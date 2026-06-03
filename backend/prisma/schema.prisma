@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Company {
+  id   String @id @default(uuid())
+  name String
+  code String @unique
+
+  email   String?
+  phone   String?
+  website String?
+  address String?
+  logo    String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String?
+  email    String  @unique
+  password String
+  isActive Boolean @default(true)
+  // roles     Role[]
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lastLogin DateTime?
+
+  // employee   Employee?
+  // attendance Attendance[]
+
+  // companyId Int
+  // company   Company @relation(fields: [companyId], references: [id])
+}
+
+// model Role {
+//   id          Int          @id @default(autoincrement())
+//   name        String       @unique // "ADMIN", "MANAGER" , "DEVELOPER"
+//   description String?
+//   users       User[]
+//   permissions Permission[]
+//   updatedAt   DateTime     @default(now()) @updatedAt
+
+//   companyId Int
+//   company   Company @relation(fields: [companyId], references: [id])
+// }
+
+// model Permission {
+//   id        Int      @id @default(autoincrement())
+//   name      String
+//   module    String
+//   action    String
+//   roles     Role[]
+//   createdAt DateTime @default(now())
+
+//   @@unique([module, action]) // ab name duplicate ho sakta hai (VIEW multiple times)  isliye unique constraint lagao
+// }
+
+// model Department {
+//   id        Int      @id @default(autoincrement())
+//   name      String   @unique
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   employees Employee[]
+//   companyId Int
+//   company   Company    @relation(fields: [companyId], references: [id])
+// }
+
+// model Employee {
+//   id Int @id @default(autoincrement())
+
+//   userId Int  @unique
+//   user   User @relation(fields: [userId], references: [id])
+
+//   // personal info
+//   firstName   String
+//   lastName    String
+//   phone       String?   @unique
+//   dateOfBirth DateTime?
+
+//   // profetional info
+//   employeeCode String   @unique
+//   joiningDate  DateTime
+//   designation  String
+
+//   departmentId Int
+//   department   Department @relation(fields: [departmentId], references: [id])
+
+//   // Address
+//   address String?
+//   city    String?
+//   state   String?
+//   pincode String?
+
+//   // status
+//   isActive Boolean @default(true)
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   companyId Int
+//   company   Company? @relation(fields: [companyId], references: [id])
+// }
+
+// model Attendance {
+//   id     Int  @id @default(autoincrement())
+//   userId Int
+//   user   User @relation(fields: [userId], references: [id])
+
+//   companyId Int
+//   company   Company? @relation(fields: [companyId], references: [id])
+
+//   date     DateTime // ek din ka record
+//   checkIn  DateTime?
+//   checkOut DateTime?
+
+//   totalMinutes    Int?
+//   overtimeMinutes Int? // >8 hrs
+//   workingHours    Float?
+//   lateMinutes     Int?
+//   status          String // present /late /Early
+
+//   createAt  DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   @@unique([userId, date]) // ek user ka ek din me ek record
+// }

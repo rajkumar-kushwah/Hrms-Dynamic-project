@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Attendance" ALTER COLUMN "totalHours" SET DATA TYPE TEXT,
+ALTER COLUMN "overtime" SET DATA TYPE TEXT;

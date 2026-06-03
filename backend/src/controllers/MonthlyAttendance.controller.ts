@@ -1,0 +1,271 @@
+import { prisma } from "../config/db.ts";
+import { type Request, type Response } from "express";
+
+
+// monthly attendance controller
+
+export const getMonthlyAttendance = async (req: Request, res: Response) => {
+    try {
+        const session: any = req.session;
+        const userId = session?.userId;
+        const companyId = session?.companyId;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+
+        const month = Number(req.query.month);
+        const year = Number(req.query.year);
+
+        if (!month || !year) {
+            return res.status(400).json({
+                message: "Month and year are required",
+            });
+        }
+
+        // month start
+        const start = new Date(year, month - 1, 1);
+
+        // month end
+        const end = new Date(year, month, 0, 23, 59, 59, 999);
+
+        // logged-in user + roles
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+            include: {
+                roles: {
+                    select: {
+                        name: true,
+                    },
+                },
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        const roles = user.roles.map((role) => role.name);
+
+        let attendance;
+
+        // SUPER_ADMIN / HR → all employees full attendance
+        if (
+            roles.includes("SUPER_ADMIN") ||
+            roles.includes("HR")
+        ) {
+            attendance = await prisma.attendance.findMany({
+                where: {
+                    companyId: companyId,
+                    checkIn: {
+                        gte: start,
+                        lte: end,
+                    },
+                },
+                include: {
+                    user: {
+                        include: {
+                            employee: {
+                                include: {
+                                    department: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: {
+                    checkIn: "asc",
+                },
+            });
+        }
+
+        // Normal employee → only own attendance
+        else {
+            attendance = await prisma.attendance.findMany({
+                where: {
+                    companyId,
+                    userId: userId,
+                    checkIn: {
+                        gte: start,
+                        lte: end,
+                    },
+                },
+                include: {
+                    user: {
+                        include: {
+                            employee: {
+                                include: {
+                                    department: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: {
+                    checkIn: "asc",
+                },
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Monthly attendance fetched successfully",
+            data: attendance,
+        });
+    } catch (error) {
+        console.error("Monthly attendance error:", error);
+
+        return res.status(500).json({
+            message: "Server error",
+        });
+    }
+};
+
+
+// filtered monthly attendance
+
+export const FilteredMonthlyAttendance = async (
+    req: Request,
+    res: Response
+) => {
+    try {
+        const session: any = req.session;
+        const userId = session?.userId;
+        const companyId = session?.companyId;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+
+        const month = Number(req.query.month);
+        const year = Number(req.query.year);
+
+        const departmentId = Number(req.query.departmentId);
+        const employeeId = Number(req.query.employeeId);
+
+        const status = req.query.status as string;
+
+        if (!month || !year) {
+            return res.status(400).json({
+                message: "Month and year are required",
+            });
+        }
+
+        // month start
+        const start = new Date(year, month - 1, 1);
+
+        // month end
+        const end = new Date(year, month, 0, 23, 59, 59, 999);
+
+        // logged-in user + roles
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+            include: {
+                roles: {
+                    select: {
+                        name: true,
+                    },
+                },
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        const roles = user.roles.map(
+            (role) => role.name
+        );
+
+        // dynamic where
+        const where: any = {
+            companyId,
+            checkIn: {
+                gte: start,
+                lte: end,
+            },
+        };
+
+        // status filter
+        if (status && status !== "all") {
+            where.status = status;
+        }
+
+        const name = req.query.name as string;
+
+        where.user = {
+            employee: {}
+        };
+
+        if (departmentId) {
+            where.user.employee.departmentId = departmentId;
+        }
+
+        if (name) {
+            where.user.employee.firstName = {
+                contains: name,
+                mode: "insensitive",
+            };
+        }
+
+        // employee filter
+        if (employeeId) {
+            where.userId = employeeId;
+        }
+
+        // normal employee → only own data
+        if (
+            !roles.includes("SUPER_ADMIN") &&
+            !roles.includes("HR")
+        ) {
+            where.userId = userId;
+        }
+
+        const attendance =
+            await prisma.attendance.findMany({
+                where,
+                include: {
+                    user: {
+                        include: {
+                            employee: {
+                                include: {
+                                    department: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: {
+                    checkIn: "asc",
+                },
+            });
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "Monthly attendance fetched successfully",
+            data: attendance,
+        });
+    } catch (error) {
+        console.error(
+            "Monthly attendance error:",
+            error
+        );
+
+        return res.status(500).json({
+            message: "Server error",
+        });
+    }
+};
