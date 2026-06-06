@@ -282,6 +282,17 @@ export const signin = async (req: Request, res: Response) => {
         // find user
         const user = await prisma.user.findUnique({
             where: { email },
+            include: {
+                role: {
+                    include: {
+                        permissions: {
+                            include: {
+                                module: true  // module detail bhi aaye
+                            }
+                        }
+                    }
+                }
+            }
         })
 
         if (!user) {
@@ -306,22 +317,29 @@ export const signin = async (req: Request, res: Response) => {
         console.log("USER ID:", req.session.userId);
 
         // update Last login
-        await prisma.user.update({
+        const UpdateUser = await prisma.user.update({
             where: { id: user.id },
-            data: {
-                lastLogin: new Date()
-            },
+            data: { lastLogin: new Date() },
+            include: {
+                role: {
+                    include: {
+                        permissions: {
+                            include: {
+                                module: true  //  Module details bhi aaye
+                            }
+                        }
+                    }
+                }
+            }
         });
+
+        const { password: _, ...userWithoutPassword } = UpdateUser;
 
         // session Response 
         return res.status(200).json({
             success: true,
             message: 'Login successful',
-            data: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-            },
+            data: userWithoutPassword
         });
     } catch (error) {
         console.error(error);
@@ -339,7 +357,11 @@ export const logout = async (req: Request, res: Response) => {
                 return res.status(500).json({ success: false, message: 'Logout failed' });
             }
 
-            res.clearCookie('connect.sid');
+            res.clearCookie("connect.sid", {
+                path: "/",
+                httpOnly: true,
+                sameSite: "lax",
+            });
             return res.status(200).json({ success: true, message: 'Logged out successfully' });
 
         });

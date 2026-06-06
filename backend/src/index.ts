@@ -31,23 +31,25 @@ app.use(sessionMiddleware);
 
 
 app.use('/auth', authRouter)
+app.use('/api/roles', roleRouter)
+app.use('/api/company', companyRouter)
+
+
 app.use('/department', departmentRouter)
 app.use('/permission', permissionRouter)
-app.use('/role', roleRouter)
 app.use('/employee', employeeRouter)
 app.use('/checkin', checkInRouter)
 app.use('/monthly-attendance', monthlyRouter)
-app.use('/company', companyRouter)
 
 async function start() {
-    try{
-    await prisma.$connect();
-    app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
-    });
-} catch(error){
-    console.log("Error connecting to database")
-}
+    try {
+        await prisma.$connect();
+        app.listen(port, () => {
+            console.log(`Server running on port ${port}`);
+        });
+    } catch (error) {
+        console.log("Error connecting to database")
+    }
 }
 
 start();

@@ -12,6 +12,8 @@ export default function layout() {
                 return "Dashboard";
             case "/monthly-attendance":
                 return "Monthly Attendance";
+            case "/company":
+                return "Company";
             case "/check-in":
                 return "Check-in/Out";
             case "/employees":
@@ -37,12 +39,12 @@ export default function layout() {
                 <AppSidebar />
 
                 <main className="flex-1 p-3">
-                   
-                        <SidebarTrigger className="-ml-1 cursor-pointer" />
-                        <h1 className=" text-base font-medium">
-                            {getPageTitle()}
-                        </h1>
-                    
+
+                    <SidebarTrigger className="-ml-1 cursor-pointer" />
+                    <h1 className=" text-base font-medium">
+                        {getPageTitle()}
+                    </h1>
+
                     {/* {children} */}
                     <Outlet />
                 </main>

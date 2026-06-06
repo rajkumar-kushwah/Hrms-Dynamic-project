@@ -18,20 +18,35 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon, Sun, Moon, BadgeCheck } from "lucide-react"
 import { useAuthStore } from "@/store/auth.store"
+import { LogoutUser } from "@/services/auth.service"
+import { useNavigate } from "react-router-dom"
+import { useTheme } from "@/providers/ThemeContext"
 
 export function NavUser() {
-//   user,
-// }: {
-//   user: {
-//     name: string
-//     email: string
-//     avatar: string
-//   }
-// }) {
+  //   user,
+  // }: {
+  //   user: {
+  //     name: string
+  //     email: string
+  //     avatar: string
+  //   }
+  // }) {
   const { isMobile } = useSidebar()
-  const logout = useAuthStore((state) => state.logout);
+  const navigate = useNavigate();
+  // const logout = useAuthStore((state) => state.logout);
+
+  const logout = async () => {
+    try {
+      await LogoutUser()
+
+      navigate("/signin");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const { user } = useAuthStore((state) => state);
   if (!user) return null
 
@@ -41,6 +56,58 @@ export function NavUser() {
       .map((n) => n[0])
       .join("")
       .toUpperCase();
+  };
+
+  // Theme toggle
+
+  const { dark, setDark } = useTheme();
+
+  const handleThemeToggle = (
+    e: React.MouseEvent<HTMLDivElement>
+  ) => {
+
+    const x = e.clientX;
+    const y = e.clientY;
+
+    const circle = document.createElement("div");
+
+    circle.style.position = "fixed";
+    circle.style.left = `${x}px`;
+    circle.style.top = `${y}px`;
+
+    circle.style.width = "20px";
+    circle.style.height = "20px";
+
+    circle.style.borderRadius = "9999px";
+
+    circle.style.background = dark ? "#fff" : "#000";
+    circle.style.border = dark ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(0,0,0,0.15)";
+
+    circle.style.opacity = "1";
+    circle.style.transform = "translate(-50%, -50%) scale(0)";
+
+    circle.style.transition = "transform 1200ms cubic-bezier(0.22, 1, 0.36, 1), opacity 1200ms ease";
+
+    circle.style.zIndex = "9999";
+    circle.style.pointerEvents = "none";
+
+    document.body.appendChild(circle);
+
+    // requestAnimationFrame is used to ensure that the animation is smooth
+    requestAnimationFrame(() => {
+      circle.style.transform =
+        "translate(-50%, -50%) scale(90)";
+
+      circle.style.opacity = "0";
+    });
+
+    setTimeout(() => {
+      setDark(!dark);
+    }, 350);
+
+    setTimeout(() => {
+      circle.remove();
+    }, 1200);
   };
 
   return (
@@ -82,7 +149,21 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/profile")}>
+              <BadgeCheck className="mr-2 h-4 w-4" />
+              Profile
+            </DropdownMenuItem>
             <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={handleThemeToggle}
+              // onClick={() => {
+              //   console.log("before:", dark); setDark(!dark); console.log("after click");
+              // }}
+              >
+
+                {dark ? <Sun /> : <Moon />}
+                {dark ? "Light Mode" : "Dark Mode"}
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <SparklesIcon
                 />

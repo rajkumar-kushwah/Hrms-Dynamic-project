@@ -80,46 +80,59 @@ import { prisma } from "../config/db.ts";
 
 
 
-export const getProfile = async (req: Request, res: Response) => {
-  try {
-    const userId = req.session.userId;
+// export const getProfile = async (req: Request, res: Response) => {
+//   try {
+//     const userId = req.session.userId;
 
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     if (!userId) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
 
 
-   
 
-    return res.status(200).json({
-      success: true,
-      message: "User profile",
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        isActive: user.isActive,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-        lastLogin: user.lastLogin,
-      }
-    });
+//     const user = await prisma.user.findUnique({
+//       where: {
+//         id: userId,
+//       },
 
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error" });
-  }
-}
+//     });
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "User profile",
+//       data: {
+//         id: user.id,
+//         name: user.name,
+//         email: user.email,
+//         isActive: user.isActive,
+//         createdAt: user.createdAt,
+//         updatedAt: user.updatedAt,
+//         lastLogin: user.lastLogin,
+//       }
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Server error" });
+//   }
+// }
+
+
+export const getProfile = async (
+  req: Request,
+  res: Response
+) => {
+  const user = req.user;
+
+  return res.status(200).json({
+    success: true,
+    message: "User profile",
+    data: user,
+  });
+};

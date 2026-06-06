@@ -7,23 +7,26 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { signinUser } from '@/services/auth.service'
-// import { useAuthStore } from "@/store/auth.store"
 import { useNavigate } from 'react-router-dom'
+import { useAuthStore } from "@/store/auth.store"
 
 
 function Signin() {
-    const [loading, setLoading] = useState(false);
+    const [spinner, setSpinner] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
+    const { setUser, setLoading, setInitialized } = useAuthStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setSpinner(true);
+
         try {
             const res = await signinUser({ email, password });
-            
-            console.log("login",res.data);
+            setUser(res.data);
+            console.log("login", res.data);
             toast.success(res.data.message || "Signin successful");
             navigate("/dashboard");
 
@@ -36,6 +39,7 @@ function Signin() {
             }
         } finally {
             setLoading(false);
+            setSpinner(false);
         }
     };
 
@@ -45,7 +49,7 @@ function Signin() {
             <div className='bg-card  w-full max-w-md p-6 space-y-4 shadow-lg border rounded-2xl'>
                 <h1 className="text-2xl text-center">Signin</h1>
 
-                <form  className='space-y-4'>
+                <form className='space-y-4'>
                     {/* <div>
                         <Label>Company code </Label>
                         <Input placeholder='Company code' required />
@@ -69,7 +73,7 @@ function Signin() {
                     </Field>
 
                     <Button type="submit" className='btn btn-primary w-full cursor-pointer' onClick={handleSubmit}>
-                        {loading && <Spinner />}
+                        {spinner && <Spinner />}
                         Signin
                     </Button>
                     <FieldDescription>

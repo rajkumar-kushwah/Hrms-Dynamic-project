@@ -45,11 +45,59 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized"
+        message: "Unauthorized - Please login"
       });
     }
 
-    req.userId = userId;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isActive: true,
+        companyId: true, // agar hai to
+        createdAt: true,
+        updatedAt: true,
+        lastLogin: true,
+        roleId: true,
+        role: {
+          select: {
+            id: true,
+            name: true,   // "super_admin" etc.
+            permissions: {
+              select: {
+                canView: true,
+                canCreate: true,
+                canDelete: true,
+                canEdit: true,
+                module: {
+                  select: {
+                    id: true,
+                    name: true,
+                    displayName: true,
+                    icon: true,
+                    url: true,
+                    parentId: true,
+                    order: true,
+                  }
+                }
+              }
+            }
+          },
+        },
+      },
+    })
+
+    if (!user || !user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "User not found or inactive",
+      });
+    }
+
+    req.user = user;
+
     next();
   } catch (error) {
     return res.status(500).json({ message: "Auth error" });

@@ -8,38 +8,23 @@ export const api = axios.create({
   },
 });
 
+
+
+
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     const status = error.response?.status;
 
-    switch (status) {
-      case 401:
-        logout();
-        window.location.href = "/signin";
-        break;
-      case 403:
-        window.location.href = "/unauthorized";
-        break;
-      case 404:
-        window.location.href = "/not-found";
-        break;
-      case 500:
-        window.location.href = "/server-error";
-        break;
-      default: 
+    if (!status) {
+      console.error("Network error");
+      return Promise.reject(error);
     }
 
-      // optional: clear store
-      // useAuthStore.getState().logout();
-    
-
-    return Promise.reject(error);
+    return Promise.reject({
+      status,
+      message: error.response?.data?.message || "Request failed",
+      original: error,
+    });
   }
 );
-
-function logout() {
-  throw new Error("Function not implemented.");
-}

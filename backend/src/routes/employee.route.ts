@@ -1,19 +1,18 @@
 import { protect } from "../middleware/auth.middleware.ts";
 import express from "express";
 import { createEmployee, getEmployees, updateEmployee, deleteEmployee, filterEmployee } from "../controllers/Employee.controller.ts";
-import { checkPermissions } from "../middleware/role.middleware.ts";
+import { authorize } from "../middleware/role.middleware.ts";
 
 const router = express.Router();
 router.use(protect);
 
-router.post('/', protect, checkPermissions("EMPLOYEE.CREATE"), createEmployee);
+router.post('/', protect, authorize("employee", "canCreate"), createEmployee);
 
-router.get('/', protect, checkPermissions("EMPLOYEE.VIEW"), getEmployees);
+router.get('/', protect, authorize("employee", "canView"), getEmployees);
 
-router.put('/:id', protect, checkPermissions("EMPLOYEE.UPDATE"), updateEmployee);
+router.put('/:id', protect, authorize("employee", "canEdit"), updateEmployee);
 
-router.delete('/:id', protect, checkPermissions("EMPLOYEE.DELETE"), deleteEmployee);
+router.delete('/:id', protect, authorize("employee", "canDelete"), deleteEmployee);
 
-router.get('/filter', protect, checkPermissions("EMPLOYEE.FILTER"), filterEmployee);
 
 export default router

@@ -3,13 +3,16 @@ import Signin from "@/pages/Auth/Signin";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import Layout from "@/components/layout";
 import { ProtectedRoute } from "../providers/ProtectedRoute";
-import Profile from "@/pages/profile/Profile";
+import Profile from "@/pages/Profile";
 import { Toaster } from "sonner";
 import Unauthorized from "@/Unauthorized/Unauthorized";
 import ErrorPage from "@/ErrorHandling/ErrorPage";
+import CompanyList from "@/pages/CompanyList";
+
 const AppRoutes = () => {
     return (
         <BrowserRouter>
+        
             <Toaster position="top-right" />
             <Routes>
 
@@ -20,6 +23,7 @@ const AppRoutes = () => {
                     <Route element={<Layout />}>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/profile" element={<Profile />} />
+                        <Route path="/company" element={<CompanyList />} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}

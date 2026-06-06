@@ -1,16 +1,26 @@
 import express from "express";
-import { createRole, deleteRole, getRole, updateRole } from "../controllers/Role.controller.ts";
+
+import { Router } from "express";
+import {
+    createRole,
+    getAllRoles,
+    getRoleById,
+    updateRole,
+    deleteRole,
+} from "../controllers/Role.controller.ts";
 import { protect } from "../middleware/auth.middleware.ts";
-import { checkPermissions } from "../middleware/role.middleware.ts";
+import { authorize } from "../middleware/role.middleware.ts";
 
-// role.routes.ts
-const router = express.Router();
-router.post('/', protect, checkPermissions("ROLE.CREATE"), createRole);
+const router = Router();
 
-router.get('/', protect, checkPermissions("ROLE.VIEW"), getRole);
+router.get("/", protect, authorize("roles", "canView"), getAllRoles);
 
-router.put('/:id', protect, checkPermissions("ROLE.UPDATE"), updateRole);
+router.get("/:id", protect, authorize("roles", "canView"), getRoleById);
 
-router.delete('/:id', protect, checkPermissions("ROLE.DELETE"), deleteRole);
+router.post("/", protect, authorize("roles", "canCreate"), createRole);
+
+router.put("/:id", protect, authorize("roles", "canEdit"), updateRole);
+
+router.delete("/:id", protect, authorize("roles", "canDelete"), deleteRole);
 
 export default router;

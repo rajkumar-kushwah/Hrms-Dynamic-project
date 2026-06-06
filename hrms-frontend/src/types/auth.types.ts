@@ -15,10 +15,39 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    role?: string;
+    role?: Role;
     avatar?: string;
+    company?: {
+        id: number;
+        name: string
+    }
+
     lastLogin?: string;
     isActive?: boolean;
     createdAt?: string;
     updatedAt?: string;
+}
+
+
+// store/auth.store.ts
+interface Permission {
+    canView: boolean;
+    canCreate: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    module: {
+        id: number;
+        name: string;
+        displayName: string;
+        icon: string;
+        url: string;
+        parentId: number | null;
+        order: number;
+    };
+}
+
+interface Role {
+    id: number;
+    name: string;
+    permissions: Permission[];
 }

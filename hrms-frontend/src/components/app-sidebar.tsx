@@ -63,13 +63,13 @@ const data = {
           url: "/dashboard",
         },
         {
-          title: "Projects",
+          title: "Profile",
           url: "/profile",
         },
-        // {
-        //   title: "Settings",
-        //   url: "#",
-        // },
+        {
+          title: "Companys",
+          url: "/company",
+        },
       ],
     },
     // {
@@ -182,7 +182,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain  />
+        {/* <NavMain items={data.navMain} /> */}
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>

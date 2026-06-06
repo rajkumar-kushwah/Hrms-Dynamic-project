@@ -3,13 +3,17 @@ import { useAuthStore } from "../store/auth.store";
 
 
 export const ProtectedRoute = () => {
-    const { isAuthenticated, user } = useAuthStore();
+    const { isAuthenticated, isInitialized, loading } = useAuthStore();
 
-    if (isAuthenticated === null) return null;
+    // console.log("ProtectedRoute state:", { isAuthenticated, isInitialized, loading });
 
-    if (!isAuthenticated && !user) {
+    if (!isInitialized || loading) {
+        return <div>Loading...</div>
+    }
+
+    if (!isAuthenticated) {
         return <Navigate to="/" />
     }
-    
+
     return <Outlet />
 }

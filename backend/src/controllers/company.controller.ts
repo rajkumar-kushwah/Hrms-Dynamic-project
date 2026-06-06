@@ -48,6 +48,12 @@ export const getCompanies = async (req: Request, res: Response) => {
                 createdAt: 'desc'
             },
         })
+
+        return res.status(200).json({
+            success: true,
+            message: 'Companies fetched successfully',
+            data: companies
+        });
     } catch (error) {
         return res.status(500).json({ message: "Server error" });
     }
@@ -84,28 +90,50 @@ export const getCompanyById = async (req: Request, res: Response) => {
 
 // update company 
 export const updateCompany = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params
+  try {
+    const { id } = req.params;
 
-        if (!id || typeof id !== 'string') {
-            return res.status(400).json({ success: false, message: "Company id is required" });
-        }
-
-        const Company = await prisma.company.update({
-            where: { id },
-            data: req.body
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: 'Company updated successfully',
-            data: Company
-        });
-
-    } catch (error) {
-        return res.status(500).json({ message: "Server error" });
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Company id is required"
+      });
     }
-}
+
+    //  Pehle check karo exist karta hai
+    const existing = await prisma.company.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Company not found"
+      });
+    }
+
+    //  Sirf allowed fields update karo
+    const { name, email, phone, website, address, logo } = req.body;
+
+    const company = await prisma.company.update({
+      where: { id },
+      data: {
+        ...(name && { name }),
+        ...(email && { email }),
+        ...(phone && { phone }),
+        ...(website && { website }),
+        ...(address && { address }),
+        ...(logo && { logo }),
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Company updated successfully",
+      data: company
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 
 // delete company 
 export const deleteCompany = async (req: Request, res: Response) => {

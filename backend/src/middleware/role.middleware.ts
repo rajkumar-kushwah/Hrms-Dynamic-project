@@ -4,81 +4,99 @@
 //  check Permissions
 
 
+import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../config/db.ts";
 
 
 // export const checkPermissions = (permissionName: string) => {
-//   return (req: any, res: any, next: any) => {
+//   return async (req: any, res: any, next: any) => {
+//     const userId = req.session.userId;
 
-//     const user = req.user;
+//     if (!userId) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     const user = await prisma.user.findUnique({
+//       where: { id: userId },
+//       include: {
+//         company: true,
+//         roles: {
+//           include: {
+//             permissions: true
+//           }
+//         }
+//       }
+//     });
 
 //     if (!user) {
 //       return res.status(401).json({ message: "Unauthorized" });
 //     }
 
-//     // roles extract karo
-//     const roles = user.roles.map((r: any) => r.name);
+//     const roles = user.roles.map(r => r.name);
 
-//     // SUPER_ADMIN bypass
 //     if (roles.includes("SUPER_ADMIN")) {
 //       return next();
 //     }
 
-//     // permissions extract karo
-//     const permissions = user.roles.flatMap((role: any) =>
-//       role.permissions.map((p: any) => p.name)
+//     const permissions = user.roles.flatMap(role =>
+//       role.permissions.map(p => p.name)
 //     );
 
 //     if (!permissions.includes(permissionName)) {
 //       return res.status(403).json({ message: "Forbidden" });
 //     }
 
+//     req.user = user;
+//     req.company = user.company;
+
 //     next();
 //   };
 // };
 
 
-export const checkPermissions = (permissionName: string) => {
-  return async (req: any, res: any, next: any) => {
-    const userId = req.session.userId;
+// -- Role + Permission chek ek sath 
+export const authorize = (moduleName: string, action: "canView" | "canCreate" | "canEdit" | "canDelete") => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
 
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+      const user = req.user;
+      const roleId = user?.role?.id;
+      const roleName = user?.role?.name;
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        company: true,
-        roles: {
-          include: {
-            permissions: true
-          }
-        }
+      if (!roleId || !roleName) {
+        return res.status(403).json({
+          success: false,
+          message: "No role assigned"
+        });
       }
-    });
+      
+     // Super Admin ko direct allow karo — permission check ki zaroorat nahi
+      if(roleName === "super_admin"){
+        return next();
+      }
 
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      //  Baaki sabke liye permission check this
+      const permission = await prisma.permission.findFirst({
+        where: {
+          roleId,
+          module: {name: moduleName},
+        }
+      });
+
+      if(!permission || !permission[action]){
+        return res.status(403).json({
+          success: false,
+          message: `Access denied for ${moduleName} ${action}`
+        });
+      }
+
+      next();
+
+
+    } catch (err) {
+      return res.status(500).json({ success: false, message: 'Permission error' });
     }
+  }
 
-    const roles = user.roles.map(r => r.name);
 
-    if (roles.includes("SUPER_ADMIN")) {
-      return next();
-    }
-
-    const permissions = user.roles.flatMap(role =>
-      role.permissions.map(p => p.name)
-    );
-
-    if (!permissions.includes(permissionName)) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-    
-    req.user = user;
-    req.company = user.company;
-
-    next();
-  };
-};
+}
