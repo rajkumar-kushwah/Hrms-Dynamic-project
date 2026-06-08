@@ -1,165 +1,84 @@
-import { type Request, type Response } from "express";
-import { prisma } from "../config/db.ts";
-import {
-    createRoleService,
-    getAllRolesService,
-    getRoleByIdService,
-    updateRoleService,
-    deleteRoleService,
-} from "../services/role.service.ts";
+import type { Request, Response } from "express";
+import * as RoleService from "../services/role.service.ts";
 
+// Sabhi roles
+export const getCompanyRoles = async (req: Request, res: Response) => {
+    try {
+        const companyId = req.user?.companyId!;
+        const roles = await RoleService.getCompanyRoles(companyId);
+        res.status(200).json({ success: true, data: roles });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
-//Create Role controller
-
+// Role create
 export const createRole = async (req: Request, res: Response) => {
     try {
-        const { name, description, permissions } = req.body;
-        const companyId = req?.user?.companyId ?? undefined;
+        const companyId = req.user?.companyId!;
 
-        if (!name) {
+        if (!companyId) {
             return res.status(400).json({
                 success: false,
-                message: "Role name is required"
+                message: "Company not found in session"
             });
         }
 
-        if (!permissions || permissions.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: "Permissions are required"
-            });
-        }
-
-        const role = await createRoleService({
-            name,
-            description,
-            companyId,
-            permissions,
-        });
-
-        return res.status(201).json({
+        const role = await RoleService.createRole(companyId, req.body);
+        res.status(201).json({
             success: true,
             message: "Role created successfully",
             data: role,
         });
     } catch (error: any) {
-        console.error(error);
-        return res.status(400).json({
-            success: false,
-            message: error.message ?? "Failed to create role",
-        });
+        res.status(400).json({ success: false, message: error.message });
     }
-}
-// Get All Roles controller
-export const getAllRoles = async (req: Request, res: Response) => {
+};
+
+// Role permissions dekho
+export const getRolePermissions = async (req: Request, res: Response) => {
     try {
-        const companyId = req?.user?.companyId ?? undefined;
-
-        const roles = await getAllRolesService(companyId);
-
-        return res.status(200).json({
-            success: true,
-            message: "Roles fetched successfully",
-            data: roles,
-        })
+        const companyId = req.user?.companyId!;
+        const id = (req.params.id as string);
+        const roleId = parseInt(id);
+        const role = await RoleService.getRolePermissions(roleId, companyId);
+        res.status(200).json({ success: true, data: role });
     } catch (error: any) {
-        console.error(error);
-        return res.status(400).json({
-            success: false,
-            message: error.message ?? "Failed to fetch roles",
-        });
+        res.status(404).json({ success: false, message: error.message });
     }
-}
+};
 
-// Get Single Role
-export const getRoleById = async (req: Request, res: Response) => {
+// Permissions update
+export const updateRolePermissions = async (req: Request, res: Response) => {
     try {
-        const id = parseInt(req.params.id as string);
-        // validate
-        if (isNaN(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid role id"
-            });
-        }
-        const role = await getRoleByIdService(id);
-
-        return res.status(200).json({
+        const companyId = req.user?.companyId!;
+        const id = (req.params.id as string);
+        const roleId = parseInt(id);
+        const { permissions } = req.body;
+        const role = await RoleService.updateRolePermissions(
+            roleId,
+            companyId,
+            permissions
+        );
+        res.status(200).json({
             success: true,
-            message: "Role fetched successfully",
-            data: role,
-        })
-    } catch (error: any) {
-        console.error(error);
-        return res.status(400).json({
-            success: false,
-            message: error.message ?? "Failed to fetch role",
-        });
-    }
-}
-
-// update role controller
-export const updateRole = async (req: Request, res: Response) => {
-    try {
-        const id = parseInt(req.params.id as string);
-
-        if (isNaN(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid role id"
-            });
-        }
-
-        const { name, description, isActive, permissions } = req.body;
-
-        const role = await updateRoleService(id, {
-            name,
-            description,
-            isActive,
-            permissions,
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: "Role updated successfully",
+            message: "Permissions updated successfully",
             data: role,
         });
-
     } catch (error: any) {
-        console.error(error);
-        return res.status(400).json({
-            success: false,
-            message: error.message ?? "Failed to update role",
-        });
+        res.status(400).json({ success: false, message: error.message });
     }
-}
+};
 
-// Delete Role
-
+// Role delete
 export const deleteRole = async (req: Request, res: Response) => {
     try {
-        const id = parseInt(req.params.id as string);
-
-        if (isNaN(id)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid role id"
-            });
-        }
-
-        const result = await deleteRoleService(id);
-
-        return res.status(200).json({
-            success: true,
-            message: "Role deleted successfully",
-            data: result.message,
-        });
-
+        const companyId = req.user?.companyId!;
+        const id = (req.params.id as string);
+        const roleId = parseInt(id);
+        const result = await RoleService.deleteRole(roleId, companyId);
+        res.status(200).json({ success: true, message: result.message });
     } catch (error: any) {
-        console.error(error);
-        return res.status(400).json({
-            success: false,
-            message: error.message ?? "Failed to delete role",
-        });
+        res.status(400).json({ success: false, message: error.message });
     }
-    }
+};

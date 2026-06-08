@@ -50,7 +50,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: String(userId) },
       select: {
         id: true,
         name: true,

@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import Unauthorized from "@/Unauthorized/Unauthorized";
 import ErrorPage from "@/ErrorHandling/ErrorPage";
 import CompanyList from "@/pages/CompanyList";
+import  Users  from "../pages/Users";
 
 const AppRoutes = () => {
     return (
@@ -24,6 +25,7 @@ const AppRoutes = () => {
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/company" element={<CompanyList />} />
+                        <Route path="/users" element={<Users />} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}

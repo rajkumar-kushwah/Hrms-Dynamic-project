@@ -1,166 +1,151 @@
 import { type Request, type Response } from "express";
 import { prisma } from "../config/db.ts";
-
+import * as CompanyService from "../services/company.service.ts";
 
 // create company controller
 export const createCompany = async (req: Request, res: Response) => {
     try {
-        const { name, code, email, phone, website, address, logo } = req.body;
+        const company = await CompanyService.createCompanyService(req.body);
 
-        // chack company code 
-        const companyAxist = await prisma.company.findUnique({
-            where: { code }
-        });
-
-        if (companyAxist) {
-            return res.status(400).json({ success: false, message: 'Company code already exists' });
-        }
-
-        // create company
-        const Company = await prisma.company.create({
-            data: {
-                name,
-                code,
-                email,
-                phone,
-                website,
-                address,
-                logo
-            },
-        });
-
-        return res.status(201).json({
+        res.status(201).json({
             success: true,
-            message: 'Company created successfully',
-            data: Company
+            message: "Company created successfully",
+            data: company,
         });
-
-    } catch (error) {
-        return res.status(500).json({ message: "Server error" });
+    } catch (Error: any) {
+        console.error(Error);
+        res.status(400).json({
+            success: false,
+            message: Error.message ?? "Failed to create company",
+        });
     }
 }
 
-// get All company
-export const getCompanies = async (req: Request, res: Response) => {
+// Sabhi Companies
+export const getAllCompanies = async (req: Request, res: Response) => {
     try {
-        const companies = await prisma.company.findMany({
-            orderBy: {
-                createdAt: 'desc'
-            },
-        })
+        const companies = await CompanyService.getAllCompanies();
 
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
-            message: 'Companies fetched successfully',
-            data: companies
+            message: "Companies fetched successfully",
+            data: companies,
         });
-    } catch (error) {
-        return res.status(500).json({ message: "Server error" });
+    } catch (Error: any) {
+        console.error(Error);
+        res.status(400).json({
+            success: false,
+            message: Error.message ?? "Failed to fetch companies",
+        });
     }
 }
 
 // get single company
 export const getCompanyById = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params
+        const id = (req.params.id as string);
+        const companies = await CompanyService.getCompanyById(id);
 
-        if (!id || typeof id !== 'string') {
-            return res.status(400).json({ success: false, message: "Company id is required" });
-        }
-
-        const company = await prisma.company.findUnique({
-            where: { id }
-        });
-
-        if (!company) {
-            return res.status(404).json({ success: false, message: "Company not found" });
-        }
-
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
-            message: 'Company found successfully',
-            data: company
+            message: "Company fetched successfully",
+            data: companies,
         });
-
-
-    } catch (error) {
-        return res.status(500).json({ message: "Server error" });
+    } catch (Error: any) {
+        console.error(Error);
+        res.status(400).json({
+            success: false,
+            message: Error.message ?? "Failed to fetch company",
+        });
     }
 }
 
-// update company 
+// update Company
 export const updateCompany = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+    try {
+        const id = (req.params.id as string);
+        const company = await CompanyService.updateCompany(id, req.body);
 
-    if (!id || typeof id !== "string") {
-      return res.status(400).json({
-        success: false,
-        message: "Company id is required"
-      });
+        res.status(200).json({
+            success: true,
+            message: "Company updated successfully",
+            data: company,
+        });
+    } catch (Error: any) {
+        console.error(Error);
+        res.status(400).json({
+            success: false,
+            message: Error.message ?? "Failed to update company",
+        });
     }
+}
 
-    //  Pehle check karo exist karta hai
-    const existing = await prisma.company.findUnique({ where: { id } });
-    if (!existing) {
-      return res.status(404).json({
-        success: false,
-        message: "Company not found"
-      });
-    }
-
-    //  Sirf allowed fields update karo
-    const { name, email, phone, website, address, logo } = req.body;
-
-    const company = await prisma.company.update({
-      where: { id },
-      data: {
-        ...(name && { name }),
-        ...(email && { email }),
-        ...(phone && { phone }),
-        ...(website && { website }),
-        ...(address && { address }),
-        ...(logo && { logo }),
-      }
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Company updated successfully",
-      data: company
-    });
-
-  } catch (error) {
-    return res.status(500).json({ message: "Server error" });
-  }
-};
-
-// delete company 
+// delete company
 export const deleteCompany = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const id = (req.params.id as string);
+        const result = await CompanyService.deleteCompany(id);
 
-        if (!id || typeof id !== "string") {
+        res.status(200).json({
+            success: true,
+            message: "Company deleted successfully",
+            data: result.message,
+        });
+    } catch (Error: any) {
+        console.error(Error);
+        res.status(400).json({
+            success: false,
+            message: Error.message ?? "Failed to delete company",
+        });
+    }
+}
+
+
+// Assign Company admin
+export const assignCompanyAdmin = async (req: Request, res: Response) => {
+    try {
+        const id = (req.params.id as string);
+        const company = await CompanyService.assignCompanyAdmin(id, req.body);
+
+        res.status(200).json({
+            success: true,
+            message: "Company admin assigned successfully",
+            data: company,
+        });
+    } catch (Error: any) {
+        console.error(Error);
+        res.status(400).json({
+            success: false,
+            message: Error.message ?? "Failed to assign company admin",
+        });
+    }
+}
+
+// get my company 
+export const getMyCompany = async (req: Request, res: Response) => {
+    try {
+        const companyId = req?.user?.companyId;
+
+        if (!companyId) {
             return res.status(400).json({
                 success: false,
-                message: "Company id is required"
-            });
+                message: "No company Assigned",
+            })
         }
 
-        const company = await prisma.company.update({
-            where: { id },
-            data: {
-                isActive: false
-            }
-        });
+        const company = await CompanyService.getMyCompany(companyId)
 
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
-            message: "Company deactivated successfully",
-            data: company
+            message: "Company fetched successfully",
+            data: company,
         });
-
-    } catch (error) {
-        return res.status(500).json({ message: "Server error" });
+    } catch (Error: any) {
+        console.error(Error);
+        res.status(400).json({
+            success: false,
+            message: Error.message ?? "Failed to fetch company",
+        });
     }
-};
+}
+

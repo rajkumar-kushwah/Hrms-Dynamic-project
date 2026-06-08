@@ -28,6 +28,8 @@ export default function layout() {
                 return "Attendance History";
             case "/att-regularization":
                 return "Regularization";
+            case "/users":
+                return "Users";
             default:
                 return "Dashboard";
         }

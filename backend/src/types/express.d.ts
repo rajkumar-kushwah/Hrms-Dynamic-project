@@ -3,7 +3,7 @@ import { User } from "../generated/prisma/client";
 
 declare module "express-serve-static-core" {
   interface Request {
-    userId?: number;
+    userId?: string;
     user?: user;
   }
 }

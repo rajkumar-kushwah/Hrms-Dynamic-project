@@ -1,5 +1,5 @@
 import { api } from "../api/axios";
-import type { CreateCompanyPayload, UpdateCompanyPayload } from "@/types/company.types";
+import type { CreateCompanyPayload, UpdateCompanyPayload, AssignAdminPayload } from "@/types/company.types";
 
 export const getCompanies = () => {
   return api.get("/api/company");
@@ -20,4 +20,13 @@ export const getCompanyById = (id: string) => {
 // delete company
 export const deleteCompany = (id: string) => {
   return api.delete(`/api/company/${id}`);
+};
+
+// me company
+export const getMyCompany = () => {
+  return api.get("/api/company/me");
+};
+
+export const assignCompanyAdmin = ( companyId: string, data: AssignAdminPayload) => {
+  return api.post(`/api/company/${companyId}/assign-admin`, data);
 };

@@ -17,10 +17,12 @@ export interface User {
     email: string;
     role?: Role;
     avatar?: string;
+    companyId?: number | null;
     company?: {
         id: number;
         name: string
-    }
+        permissions: Permission[]
+    } | null;
 
     lastLogin?: string;
     isActive?: boolean;

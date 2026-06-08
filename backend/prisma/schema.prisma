@@ -24,6 +24,12 @@ model Company {
   address String?
   logo    String?
 
+  gstNumber        String?
+  subscriptionPlan String    @default("basic")
+  subscriptionEnd  DateTime?
+  maxBranches      Int       @default(1)
+  maxEmployees     Int       @default(10)
+
   isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
@@ -35,7 +41,7 @@ model Company {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
+  id       String  @id @default(uuid())
   name     String?
   email    String  @unique
   password String
@@ -55,7 +61,7 @@ model User {
 //Roles Table — UI se banenge, hardcoded nahi
 model Role {
   id          Int     @id @default(autoincrement())
-  name        String  @unique //  "HR Manager" , "Accountant" , "Branch Manager"
+  name        String //  "HR Manager" , "Accountant" , "Branch Manager"
   description String?
   isActive    Boolean @default(true)
 
@@ -64,12 +70,14 @@ model Role {
 
   user        User[]
   permissions Permission[]
+
+  @@unique([name, companyId])
 }
 
 //Modules Table — Kaunse modules hain system mein
 model Module {
   id          Int     @id @default(autoincrement())
-  name        String // "attendance", "payroll", "reports"
+  name        String  @unique // "attendance", "payroll", "reports"
   displayName String // "Attendance", "Payroll", "Reports"
   icon        String // ui icon
   url         String // "/attendance"
@@ -84,8 +92,6 @@ model Module {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@unique([name])
 }
 
 //Permissions Table — Role + Module ka combination
@@ -110,7 +116,7 @@ model Permission {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([roleId, moduleId]) // Ek role ka ek module pe ek hi permission
+  @@unique([roleId, moduleId, companyId]) // Ek role ka ek module pe ek hi permission
 }
 
 // model Department {

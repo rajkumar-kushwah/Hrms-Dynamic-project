@@ -1,186 +1,167 @@
-import { exit } from "node:process";
-import { prisma } from "../../src/config/db.ts";
+import { prisma } from "../config/db.ts";
 
+// Company ke sabhi roles
+export const getCompanyRoles = async (companyId: string) => {
+    return await prisma.role.findMany({
+        where: { companyId },
+        include: {
+            permissions: {
+                include: {
+                    module: true,
+                },
+            },
+        },
+        orderBy: { id: "asc" },
+    });
+};
 
-// Create role
+// Naya role banao
+export const createRole = async (
+    companyId: string,
+    data: {
+        name: string;
+        description?: string;
+    }
+) => {
+    // Same name already exist?
+    const existing = await prisma.role.findFirst({
+        where: {
+            name: data.name,
+            companyId,
+        },
+    });
 
-export const createRoleService = async (data: {
-    name: string;
-    description: string;
-    companyId?: string;
+    if (existing) throw new Error("Role already exists");
+
+    // Role banao
+    const role = await prisma.role.create({
+        data: {
+            name: data.name,
+            description: data.description ?? null,
+            isActive: true,
+            companyId,
+        }
+    });
+
+    // Default permissions - sab false
+    const allModules = await prisma.module.findMany({
+        where: { parentId: null }, // Sirf parent modules
+    });
+
+    await prisma.permission.createMany({
+        data: allModules.map((mod) => ({
+            roleId: role.id,
+            moduleId: mod.id,
+            companyId,
+            canView: false,
+            canCreate: false,
+            canEdit: false,
+            canDelete: false,
+        })),
+        skipDuplicates: true,
+    });
+
+    return role;
+};
+
+// Role ki permissions dekho
+export const getRolePermissions = async (
+    roleId: number,
+    companyId: string
+) => {
+    const role = await prisma.role.findFirst({
+        where: {
+            id: roleId,
+            companyId,
+        },
+        include: {
+            permissions: {
+                include: {
+                    module: {
+                        include: {
+                            children: true, // Sub modules bhi
+                        },
+                    },
+                },
+                orderBy: {
+                    moduleId: "asc",
+                },
+            },
+        },
+    });
+
+    if (!role) throw new Error("Role not found");
+
+    return role;
+};
+
+// Permissions update karo
+export const updateRolePermissions = async (
+    roleId: number,
+    companyId: string,
     permissions: {
         moduleId: number;
         canView: boolean;
         canCreate: boolean;
         canEdit: boolean;
         canDelete: boolean;
-    }[];
-
-}) => {
-
-
-    // check duplicate role name same company mein
-    const exitingRole = await prisma.role.findFirst({
-        where: {
-            name: data.name,
-            companyId: data.companyId ?? null,
-        },
+    }[]
+) => {
+    // Role is company ka hai?
+    const role = await prisma.role.findFirst({
+        where: { id: roleId, companyId },
     });
 
-    if (exitingRole) {
-        throw new Error("Role already exists");
-    }
+    if (!role) throw new Error("Role not found");
 
-    const role = await prisma.role.create({
-        data: {
-            name: data.name,
-            description: data.description,
-            companyId: data.companyId ?? null,
-            permissions: {
-                create: data.permissions.map((permission) => ({
-                    moduleId: permission.moduleId,
-                    canView: permission.canView,
-                    canCreate: permission.canCreate,
-                    canEdit: permission.canEdit,
-                    canDelete: permission.canDelete,
-                })),
-            },
-        },
-        include: {
-            permissions: {
-                include: {
-                    module: true
+    // Har permission update karo
+    for (const perm of permissions) {
+        await prisma.permission.upsert({
+            where: {
+                roleId_moduleId_companyId: {
+                    roleId,
+                    moduleId: perm.moduleId,
+                    companyId,
                 },
             },
-        },
-    })
-
-    return role;
-
-
-}
-
-//  Get All Roles
-
-export const getAllRolesService = async (companyId?: string) => {
-    const roles = await prisma.role.findMany({
-        where: {
-            companyId: companyId ?? null,
-        },
-        include: {
-            permissions: {
-                include: { module: true },
+            update: {
+                canView: perm.canView,
+                canCreate: perm.canCreate,
+                canEdit: perm.canEdit,
+                canDelete: perm.canDelete,
             },
-            _count: {
-                select: { user: true }, // Kitne users hain is role pe
+            create: {
+                roleId,
+                moduleId: perm.moduleId,
+                companyId,
+                canView: perm.canView,
+                canCreate: perm.canCreate,
+                canEdit: perm.canEdit,
+                canDelete: perm.canDelete,
             },
-        },
-        orderBy: { id: "asc" },
-    });
+        });
+    }
 
-    return roles;
+    return await getRolePermissions(roleId, companyId);
 };
 
-// Get Single Role
-export const getRoleByIdService = async (id: number) => {
+// Role delete karo
+export const deleteRole = async (roleId: number, companyId: string) => {
     const role = await prisma.role.findFirst({
-        where: { id },
-        include: {
-            permissions: {
-                include: { module: true },
-            },
-            _count: {
-                select: { user: true },
-            },
-        },
+        where: { id: roleId, companyId },
     });
 
-    if (!role) {
-        throw new Error('Role not found');
-    }
-    return role;
-}
+    if (!role) throw new Error("Role not found");
 
-// Update Role
-export const updateRoleService = async (
-    id: number,
-    data: {
-        name?: string;
-        description?: string;
-        isActive?: boolean;
-        permissions: {
-            moduleId: number;
-            canView: boolean;
-            canCreate: boolean;
-            canEdit: boolean;
-            canDelete: boolean;
-        }[];
-    }) => {
-
-    // Check karo role exist karta hai
-    const existing = await prisma.role.findUnique({ where: { id } });
-    if (!existing) throw new Error('Role not found');
-
-    // Permissions update karni hain to pehle delete karo phir recreate
-    if (data.permissions) {
-        await prisma.permission.deleteMany({ where: { roleId: id } })
-    }
-
-    const role = await prisma.role.update({
-        where: { id },
-        data: {
-            //  Sirf wahi fields pass karo jo actually hain
-            ...(data.name !== undefined && { name: data.name }),
-            ...(data.description !== undefined && { description: data.description }),
-            ...(data.isActive !== undefined && { isActive: data.isActive }),
-            ...(data.permissions && {
-                permissions: {
-                    create: data.permissions.map((p) => ({
-                        moduleId: p.moduleId,
-                        canView: p.canView,
-                        canCreate: p.canCreate,
-                        canEdit: p.canEdit,
-                        canDelete: p.canDelete,
-                    })),
-                },
-            }),
-        },
-        include: {
-            permissions: {
-                include: { module: true },
-            },
-        },
+    // Pehle permissions delete karo
+    await prisma.permission.deleteMany({
+        where: { roleId, companyId },
     });
 
-    return role
-
-}
-
-// Delete Role
-
-export const deleteRoleService = async (id: number) => {
-    const existing = await prisma.role.findUnique({
-        where: { id },
-        include: { _count: { select: { user: true } } },
+    // Phir role delete karo
+    await prisma.role.delete({
+        where: { id: roleId },
     });
-
-    if (!existing) throw new Error("Role not found");
-
-    // Super admin delete nahi hoga
-    if (existing.name === "super_admin") {
-        throw new Error("Super Admin role cannot be deleted");
-    }
-
-    // Agar users assigned hain to delete mat karo
-    if (existing._count.user > 0) {
-        throw new Error(`Cannot delete — ${existing._count.user} users assigned to this role`);
-    }
-
-    // Pehle permissions delete karo phir role
-
-    await prisma.permission.deleteMany({ where: { roleId: id } });
-    await prisma.role.delete({ where: { id } });
 
     return { message: "Role deleted successfully" };
-    
-}
+};

@@ -1,47 +1,51 @@
 import { prisma } from "../../src/config/db.ts";
 
 export const seedSuperAdminRole = async () => {
-    // Super Admin Role banao
-    const superAdminRole = await prisma.role.upsert({
-        where: { name: "super_admin" },
-        update: {},
-        create: {
-            name: "super_admin",
-            description: "Full access to everything",
-            isActive: true,
-            companyId: null,
-        },
+    let superAdminRole = await prisma.role.findFirst({
+        where: { name: "super_admin", companyId: null },
     });
 
-    console.log(" Super Admin role created!");
-
-    // Pehle check karo permissions already hain kya
-    const existingPermissions = await prisma.permission.count({
-        where: { roleId: superAdminRole.id },
-    });
-
-    if (existingPermissions > 0) {
-        console.log(" Super Admin permissions already exist!");
-        return superAdminRole;
+    if (!superAdminRole) {
+        superAdminRole = await prisma.role.create({
+            data: {
+                name: "super_admin",
+                description: "Full access to everything",
+                isActive: true,
+                companyId: null,
+            },
+        });
+        console.log(" Super Admin role created!");
+    } else {
+        console.log(" Super Admin role already exists!");
     }
 
-    // Saare modules lo
+    //  Early return hatao — upsert use karo
     const allModules = await prisma.module.findMany();
 
-    // Ek saath saari permissions create karo
-    await prisma.permission.createMany({
-        data: allModules.map((mod) => ({
-            roleId: superAdminRole.id,
-            moduleId: mod.id,
-            canView: true,
-            canCreate: true,
-            canEdit: true,
-            canDelete: true,
-        })),
-        skipDuplicates: true, //  Duplicate hone pe skip karo
-    });
+    for (const mod of allModules) {
+        const existing = await prisma.permission.findFirst({
+            where: {
+                roleId: superAdminRole.id,
+                moduleId: mod.id,
+                companyId: null,
+            },
+        });
+
+        if (!existing) {
+            await prisma.permission.create({
+                data: {
+                    roleId: superAdminRole.id,
+                    moduleId: mod.id,
+                    companyId: null,
+                    canView: true,
+                    canCreate: true,
+                    canEdit: true,
+                    canDelete: true,
+                },
+            });
+        }
+    }
 
     console.log(" Super Admin permissions seeded!");
-
     return superAdminRole;
 };

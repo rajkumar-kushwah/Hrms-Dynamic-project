@@ -13,6 +13,7 @@ import checkInRouter from "./routes/checkIn.route.ts";
 import monthlyRouter from "./routes/monthly.route.ts";
 import { sessionMiddleware } from "./config/session.ts";
 import companyRouter from "./routes/company.route.ts";
+import userRoutes from "./routes/companyuser.routes.ts";
 
 dotenv.config();
 const app = express();
@@ -33,6 +34,7 @@ app.use(sessionMiddleware);
 app.use('/auth', authRouter)
 app.use('/api/roles', roleRouter)
 app.use('/api/company', companyRouter)
+app.use("/api/users", userRoutes);
 
 
 app.use('/department', departmentRouter)
