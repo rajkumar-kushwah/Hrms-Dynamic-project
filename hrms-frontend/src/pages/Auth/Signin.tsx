@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import axios from 'axios'
+import axios from "axios";
 import { signinUser } from '@/services/auth.service'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from "@/store/auth.store"
@@ -26,17 +26,14 @@ function Signin() {
         try {
             const res = await signinUser({ email, password });
             setUser(res.data);
-            console.log("login", res.data);
             toast.success(res.data.message || "Signin successful");
             navigate("/dashboard");
 
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                toast.error(error.response?.data?.message || "Error");
-            } else {
-                console.error(error);
-                toast.error("Something went wrong");
-            }
+        } catch (error: any) {
+            
+                const message = error?.message || "Error";
+                toast.error(message);
+          
         } finally {
             setLoading(false);
             setSpinner(false);

@@ -8,17 +8,10 @@ import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@/api/axios";
+import {getCompanyUsers, resetUserPassword, toggleUserStatus} from "@/services/companyuser.service";
+import type { CompanyUser } from "@/types/companyuser.types";
 
-interface CompanyUser {
-    id: number;
-    name: string;
-    email: string;
-    isActive: boolean;
-    createdAt: string;
-    company: { id: string; name: string; code: string } | null;
-    role: { id: number; name: string } | null;
-}
+
 
 const Users = () => {
     const [users, setUsers] = React.useState<CompanyUser[]>([]);
@@ -32,7 +25,7 @@ const Users = () => {
 
     const loadUsers = async () => {
         try {
-            const res = await api.get("/api/users");
+            const res = await getCompanyUsers();
             setUsers(res.data.data);
         } catch (err) {
             toast.error("Failed to load users");
@@ -42,7 +35,7 @@ const Users = () => {
     //  Toggle Active/Inactive
     const handleToggleStatus = async (user: CompanyUser) => {
         try {
-            const res = await api.patch(`/api/users/${user.id}/toggle-status`);
+            const res = await  toggleUserStatus(user.id);
             toast.success(res.data.message);
             //  Local state update karo — dobara API call nahi
             setUsers((prev) =>
@@ -63,15 +56,13 @@ const Users = () => {
             return;
         }
         try {
-            await api.patch(`/users/${selectedUser.id}/reset-password`, {
-                password: newPassword,
-            });
+            await resetUserPassword(selectedUser.id, newPassword);
             toast.success("Password reset successfully!");
             setResetOpen(false);
             setNewPassword("");
             setSelectedUser(null);
-        } catch (err) {
-            toast.error("Failed to reset password");
+        } catch (err: any) {
+             toast.error(err?.message || "Failed to reset password");
         }
     };
 

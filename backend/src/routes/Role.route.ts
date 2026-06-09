@@ -7,11 +7,14 @@ import {
     getRolePermissions,
     updateRolePermissions,
     deleteRole,
+    getModules
 } from "../controllers/Role.controller.ts";
 import { protect } from "../middleware/auth.middleware.ts";
 import { authorize } from "../middleware/role.middleware.ts";
 
 const router = Router();
+
+router.get("/modules", protect, getModules);
 
 router.get("/", protect, authorize("roles", "canView"), getCompanyRoles);
 
@@ -22,5 +25,6 @@ router.get("/:id/permissions", protect, authorize("roles", "canView"), getRolePe
 router.put("/:id/permissions", protect, authorize("roles", "canEdit"), updateRolePermissions);
 
 router.delete("/:id", protect, authorize("roles", "canDelete"), deleteRole);
+
 
 export default router;

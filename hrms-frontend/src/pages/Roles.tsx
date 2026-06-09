@@ -1,0 +1,343 @@
+import React, { useState, useEffect } from "react";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreVertical, PlusIcon } from "lucide-react";
+import { toast } from "sonner";
+import { api } from "@/api/axios";
+
+interface Module {
+    id: number;
+    name: string;
+    displayName: string;
+}
+
+interface Permission {
+    moduleId: number;
+    canView: boolean;
+    canCreate: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+}
+
+interface Role {
+    id: number;
+    name: string;
+    description?: string;
+    isActive: boolean;
+    company?: {
+        id: string;
+        name: string;
+    } | null;
+    permissions: {
+        module: Module;
+        canView: boolean;
+        canCreate: boolean;
+        canEdit: boolean;
+        canDelete: boolean;
+    }[];
+    _count: { user: number };
+}
+
+const Roles = () => {
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [modules, setModules] = useState<Module[]>([]);
+    const [open, setOpen] = useState(false);
+    const [editRole, setEditRole] = useState<Role | null>(null);
+
+    const [form, setForm] = useState({
+        name: "",
+        description: "",
+    });
+
+    //  Permissions state — har module ke liye
+    const [permissions, setPermissions] = useState<Permission[]>([]);
+
+    useEffect(() => {
+        loadRoles();
+        loadModules();
+    }, []);
+
+    //  Modules load hone ke baad permissions initialize karo
+    useEffect(() => {
+        if (modules.length > 0 && !editRole) {
+            initPermissions();
+        }
+    }, [modules]);
+
+    const initPermissions = (existingPermissions?: Role["permissions"]) => {
+        setPermissions(
+            modules.map((mod) => {
+                const existing = existingPermissions?.find(p => p.module.id === mod.id);
+                return {
+                    moduleId: mod.id,
+                    canView: existing?.canView ?? false,
+                    canCreate: existing?.canCreate ?? false,
+                    canEdit: existing?.canEdit ?? false,
+                    canDelete: existing?.canDelete ?? false,
+                };
+            })
+        );
+    };
+
+    const loadRoles = async () => {
+        try {
+            const res = await api.get("/api/roles");
+            setRoles(res.data.data);
+        } catch (err) {
+            toast.error("Failed to load roles");
+        }
+    };
+
+    const loadModules = async () => {
+        try {
+            const res = await api.get('/api/roles/modules');
+            setModules(res.data.data);
+        } catch (err) {
+            toast.error("Failed to load modules");
+        }
+    };
+
+    //  Permission toggle
+    const togglePermission = (
+        moduleId: number,
+        field: "canView" | "canCreate" | "canEdit" | "canDelete"
+    ) => {
+        setPermissions((prev) =>
+            prev.map((p) =>
+                p.moduleId === moduleId ? { ...p, [field]: !p[field] } : p
+            )
+        );
+    };
+
+    //  Create Role
+    const handleSubmit = async () => {
+        if (!form.name) { toast.error("Role name is required"); return; }
+
+        try {
+            if (editRole) {
+                // Update
+                await api.put(`/api/roles/${editRole.id}`, {
+                    ...form,
+                    permissions,
+                });
+                toast.success("Role updated successfully!");
+            } else {
+                // Create
+                await api.post("/api/roles", {
+                    ...form,
+                    permissions,
+                });
+                toast.success("Role created successfully!");
+            }
+            loadRoles();
+            handleClose();
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to save role");
+        }
+    };
+
+    //  Edit Role
+    const handleEdit = (role: Role) => {
+        setEditRole(role);
+        setForm({ name: role.name, description: role.description ?? "" });
+        initPermissions(role.permissions);
+        setOpen(true);
+    };
+
+    //  Delete Role
+    const handleDelete = async (id: number) => {
+        try {
+            await api.delete(`/api/roles/${id}`);
+            toast.success("Role deleted successfully!");
+            loadRoles();
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to delete role");
+        }
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+        setEditRole(null);
+        setForm({ name: "", description: "" });
+        initPermissions();
+    };
+
+    return (
+        <div className="flex flex-col gap-4">
+
+            {/* Header */}
+            <div className="flex items-center justify-end">
+                <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Add Role
+                </Button>
+            </div>
+
+            {/* Create/Edit Dialog */}
+            <Dialog open={open} onOpenChange={handleClose}>
+                <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>{editRole ? "Edit Role" : "Create Role"}</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="flex flex-col gap-4">
+                        {/* Name + Description */}
+                        <div className="flex gap-3">
+                            <div className="flex-1">
+                                <Label>Role Name *</Label>
+                                <Input
+                                    placeholder="e.g. HR Manager"
+                                    value={form.name}
+                                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <Label>Description</Label>
+                                <Input
+                                    placeholder="Role description"
+                                    value={form.description}
+                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        {/*  Permissions Table */}
+                        <div className="border rounded-lg overflow-hidden">
+                            <Table>
+                                <TableHeader className="bg-muted">
+                                    <TableRow>
+                                        <TableHead className="w-[200px]">Module</TableHead>
+                                        <TableHead className="text-center">View</TableHead>
+                                        <TableHead className="text-center">Create</TableHead>
+                                        <TableHead className="text-center">Edit</TableHead>
+                                        <TableHead className="text-center">Delete</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {modules.map((mod) => {
+                                        const perm = permissions.find(p => p.moduleId === mod.id);
+                                        return (
+                                            <TableRow key={mod.id}>
+                                                <TableCell className="font-medium">{mod.displayName}</TableCell>
+                                                <TableCell className="text-center">
+                                                    <Checkbox
+                                                        checked={perm?.canView ?? false}
+                                                        onCheckedChange={() => togglePermission(mod.id, "canView")}
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Checkbox
+                                                        checked={perm?.canCreate ?? false}
+                                                        onCheckedChange={() => togglePermission(mod.id, "canCreate")}
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Checkbox
+                                                        checked={perm?.canEdit ?? false}
+                                                        onCheckedChange={() => togglePermission(mod.id, "canEdit")}
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Checkbox
+                                                        checked={perm?.canDelete ?? false}
+                                                        onCheckedChange={() => togglePermission(mod.id, "canDelete")}
+                                                    />
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        <Button onClick={handleSubmit}>
+                            {editRole ? "Update Role" : "Create Role"}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Roles Table */}
+            <div className="bg-card rounded border w-full overflow-x-auto">
+                <Table>
+                    <TableHeader className="bg-muted">
+                        <TableRow>
+                            <TableHead>#</TableHead>
+                            <TableHead>Role Name</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Users</TableHead>
+                            <TableHead>Company</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="sticky right-0 bg-muted">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {roles.map((role, index) => (
+                            <TableRow key={role.id}>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell className="font-medium">{role.name}</TableCell>
+                                <TableCell>{role.description ?? "—"}</TableCell>
+                                <TableCell>
+                                    <Badge variant="outline">{role._count?.user ?? 0} users</Badge>
+                                </TableCell>
+                                {/*  ← Super Admin = Global */}
+                                <TableCell> {role.company?.name ?? "Global"}</TableCell>
+                                <TableCell>
+                                    <Badge className={role.isActive
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-red-100 text-red-700"}>
+                                        {role.isActive ? "Active" : "Inactive"}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="sticky right-0 bg-card">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            {role.name !== "super_admin" && (
+                                                <>
+                                                    <DropdownMenuItem onClick={() => handleEdit(role)}>
+                                                        Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="text-red-600"
+                                                        onClick={() => handleDelete(role.id)}
+                                                    >
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                </>
+                                            )}
+                                            {role.name === "super_admin" && (
+                                                <DropdownMenuItem disabled>
+                                                    Cannot modify
+                                                </DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                        {roles.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                                    No roles found
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+        </div>
+    );
+};
+
+export default Roles;

@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
 import * as RoleService from "../services/role.service.ts";
-
+import { prisma } from "../config/db.ts";
 // Sabhi roles
 export const getCompanyRoles = async (req: Request, res: Response) => {
     try {
-        const companyId = req.user?.companyId!;
+        const companyId = req.user?.companyId ?? null;
         const roles = await RoleService.getCompanyRoles(companyId);
         res.status(200).json({ success: true, data: roles });
     } catch (error: any) {
@@ -80,5 +80,22 @@ export const deleteRole = async (req: Request, res: Response) => {
         res.status(200).json({ success: true, message: result.message });
     } catch (error: any) {
         res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+// GET /api/modules — Saare modules lo
+export const getModules = async (req: Request, res: Response) => {
+    try {
+        const modules = await prisma.module.findMany({
+            where: { isActive: true, parentId: null }, // Sirf parent modules
+            orderBy: { order: "asc" },
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: modules,
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };

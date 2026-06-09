@@ -53,7 +53,7 @@ const Profile = () => {
                         {user?.company && (
                             <span className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <Building2 className="h-3 w-3" />
-                                {user.company.name}
+                                {user?.company?.name}
                             </span>
                         )}
                     </div>

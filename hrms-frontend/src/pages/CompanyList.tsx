@@ -28,7 +28,7 @@ function CompanyList() {
     website: "",
     address: "",
     gstNumber: "",
-    subscriptionPlan: "basic",
+    // subscriptionPlan: "basic",
     maxBranches: 1,
     maxEmployees: 10,
   });
@@ -83,7 +83,7 @@ function CompanyList() {
         website: "",
         address: "",
         gstNumber: "",
-        subscriptionPlan: "basic",
+        // subscriptionPlan: "basic",
         maxBranches: 1,
         maxEmployees: 10,
       });
@@ -113,60 +113,62 @@ function CompanyList() {
     <div className='flex flex-col gap-4'>
 
       {/* Header */}
-      <div className='bg-card w-full flex items-center justify-end'>
-        {!isCompanyAdmin && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className='flex items-center gap-2 cursor-pointer' variant="outline">
-                <PlusIcon className='h-4 w-4' />
-                Add Company
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Company</DialogTitle>
-                <DialogDescription>Company Details form Fill up</DialogDescription>
-              </DialogHeader>
-              <div className='flex items-center w-full gap-2'>
-                <div className='flex-1'>
-                  <Label>Company Name *</Label>
-                  <Input type="text" placeholder="Company Name" name='name' value={form.name} onChange={handleChange} />
+      <div className='flex items-center justify-end'>
+        <div>
+          {!isCompanyAdmin && (
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className='flex items-center gap-2 cursor-pointer' size="sm" variant="outline">
+                  <PlusIcon className='h-4 w-4' />
+                  Add Company
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Company</DialogTitle>
+                  <DialogDescription>Company Details form Fill up</DialogDescription>
+                </DialogHeader>
+                <div className='flex items-center w-full gap-2'>
+                  <div className='flex-1'>
+                    <Label>Company Name *</Label>
+                    <Input type="text" placeholder="Company Name" name='name' value={form.name} onChange={handleChange} />
+                  </div>
                 </div>
-              </div>
-              <div className='flex items-center w-full gap-2'>
-                <div className='flex-1'>
-                  <Label>Email</Label>
-                  <Input type="email" placeholder="name@example.com" name='email' value={form.email} onChange={handleChange} />
+                <div className='flex items-center w-full gap-2'>
+                  <div className='flex-1'>
+                    <Label>Email</Label>
+                    <Input type="email" placeholder="name@example.com" name='email' value={form.email} onChange={handleChange} />
+                  </div>
+                  <div className='flex-1'>
+                    <Label>Phone</Label>
+                    <Input type="text" placeholder="Phone" name='phone' value={form.phone} onChange={handleChange} />
+                  </div>
                 </div>
-                <div className='flex-1'>
-                  <Label>Phone</Label>
-                  <Input type="text" placeholder="Phone" name='phone' value={form.phone} onChange={handleChange} />
+                <div className='flex items-center w-full gap-2'>
+                  <div className='flex-1'>
+                    <Label>GST Number</Label>
+                    <Input type="text" placeholder="GST Number" name='gstNumber' value={form.gstNumber} onChange={handleChange} />
+                  </div>
+                  {/* <div className='flex-1'>
+                    <Label>Subscription Plan</Label>
+                    <Input type="text" placeholder="basic/pro/enterprise" name='subscriptionPlan' value={form.subscriptionPlan} onChange={handleChange} />
+                  </div> */}
                 </div>
-              </div>
-              <div className='flex items-center w-full gap-2'>
-                <div className='flex-1'>
-                  <Label>GST Number</Label>
-                  <Input type="text" placeholder="GST Number" name='gstNumber' value={form.gstNumber} onChange={handleChange} />
+                <div>
+                  <Label>Website</Label>
+                  <Input type="url" placeholder="https://example.com" name='website' value={form.website} onChange={handleChange} />
                 </div>
-                <div className='flex-1'>
-                  <Label>Subscription Plan</Label>
-                  <Input type="text" placeholder="basic/pro/enterprise" name='subscriptionPlan' value={form.subscriptionPlan} onChange={handleChange} />
+                <div>
+                  <Label>Address</Label>
+                  <Input type="text" placeholder="Company Address" name='address' value={form.address} onChange={handleChange} />
                 </div>
-              </div>
-              <div>
-                <Label>Website</Label>
-                <Input type="url" placeholder="https://example.com" name='website' value={form.website} onChange={handleChange} />
-              </div>
-              <div>
-                <Label>Address</Label>
-                <Input type="text" placeholder="Company Address" name='address' value={form.address} onChange={handleChange} />
-              </div>
-              <Button variant="outline" className='cursor-pointer' onClick={handleSubmit}>
-                Submit
-              </Button>
-            </DialogContent>
-          </Dialog>
-        )}
+                <Button variant="outline" className='cursor-pointer' onClick={handleSubmit}>
+                  Submit
+                </Button>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       {/* Assign Admin Dialog */}
@@ -195,8 +197,8 @@ function CompanyList() {
       </Dialog>
 
       {/* Table */}
-      <div className="bg-card p-2 grid grid-cols-1 rounded border w-full overflow-x-auto">
-        <Table>
+      <div className="bg-card  grid grid-cols-1 rounded border w-full overflow-x-auto">
+        <Table className='table-auto'>
           <TableHeader className='bg-muted rounded-lg'>
             <TableRow>
               <TableHead>Logo</TableHead>
@@ -206,7 +208,7 @@ function CompanyList() {
               <TableHead>Phone</TableHead>
               <TableHead>Website</TableHead>
               <TableHead>Address</TableHead>
-              <TableHead>Plan</TableHead>
+              {/* <TableHead>Plan</TableHead> */}
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -225,9 +227,9 @@ function CompanyList() {
                 <TableCell>{company.phone ?? "—"}</TableCell>
                 <TableCell>{company.website ?? "—"}</TableCell>
                 <TableCell>{company.address ?? "—"}</TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <Badge variant="outline">{company.subscriptionPlan ?? "basic"}</Badge>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <Badge className={company.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}>
                     {company.isActive ? "Active" : "Inactive"}
@@ -236,7 +238,7 @@ function CompanyList() {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="p-2">
+                      <Button variant="ghost" className="p-2 shrink-0">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

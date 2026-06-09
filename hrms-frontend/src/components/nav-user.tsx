@@ -143,7 +143,10 @@ export function NavUser() {
                   <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate font-medium">{user.name} {user?.company?.name ?? "Global"} </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                     
+                  </span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
               </div>

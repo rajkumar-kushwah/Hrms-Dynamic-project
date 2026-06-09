@@ -86,6 +86,15 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
             }
           },
         },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            createdAt: true,
+            updatedAt: true,
+            isActive: true,
+          }
+        }
       },
     })
 

@@ -1,4 +1,5 @@
 export interface Company {
+  users: any;
   id: string;
   name: string;
   code: string;

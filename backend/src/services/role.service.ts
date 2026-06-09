@@ -1,15 +1,13 @@
 import { prisma } from "../config/db.ts";
 
 // Company ke sabhi roles
-export const getCompanyRoles = async (companyId: string) => {
+export const getCompanyRoles = async (companyId: string | null) => {
     return await prisma.role.findMany({
-        where: { companyId },
+        where: { companyId: companyId ?? null },
         include: {
-            permissions: {
-                include: {
-                    module: true,
-                },
-            },
+            permissions: { include: { module: true, } },
+            _count: { select: { user: true } },
+            company: { select: { id: true, name: true } }
         },
         orderBy: { id: "asc" },
     });
