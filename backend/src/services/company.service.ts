@@ -4,9 +4,21 @@ import { prisma } from "../config/db.ts";
 
 // Auto company code generate krna 
 const generateCompanyCode = async (): Promise<string> => {
-    const count = await prisma.company.count();
-    const number = String(count + 1).padStart(3, "0");
-    return `COMP_${number}`;
+    const lastCompany = await prisma.company.findFirst({
+        orderBy: {
+            createdAt: 'desc'
+        },
+        select: {
+            code: true
+        }
+    })
+   const number = lastCompany?.code?.split("_")[1]
+    const newNumber = String(Number(number) + 1).padStart(3, "0");
+    return `COMP_${newNumber}`
+
+    // const count = await prisma.company.count();
+    // const number = String(count + 1).padStart(3, "0");
+    // return `COMP_${number}`;
 }
 
 // company create
@@ -100,7 +112,9 @@ export const assignCompanyAdmin = async (companyId: string, data: {
     name: string;
     email: string;
     password: string;
-}) => {
+},
+    createdBy?: string
+) => {
 
     const company = await prisma.company.findUnique({
         where: { id: companyId },
@@ -154,6 +168,7 @@ export const assignCompanyAdmin = async (companyId: string, data: {
             isActive: true,
             companyId: companyId,
             roleId: companyAdminRole.id,
+            createdBy: createdBy ?? null
         },
     });
 

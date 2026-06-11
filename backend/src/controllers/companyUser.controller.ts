@@ -5,10 +5,19 @@ import bcrypt from "bcrypt";
 // Get All Users
 export const getUsers = async (req: Request, res: Response) => {
     try {
+        const userRole = req.user?.role?.name;
+        const companyId = req.user?.companyId;
+
+        // super admin can see all users
+        // company admin can see only their company users
+        const whereClause = userRole === "super_admin"
+            ? { companyId: { not: null } }
+            : {
+                companyId: companyId ?? undefined
+            }
+
         const users = await prisma.user.findMany({
-            where: {
-                companyId: { not: null },
-            },
+            where: whereClause,
             select: {
                 id: true,
                 name: true,
@@ -35,7 +44,7 @@ export const getUsers = async (req: Request, res: Response) => {
 export const toggleUserStatus = async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string;
-
+        const requestingUser = req.user;
         if (!id) {
             return res.status(400).json({ message: "Invalid user id" });
         }
@@ -44,6 +53,15 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
 
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
+        }
+        //  Khud ko deactivate mat karo
+        if (id === requestingUser?.id) {
+            return res.status(400).json({ success: false, message: "you cannot Deactivate yourself" });
+        }
+
+        // Dusri company ka user touch mat karo and super admin ka user touch mat karo
+        if (requestingUser.role.name !== "super_admin" && user.companyId !== requestingUser.companyId) {
+            return res.status(400).json({ success: false, message: "Access Denied" });
         }
 
         const updated = await prisma.user.update({

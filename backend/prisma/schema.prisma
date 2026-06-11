@@ -56,6 +56,10 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   lastLogin DateTime?
+
+  createdBy     String? //  Kisne ne banaya
+  createdByUser User?   @relation("CreatedBy", fields: [createdBy], references: [id])
+  createdUsers  User[]  @relation("CreatedBy")
 }
 
 //Roles Table — UI se banenge, hardcoded nahi

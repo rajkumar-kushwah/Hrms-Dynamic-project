@@ -22,7 +22,7 @@ router.post("/", protect, authorize("roles", "canCreate"), createRole);
 
 router.get("/:id/permissions", protect, authorize("roles", "canView"), getRolePermissions);
 
-router.put("/:id/permissions", protect, authorize("roles", "canEdit"), updateRolePermissions);
+router.put("/:id", protect, authorize("roles", "canEdit"), updateRolePermissions);
 
 router.delete("/:id", protect, authorize("roles", "canDelete"), deleteRole);
 

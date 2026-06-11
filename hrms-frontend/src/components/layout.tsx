@@ -20,7 +20,7 @@ export default function layout() {
                 return "Employees";
             case "/department":
                 return "Department";
-            case "/role":
+            case "/roles":
                 return "Role";
             case "/profile":
                 return "Profile";

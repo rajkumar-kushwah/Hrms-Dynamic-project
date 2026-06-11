@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/auth.store";
-import { Building2, Clock, Calendar, Phone, Mail, User, ShieldCheck } from "lucide-react";
+import { Building2, Clock, Calendar, Phone, Mail, User, ShieldCheck, UserCheck } from "lucide-react";
 
 const Profile = () => {
     const { user } = useAuthStore();
@@ -57,6 +57,21 @@ const Profile = () => {
                             </span>
                         )}
                     </div>
+
+                    {/* Created By */}
+                    {user?.createdByUser && (
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-muted-foreground flex items-center gap-1">
+                                <UserCheck className="h-3 w-3" /> Created By
+                            </label>
+                            <Input
+                                type="text"
+                                defaultValue={user.createdByUser.name ?? "—"}
+                                readOnly
+                                className="opacity-60 cursor-not-allowed"
+                            />
+                        </div>
+                    )}
 
                     {/* Info Fields */}
                     <div className='flex flex-col gap-4'>

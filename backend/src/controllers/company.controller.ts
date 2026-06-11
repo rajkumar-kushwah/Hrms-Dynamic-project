@@ -105,7 +105,8 @@ export const deleteCompany = async (req: Request, res: Response) => {
 export const assignCompanyAdmin = async (req: Request, res: Response) => {
     try {
         const id = (req.params.id as string);
-        const company = await CompanyService.assignCompanyAdmin(id, req.body);
+        const createdBy = (req?.user?.id as string);
+        const company = await CompanyService.assignCompanyAdmin(id, req.body, createdBy);
 
         res.status(200).json({
             success: true,

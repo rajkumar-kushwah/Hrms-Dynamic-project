@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreVertical, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/api/axios";
+import { useAuthStore } from "@/store/auth.store";
 
 interface Module {
     id: number;
@@ -44,7 +45,14 @@ interface Role {
     _count: { user: number };
 }
 
+
 const Roles = () => {
+    const { user } = useAuthStore();
+    const rolePermission = user?.role?.permissions?.find(
+        (p) => p.module.name === "roles"
+    );
+    const canDelete = rolePermission?.canDelete;
+
     const [roles, setRoles] = useState<Role[]>([]);
     const [modules, setModules] = useState<Module[]>([]);
     const [open, setOpen] = useState(false);
@@ -152,8 +160,9 @@ const Roles = () => {
 
     //  Delete Role
     const handleDelete = async (id: number) => {
+        console.log("DELETE CLICKED", id);
         try {
-            await api.delete(`/api/roles/${id}`);
+            await api.delete(`/api/roles/${id}/permissions`);
             toast.success("Role deleted successfully!");
             loadRoles();
         } catch (err: any) {
@@ -184,6 +193,7 @@ const Roles = () => {
                 <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{editRole ? "Edit Role" : "Create Role"}</DialogTitle>
+                        <DialogDescription>Update role details</DialogDescription>
                     </DialogHeader>
 
                     <div className="flex flex-col gap-4">
@@ -212,7 +222,7 @@ const Roles = () => {
                             <Table>
                                 <TableHeader className="bg-muted">
                                     <TableRow>
-                                        <TableHead className="w-[200px]">Module</TableHead>
+                                        <TableHead className="w-50">Module</TableHead>
                                         <TableHead className="text-center">View</TableHead>
                                         <TableHead className="text-center">Create</TableHead>
                                         <TableHead className="text-center">Edit</TableHead>
@@ -264,7 +274,7 @@ const Roles = () => {
             </Dialog>
 
             {/* Roles Table */}
-            <div className="bg-card rounded border w-full overflow-x-auto">
+            <div className="bg-card grid grid-cols-1 rounded border w-full overflow-x-auto">
                 <Table>
                     <TableHeader className="bg-muted">
                         <TableRow>
@@ -308,12 +318,15 @@ const Roles = () => {
                                                     <DropdownMenuItem onClick={() => handleEdit(role)}>
                                                         Edit
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        className="text-red-600"
-                                                        onClick={() => handleDelete(role.id)}
-                                                    >
-                                                        Delete
-                                                    </DropdownMenuItem>
+                                                    {canDelete && (
+
+                                                        <DropdownMenuItem
+                                                            className="text-red-600"
+                                                            onClick={() => handleDelete(role.id)}
+                                                        >
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    )}
                                                 </>
                                             )}
                                             {role.name === "super_admin" && (

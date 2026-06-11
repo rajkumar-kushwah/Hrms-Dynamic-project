@@ -2,14 +2,15 @@ import React from "react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { toast } from "sonner";
-import {getCompanyUsers, resetUserPassword, toggleUserStatus} from "@/services/companyuser.service";
+import { getCompanyUsers, resetUserPassword, toggleUserStatus } from "@/services/companyUser.service";
 import type { CompanyUser } from "@/types/companyuser.types";
+import { useAuthStore } from "@/store/auth.store";
 
 
 
@@ -18,6 +19,7 @@ const Users = () => {
     const [resetOpen, setResetOpen] = React.useState(false);
     const [selectedUser, setSelectedUser] = React.useState<CompanyUser | null>(null);
     const [newPassword, setNewPassword] = React.useState("");
+    const { user: currentUser } = useAuthStore();
 
     React.useEffect(() => {
         loadUsers();
@@ -35,7 +37,7 @@ const Users = () => {
     //  Toggle Active/Inactive
     const handleToggleStatus = async (user: CompanyUser) => {
         try {
-            const res = await  toggleUserStatus(user.id);
+            const res = await toggleUserStatus(user.id);
             toast.success(res.data.message);
             //  Local state update karo — dobara API call nahi
             setUsers((prev) =>
@@ -62,7 +64,7 @@ const Users = () => {
             setNewPassword("");
             setSelectedUser(null);
         } catch (err: any) {
-             toast.error(err?.message || "Failed to reset password");
+            toast.error(err?.message || "Failed to reset password");
         }
     };
 
@@ -80,6 +82,7 @@ const Users = () => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Reset Password — {selectedUser?.name}</DialogTitle>
+                        <DialogDescription>Reset password for {selectedUser?.name}</DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-3">
                         <Label>New Password</Label>
@@ -133,7 +136,7 @@ const Users = () => {
                                 <TableCell>
                                     {new Date(user.createdAt).toLocaleDateString()}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="sticky right-0 bg-card">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" className="p-2">
@@ -144,6 +147,8 @@ const Users = () => {
                                             {/* Toggle Status */}
                                             <DropdownMenuItem
                                                 onClick={() => handleToggleStatus(user)}
+                                                disabled={user.id === currentUser?.id}
+
                                             >
                                                 {user.isActive ? "Deactivate" : "Activate"}
                                             </DropdownMenuItem>
@@ -172,7 +177,7 @@ const Users = () => {
                     </TableBody>
                 </Table>
             </div>
-        </div>
+        </div >
     );
 };
 

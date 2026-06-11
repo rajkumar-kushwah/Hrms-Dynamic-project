@@ -12,6 +12,7 @@ export interface SigninResponse {
 }
 
 export interface User {
+
     id: number;
     name: string;
     email: string;
@@ -22,6 +23,10 @@ export interface User {
         id: number;
         name: string
         permissions: Permission[]
+    } | null;
+    createdByUser?: {   // Add karo
+        id: string;
+        name: string;
     } | null;
 
     lastLogin?: string;

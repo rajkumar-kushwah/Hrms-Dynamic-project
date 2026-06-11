@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Company, CreateCompanyPayload } from "@/types/company.types";
+import type { Company, CreateCompanyPayload, UpdateCompanyPayload } from "@/types/company.types";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -7,7 +7,7 @@ import { MoreVertical, PlusIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { getCompanies, createCompany, getMyCompany, assignCompanyAdmin } from "@/services/company.service";
+import { getCompanies, createCompany, getMyCompany, assignCompanyAdmin, updateCompany, deleteCompany } from "@/services/company.service";
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuthStore } from '@/store/auth.store';
@@ -39,6 +39,19 @@ function CompanyList() {
     password: "",
   });
 
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+  const [editOpen, setEditOpen] = React.useState(false);
+  const [selectedCompany, setSelectedCompany] = React.useState<Company | null>(null);
+  const [editForm, setEditForm] = React.useState<UpdateCompanyPayload>({
+    name: "",
+    email: "",
+    phone: "",
+    website: "",
+    address: "",
+    gstNumber: "",
+  });
+
+
   React.useEffect(() => {
     loadCompanies();
   }, []);
@@ -65,6 +78,36 @@ function CompanyList() {
   const handleAdminChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAdminForm({ ...adminForm, [e.target.name]: e.target.value });
   };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handleEdit = async () => {
+    if (!selectedCompany) return;
+    try {
+      await updateCompany(selectedCompany.id, editForm);
+      toast.success("Company updated successfully");
+      setCompanies((prev) => prev.map((c) => c.id === selectedCompany.id ? { ...c, ...editForm } : c));
+      setEditOpen(false);
+      setSelectedCompany(null);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update company");
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!selectedCompany) return;
+    try {
+      await deleteCompany(selectedCompany.id);
+      toast.success("Company deleted successfully");
+      setCompanies((prev) => prev.filter((c) => c.id !== selectedCompany.id));
+      setDeleteConfirmOpen(false);
+      setSelectedCompany(null);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete company");
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,7 +218,7 @@ function CompanyList() {
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Assign Company Admin</DialogTitle>
+            <DialogTitle>Assign Company Admin- {selectedCompany?.name}</DialogTitle>
             <DialogDescription>Create admin account for this company</DialogDescription>
           </DialogHeader>
           <div>
@@ -193,6 +236,66 @@ function CompanyList() {
           <Button onClick={handleAssignAdmin}>
             Assign Admin
           </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Company — {selectedCompany?.name}</DialogTitle>
+            <DialogDescription>Company Details form Fill up</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <div>
+              <Label>Company Name</Label>
+              <Input name="name" value={editForm.name} onChange={handleEditChange} placeholder='Company Name' />
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label>Email</Label>
+                <Input name="email" value={editForm.email} onChange={handleEditChange} placeholder='name@example.com' />
+              </div>
+              <div className="flex-1">
+                <Label>Phone</Label>
+                <Input name="phone" value={editForm.phone} onChange={handleEditChange} placeholder='Phone' />
+              </div>
+            </div>
+            <div>
+              <Label>GST Number</Label>
+              <Input name="gstNumber" value={editForm.gstNumber} onChange={handleEditChange} placeholder='GST Number' />
+            </div>
+            <div>
+              <Label>Website</Label>
+              <Input name="website" value={editForm.website} onChange={handleEditChange} placeholder='https://example.com' />
+            </div>
+            <div>
+              <Label>Address</Label>
+              <Input name="address" value={editForm.address} onChange={handleEditChange} placeholder='Company Address' />
+            </div>
+            <Button onClick={handleEdit}>Update Company</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Company</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong className='text-card-foreground'>{selectedCompany?.name}</strong>?
+              This action cannot be undone!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" className='cursor-pointer' onClick={() => setDeleteConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" className='cursor-pointer' onClick={handleDelete}>
+              Delete
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -235,7 +338,7 @@ function CompanyList() {
                     {company.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="sticky right-0 bg-card">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="p-2 shrink-0">
@@ -244,18 +347,32 @@ function CompanyList() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuGroup>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedCompany(company);
+                            setEditForm({
+                              ...company,
+                            });
+                            setEditOpen(true);
+                          }}
+                        >Edit</DropdownMenuItem>
                         {!isCompanyAdmin && (
                           <>
                             <DropdownMenuItem
                               onClick={() => {
                                 setSelectedCompanyId(company.id);
+                                setSelectedCompany(company);
                                 setAssignOpen(true);
                               }}
                             >
                               Assign Admin
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
+                            <DropdownMenuItem className="text-red-600" 
+                            onClick={() => {
+                              setSelectedCompany(company);
+                              setDeleteConfirmOpen(true);
+                            }}
+                            >
                               Delete
                             </DropdownMenuItem>
                           </>

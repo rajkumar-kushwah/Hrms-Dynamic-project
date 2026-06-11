@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { getCompanies, getMyCompany } from '@/services/company.service';
 import type { Company } from '@/types/company.types';
 import { useAuthStore } from '@/store/auth.store';
-import { getCompanyUsers } from '@/services/companyuser.service';
+import { getCompanyUsers } from '@/services/companyUser.service';
 import type { CompanyUser } from '@/types/companyuser.types';
 import { toast } from 'sonner';
 
@@ -77,13 +77,13 @@ const DashboardStats = () => {
             {isSuperAdmin && (
                 <>
                     <Card className="p-4 border rounded-xl">
-                        <CardTitle>Total Companies</CardTitle>
+                        <CardTitle className="text-sm">Total Companies</CardTitle>
                         <CardDescription className="text-xl font-bold">
                             {totalCompanies}
                         </CardDescription>
                     </Card>
                     <Card className="p-4 border rounded-xl">
-                        <CardTitle>Total CompaniesUsers</CardTitle>
+                        <CardTitle className="text-sm">Total CompaniesUsers</CardTitle>
                         <CardDescription className="text-xl font-bold">
                             {totalCompaniesUsers}
                         </CardDescription>
@@ -91,7 +91,7 @@ const DashboardStats = () => {
                 </>
             )}
 
-            {isSuperAdmin && (
+            {(isSuperAdmin || isCompanyAdmin) && (
                 <>
                     <Card className="p-4 border rounded-xl">
                         <CardTitle className="text-sm">Total Users</CardTitle>
