@@ -14,6 +14,8 @@ import monthlyRouter from "./routes/monthly.route.ts";
 import { sessionMiddleware } from "./config/session.ts";
 import companyRouter from "./routes/company.route.ts";
 import userRoutes from "./routes/companyuser.routes.ts";
+import branchRouter from "./routes/branch.routes.ts";
+import categoryRoutes from "./routes/category.routes.ts";
 
 dotenv.config();
 const app = express();
@@ -32,11 +34,12 @@ app.use(express.urlencoded({ extended: true }));  // parse application/x-www-for
 app.use(sessionMiddleware);
 
 
-app.use('/auth', authRouter)
+app.use('/api/auth', authRouter)
 app.use('/api/roles', roleRouter)
 app.use('/api/company', companyRouter)
 app.use("/api/users", userRoutes);
-
+app.use('/api/branch', branchRouter)
+app.use("/api/category", categoryRoutes);
 
 app.use('/department', departmentRouter)
 app.use('/permission', permissionRouter)

@@ -10,6 +10,7 @@ import ErrorPage from "@/ErrorHandling/ErrorPage";
 import CompanyList from "@/pages/CompanyList";
 import  Users  from "../pages/Users";
 import Roles from "@/pages/Roles";
+import BranchList from "@/pages/BranchList";
 
 const AppRoutes = () => {
     return (
@@ -28,6 +29,7 @@ const AppRoutes = () => {
                         <Route path="/company" element={<CompanyList />} />
                         <Route path="/users" element={<Users />} />
                         <Route path="/roles" element={<Roles />} />
+                        <Route path="/branch" element={<BranchList/>} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}

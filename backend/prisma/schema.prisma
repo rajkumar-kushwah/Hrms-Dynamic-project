@@ -38,6 +38,8 @@ model Company {
   users      User[]
   role       Role[]
   permission Permission[]
+  branches   Branch[]
+  categories Category[]
 }
 
 model User {
@@ -121,6 +123,50 @@ model Permission {
   updatedAt DateTime @updatedAt
 
   @@unique([roleId, moduleId, companyId]) // Ek role ka ek module pe ek hi permission
+}
+
+model Branch {
+  id          String  @id @default(uuid())
+  name        String
+  code        String
+  address     String?
+  phone       String?
+  email       String?
+  city        String?
+  state       String?
+  pincode     String?
+  managerName String?
+  latitude    Float? // 28.6139
+  longitude   Float? // 77.2090
+  geoRadius   Float? // 100 (meters)
+  isActive    Boolean @default(true)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  categories Category[]
+
+  @@unique([code, companyId])
+}
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String
+  description String
+  isActive    Boolean @default(true)
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, branchId])
 }
 
 // model Department {

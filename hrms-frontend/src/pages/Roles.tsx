@@ -95,7 +95,7 @@ const Roles = () => {
 
     const loadRoles = async () => {
         try {
-            const res = await api.get("/api/roles");
+            const res = await api.get("/roles");
             setRoles(res.data.data);
         } catch (err) {
             toast.error("Failed to load roles");
@@ -104,7 +104,7 @@ const Roles = () => {
 
     const loadModules = async () => {
         try {
-            const res = await api.get('/api/roles/modules');
+            const res = await api.get('/roles/modules');
             setModules(res.data.data);
         } catch (err) {
             toast.error("Failed to load modules");
@@ -130,14 +130,14 @@ const Roles = () => {
         try {
             if (editRole) {
                 // Update
-                await api.put(`/api/roles/${editRole.id}`, {
+                await api.put(`/roles/${editRole.id}`, {
                     ...form,
                     permissions,
                 });
                 toast.success("Role updated successfully!");
             } else {
                 // Create
-                await api.post("/api/roles", {
+                await api.post("/roles", {
                     ...form,
                     permissions,
                 });
@@ -162,7 +162,7 @@ const Roles = () => {
     const handleDelete = async (id: number) => {
         console.log("DELETE CLICKED", id);
         try {
-            await api.delete(`/api/roles/${id}/permissions`);
+            await api.delete(`/roles/${id}/permissions`);
             toast.success("Role deleted successfully!");
             loadRoles();
         } catch (err: any) {

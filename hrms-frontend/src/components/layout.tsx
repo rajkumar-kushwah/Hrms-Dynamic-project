@@ -14,6 +14,8 @@ export default function layout() {
                 return "Monthly Attendance";
             case "/company":
                 return "Company";
+            case "/branch":
+                return "Branch";
             case "/check-in":
                 return "Check-in/Out";
             case "/employees":
