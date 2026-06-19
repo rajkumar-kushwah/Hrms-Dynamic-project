@@ -81,24 +81,34 @@ export const updateCompany = async (req: Request, res: Response) => {
 }
 
 // delete company
-export const deleteCompany = async (req: Request, res: Response) => {
+export const deactivateCompany = async (req: Request, res: Response) => {
     try {
-        const id = (req.params.id as string);
-        const result = await CompanyService.deleteCompany(id);
+        const id = req.params.id as string;
+        const result = await CompanyService.deactivateCompany(id);
+        res.status(200).json({ success: true, message: result.message });
+    } catch (error: any) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
 
-        res.status(200).json({
+
+// Permanent delete
+export const permanentDeleteCompany = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string;
+        const result = await CompanyService.permanentDeleteCompany(id);
+
+        return res.status(200).json({
             success: true,
-            message: "Company deleted successfully",
-            data: result.message,
+            message: result.message
         });
-    } catch (Error: any) {
-        console.error(Error);
-        res.status(400).json({
+    } catch (error: any) {
+        return res.status(400).json({
             success: false,
-            message: Error.message ?? "Failed to delete company",
+            message: error.message
         });
     }
-}
+};
 
 
 // Assign Company admin

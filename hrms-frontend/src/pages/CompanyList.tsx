@@ -3,17 +3,18 @@ import type { Company, CreateCompanyPayload, UpdateCompanyPayload } from "@/type
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { MoreVertical, PlusIcon } from 'lucide-react';
+import { AlertTriangle, MoreVertical, PlusIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { getCompanies, createCompany, getMyCompany, assignCompanyAdmin, updateCompany, deleteCompany } from "@/services/company.service";
+import { getCompanies, createCompany, getMyCompany, assignCompanyAdmin, updateCompany, deactivateCompany, permanentDeleteCompany } from "@/services/company.service";
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuthStore } from '@/store/auth.store';
 
 function CompanyList() {
   const { user } = useAuthStore();
+  const isSuperAdmin = user?.role?.name === "super_admin";
   const isCompanyAdmin = user?.role?.name === "company_admin";
 
   const [companies, setCompanies] = React.useState<Company[]>([])
@@ -51,6 +52,8 @@ function CompanyList() {
     gstNumber: "",
   });
 
+  const [dangerOpen, setDangerOpen] = React.useState(false);
+  const [confirmText, setConfirmText] = React.useState("");
 
   React.useEffect(() => {
     loadCompanies();
@@ -96,18 +99,44 @@ function CompanyList() {
     }
   }
 
-  const handleDelete = async () => {
+  const handleDeactivate = async () => {
     if (!selectedCompany) return;
     try {
-      await deleteCompany(selectedCompany.id);
-      toast.success("Company deleted successfully");
-      setCompanies((prev) => prev.filter((c) => c.id !== selectedCompany.id));
+      await deactivateCompany(selectedCompany.id); //  Naya function
+      toast.success("Company deactivated successfully");
+      setCompanies((prev) =>
+        prev.map((c) => c.id === selectedCompany.id ? { ...c, isActive: false } : c)
+      );
       setDeleteConfirmOpen(false);
       setSelectedCompany(null);
     } catch (err: any) {
+      toast.error(err?.message || "Failed to deactivate company");
+    }
+  };
+
+
+
+  const handlePermanentDelete = async () => {
+    if (confirmText !== selectedCompany?.name) {
+      toast.error("Company name doesn't match");
+      return;
+    }
+    try {
+      await permanentDeleteCompany(selectedCompany.id);
+      toast.success("Company permanently deleted!");
+      setCompanies((prev) => prev.filter((c) => c.id !== selectedCompany.id));
+      setDangerOpen(false);
+      setEditOpen(false);
+      setConfirmText("");
+    } catch (err: any) {
       toast.error(err?.message || "Failed to delete company");
     }
-  }
+  };
+
+  const validateGST = (gst: string): boolean => {
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    return gstRegex.test(gst);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,6 +144,12 @@ function CompanyList() {
       toast.error("Company name is required");
       return;
     }
+
+    if (form.gstNumber && !validateGST(form.gstNumber)) {
+      toast.error("Invalid GST Number format");
+      return;
+    }
+
     try {
       const res = await createCompany(form);
       toast.success("Company created successfully");
@@ -149,6 +184,26 @@ function CompanyList() {
       setAdminForm({ name: "", email: "", password: "" });
     } catch (err) {
       toast.error("Failed to assign admin");
+    }
+  };
+  const handleToggleStatus = async (company: Company) => {
+    if (company.isActive) {
+      setSelectedCompany(company);
+      setDeleteConfirmOpen(true);
+      return
+    }
+    try {
+      if (company.isActive) {
+        await deactivateCompany(company.id);
+      } else {
+        await updateCompany(company.id, { isActive: true }); // Activate back
+      }
+      toast.success(`Company ${!company.isActive ? "activated" : "deactivated"} successfully!`);
+      setCompanies((prev) =>
+        prev.map((c) => c.id === company.id ? { ...c, isActive: !c.isActive } : c)
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update company");
     }
   };
 
@@ -190,7 +245,10 @@ function CompanyList() {
                 <div className='flex items-center w-full gap-2'>
                   <div className='flex-1'>
                     <Label>GST Number</Label>
-                    <Input type="text" placeholder="GST Number" name='gstNumber' value={form.gstNumber} onChange={handleChange} />
+                    <Input type="text" placeholder="e.g. 07AABCS1234A1Z5" maxLength={15} name='gstNumber' value={form.gstNumber} onChange={handleChange}
+                      className={form.gstNumber && !validateGST(form.gstNumber) ? "border-red-500 focus-visible:ring-red-500" : ""}
+                    />
+                    {form.gstNumber && !validateGST(form.gstNumber) && <p className="text-red-500 text-xs mt-1">Invalid GST Number format</p>}
                   </div>
                   {/* <div className='flex-1'>
                     <Label>Subscription Plan</Label>
@@ -275,29 +333,81 @@ function CompanyList() {
             </div>
             <Button onClick={handleEdit}>Update Company</Button>
           </div>
+          {/* Edit Dialog ke andar, form ke neeche */}
+          {isSuperAdmin && (
+            <div className="border border-red-200 rounded-lg p-4 mt-4 bg-red-50">
+              <h4 className="text-red-700 font-semibold flex items-center gap-2 text-sm">
+                <AlertTriangle className="h-4 w-4" /> Danger Zone
+              </h4>
+              <p className="text-xs text-red-600 mt-1">
+                Permanently delete this company and all its data. This cannot be undone.
+              </p>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="mt-3"
+                onClick={() => setDangerOpen(true)}
+              >
+                Delete Permanently
+              </Button>
+            </div>
+          )}
         </DialogContent>
+
       </Dialog>
 
-      {/* Delete Confirm Dialog */}
+      {/* Deactivate Confirm Dialog */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Company</DialogTitle>
+            <DialogTitle>Deactivate Company</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete <strong className='text-card-foreground'>{selectedCompany?.name}</strong>?
-              This action cannot be undone!
+              Are you sure you want to deactivate <strong className='text-card-foreground'>{selectedCompany?.name}</strong>?
+              You can activate it again later.
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" className='cursor-pointer' onClick={() => setDeleteConfirmOpen(false)}>
+            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" className='cursor-pointer' onClick={handleDelete}>
-              Delete
+            <Button variant="destructive" onClick={handleDeactivate}>
+              Deactivate
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Permanent Delete Confirmation */}
+      <Dialog open={dangerOpen} onOpenChange={setDangerOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-700">Are you sure? Permanent Delete</DialogTitle>
+            <DialogDescription>
+              This will permanently delete <strong>{selectedCompany?.name}</strong> and ALL related data
+              (users, branches, categories, roles). This CANNOT be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <Label>Type <strong>{selectedCompany?.name}</strong> to confirm</Label>
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Type company name"
+            />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setDangerOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              disabled={confirmText !== selectedCompany?.name}
+              onClick={handlePermanentDelete}
+            >
+              I understand, delete permanently
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Table */}
       <div className="bg-card  grid grid-cols-1 rounded border w-full overflow-x-auto">
@@ -309,6 +419,7 @@ function CompanyList() {
               <TableHead>Code</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
+              <TableHead>GST Number</TableHead>
               <TableHead>Website</TableHead>
               <TableHead>Address</TableHead>
               {/* <TableHead>Plan</TableHead> */}
@@ -328,6 +439,7 @@ function CompanyList() {
                 <TableCell>{company.code}</TableCell>
                 <TableCell>{company.email ?? "—"}</TableCell>
                 <TableCell>{company.phone ?? "—"}</TableCell>
+                <TableCell>{company.gstNumber ?? "—"}</TableCell>
                 <TableCell>{company.website ?? "—"}</TableCell>
                 <TableCell>{company.address ?? "—"}</TableCell>
                 {/* <TableCell>
@@ -367,16 +479,12 @@ function CompanyList() {
                             >
                               Assign Admin
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600" 
-                            onClick={() => {
-                              setSelectedCompany(company);
-                              setDeleteConfirmOpen(true);
-                            }}
-                            >
-                              Delete
-                            </DropdownMenuItem>
+
                           </>
                         )}
+                        <DropdownMenuItem onClick={() => handleToggleStatus(company)}>
+                          {company.isActive ? "Deactivate" : "Activate"}
+                        </DropdownMenuItem>
                       </DropdownMenuGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>

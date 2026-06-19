@@ -8,6 +8,7 @@ import type { CompanyUser } from '@/types/companyuser.types';
 import type { Branch } from '@/types/branch.types';
 import { toast } from 'sonner';
 import { getBranches } from "@/services/branch.service";
+import { getCategories } from '@/services/category.service';
 
 const DashboardStats = () => {
     const { user } = useAuthStore();
@@ -17,6 +18,7 @@ const DashboardStats = () => {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [companyUsers, setCompanyUsers] = useState<CompanyUser[]>([]);
     const [branches, setBranches] = useState<Branch[]>([]);
+    const [categories, setCategories] = useState([]);
 
     // React.useEffect(() => {
     //     const fetchCompanies = async () => {
@@ -46,20 +48,23 @@ const DashboardStats = () => {
 
             try {
                 if (isSuperAdmin) {
-                    const [companyRes, userRes, branchRes] = await Promise.all([
+                    const [companyRes, userRes, branchRes, categoryRes,] = await Promise.all([
                         getCompanies(),
                         getCompanyUsers(),
                         getBranches(),
+                        getCategories(),
                     ])
 
                     setCompanies(companyRes.data.data);
                     setCompanyUsers(userRes.data.data);
                     setBranches(branchRes.data.data);
+                    setCategories(categoryRes.data.data);
                 } else if (isCompanyAdmin) {
-                    const [companyRes, branchRes, userRes] = await Promise.all([
+                    const [companyRes, userRes, branchRes, categoryRes] = await Promise.all([
                         getMyCompany(),
                         getBranches(),
                         getCompanyUsers(),
+                        getCategories(),
                     ])
                     // const companyRes = await getMyCompany();
 
@@ -67,6 +72,7 @@ const DashboardStats = () => {
                     setCompanyUsers(userRes.data.data);
                     setCompanies([companyRes.data.data]);
                     setBranches(branchRes.data.data);
+                    setCategories(categoryRes.data.data);
 
                 }
             } catch (err: any) {
@@ -82,9 +88,10 @@ const DashboardStats = () => {
     const activeUsers = companyUsers.filter((user) => user.isActive).length;
 
     const totalCompaniesUsers = companyUsers.length;
-    const totalUsers = companyUsers.length;
+    // const totalUsers = companyUsers.length;
     const inactiveUsers = companyUsers.filter((user) => !user.isActive).length;
     const totalBranches = branches.length;
+    const totalCategories = categories.length;
 
     return (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2">
@@ -108,12 +115,12 @@ const DashboardStats = () => {
 
             {(isSuperAdmin || isCompanyAdmin) && (
                 <>
-                    <Card className="p-4 border rounded-xl">
+                    {/* <Card className="p-4 border rounded-xl">
                         <CardTitle className="text-sm md:text-sm">Total Users</CardTitle>
                         <CardDescription className="text-xl font-bold text-foreground">
                             {totalUsers}
                         </CardDescription>
-                    </Card>
+                    </Card> */}
 
                     <Card className="p-4 border rounded-xl">
                         <CardTitle className="text-sm md:text-sm">Active Users</CardTitle>
@@ -133,6 +140,13 @@ const DashboardStats = () => {
                         <CardTitle className="text-sm md:text-sm">Total Branches</CardTitle>
                         <CardDescription className="text-xl font-bold">
                             {totalBranches}
+                        </CardDescription>
+                    </Card>
+
+                    <Card className="p-4 border rounded-xl">
+                        <CardTitle className="text-sm md:text-sm">Total Categories</CardTitle>
+                        <CardDescription className="text-xl font-bold">
+                            {totalCategories}
                         </CardDescription>
                     </Card>
                 </>

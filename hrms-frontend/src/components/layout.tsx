@@ -16,9 +16,11 @@ export default function layout() {
                 return "Company";
             case "/branch":
                 return "Branch";
+            case "/category":
+                return "Category";
             case "/check-in":
                 return "Check-in/Out";
-            case "/employees":
+            case "/employee":
                 return "Employees";
             case "/department":
                 return "Department";

@@ -98,3 +98,4 @@ export const deleteCategory = async (id: string) => {
 
     return { message: "Category deactivated successfully" };
 }
+

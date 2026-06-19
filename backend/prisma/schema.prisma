@@ -55,13 +55,59 @@ model User {
   roleId Int?
   role   Role? @relation(fields: [roleId], references: [id])
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  lastLogin DateTime?
-
   createdBy     String? //  Kisne ne banaya
   createdByUser User?   @relation("CreatedBy", fields: [createdBy], references: [id])
   createdUsers  User[]  @relation("CreatedBy")
+
+  // employee field add kro
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  //  Personal Info
+  employeeCode  String?   @unique
+  phone         String?
+  dateOfBirth   DateTime?
+  gender        String? // Male/Female/Other
+  bloodGroup    String?
+  maritalStatus String? // Single/Married
+  profilePhoto  String?
+
+  //  Address
+  currentAddress   String?
+  permanentAddress String?
+
+  //  Employment Info
+  designation        String?
+  joiningDate        DateTime?
+  employmentType     String? // Full-time/Part-time/Contract/Intern
+  workShift          String? // Morning/Evening/Night
+  reportingManagerId String?
+  reportingManager   User?     @relation("ReportingManager", fields: [reportingManagerId], references: [id])
+  teamMembers        User[]    @relation("ReportingManager")
+
+  //  Government IDs
+  panNumber    String?
+  aadharNumber String?
+
+  //  Bank Details
+  bankAccountNumber String?
+  bankIFSC          String?
+  bankName          String?
+
+  //  Statutory
+  pfNumber  String?
+  esiNumber String?
+
+  //  Emergency Contact
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lastLogin DateTime?
 }
 
 //Roles Table — UI se banenge, hardcoded nahi
@@ -147,6 +193,7 @@ model Branch {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
   categories Category[]
+  users      User[]
 
   @@unique([code, companyId])
 }
@@ -165,9 +212,12 @@ model Category {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  users     User[]
 
   @@unique([name, branchId])
 }
+
+
 
 // model Department {
 //   id        Int      @id @default(autoincrement())

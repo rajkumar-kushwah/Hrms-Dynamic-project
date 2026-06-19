@@ -100,3 +100,14 @@ export const authorize = (moduleName: string, action: "canView" | "canCreate" | 
 
 
 }
+
+// role.middleware.ts mein add karo
+export const checkSuperAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (req.user?.role?.name !== "super_admin") {
+        return res.status(403).json({
+            success: false,
+            message: "Only Super Admin can perform this action"
+        });
+    }
+    next();
+};

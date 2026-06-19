@@ -10,11 +10,12 @@ export const getUsers = async (req: Request, res: Response) => {
 
         // super admin can see all users
         // company admin can see only their company users
-        const whereClause = userRole === "super_admin"
-            ? { companyId: { not: null } }
-            : {
-                companyId: companyId ?? undefined
-            }
+        const whereClause = {
+            companyId: userRole === "super_admin"
+                ? { not: null }
+                : companyId,
+            role: { name: "company_admin" } // Dono ke liye same
+        };
 
         const users = await prisma.user.findMany({
             where: whereClause,

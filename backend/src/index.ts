@@ -40,10 +40,10 @@ app.use('/api/company', companyRouter)
 app.use("/api/users", userRoutes);
 app.use('/api/branch', branchRouter)
 app.use("/api/category", categoryRoutes);
+app.use('/api/employee', employeeRouter)
 
 app.use('/department', departmentRouter)
 app.use('/permission', permissionRouter)
-app.use('/employee', employeeRouter)
 app.use('/checkin', checkInRouter)
 app.use('/monthly-attendance', monthlyRouter)
 

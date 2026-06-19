@@ -11,6 +11,15 @@ import { MoreVertical, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/api/axios";
 import { useAuthStore } from "@/store/auth.store";
+import {
+    getRoles,
+    getModules,
+    createRole,
+    updateRole,
+    deleteRole,
+} from "@/services/role.service";
+
+
 
 interface Module {
     id: number;
@@ -95,7 +104,7 @@ const Roles = () => {
 
     const loadRoles = async () => {
         try {
-            const res = await api.get("/roles");
+            const res = await getRoles();
             setRoles(res.data.data);
         } catch (err) {
             toast.error("Failed to load roles");
@@ -104,7 +113,7 @@ const Roles = () => {
 
     const loadModules = async () => {
         try {
-            const res = await api.get('/roles/modules');
+            const res = await getModules();
             setModules(res.data.data);
         } catch (err) {
             toast.error("Failed to load modules");
@@ -130,17 +139,18 @@ const Roles = () => {
         try {
             if (editRole) {
                 // Update
-                await api.put(`/roles/${editRole.id}`, {
+                await updateRole(editRole.id, {
                     ...form,
                     permissions,
                 });
                 toast.success("Role updated successfully!");
             } else {
                 // Create
-                await api.post("/roles", {
+                await createRole({
                     ...form,
                     permissions,
                 });
+
                 toast.success("Role created successfully!");
             }
             loadRoles();
@@ -162,7 +172,7 @@ const Roles = () => {
     const handleDelete = async (id: number) => {
         console.log("DELETE CLICKED", id);
         try {
-            await api.delete(`/roles/${id}/permissions`);
+            await deleteRole(id);
             toast.success("Role deleted successfully!");
             loadRoles();
         } catch (err: any) {

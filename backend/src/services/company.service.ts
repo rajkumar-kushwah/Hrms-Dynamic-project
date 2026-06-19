@@ -12,7 +12,7 @@ const generateCompanyCode = async (): Promise<string> => {
             code: true
         }
     })
-   const number = lastCompany?.code?.split("_")[1]
+    const number = lastCompany?.code?.split("_")[1]
     const newNumber = String(Number(number) + 1).padStart(3, "0");
     return `COMP_${newNumber}`
 
@@ -21,6 +21,10 @@ const generateCompanyCode = async (): Promise<string> => {
     // return `COMP_${number}`;
 }
 
+const validateGST = (gst: string): boolean => {
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    return gstRegex.test(gst);
+};
 // company create
 export const createCompanyService = async (data: {
     name: string;
@@ -34,6 +38,9 @@ export const createCompanyService = async (data: {
     maxBranches?: number;
     maxEmployees?: number;
 }) => {
+    if (data.gstNumber && !validateGST(data.gstNumber)) {
+        throw new Error("Invalid GST Number format");
+    }
     const companyCode = await generateCompanyCode();
     const company = await prisma.company.create({
         data: {
@@ -92,14 +99,36 @@ export const updateCompany = async (id: string, data: {
 }
 
 // Company Delete
-export const deleteCompany = async (id: string) => {
-    await prisma.company.delete({
+export const deactivateCompany = async (id: string) => {
+    await prisma.company.update({
         where: { id },
+        data: { isActive: false }  // Soft delete
     });
-
-    return { message: "Company deleted successfully" };
+    return { message: "Company deactivated successfully" };
 };
 
+// company.service.ts parmanent delete
+
+export const permanentDeleteCompany = async (id: string) => {
+    const company = await prisma.company.findUnique({
+        where: { id },
+        include: { users: true }
+    });
+
+    if (!company) throw new Error("Company not found");
+
+    //  Order matters — pehle dependent records delete karo
+    await prisma.permission.deleteMany({ where: { companyId: id } });
+    await prisma.role.deleteMany({ where: { companyId: id } });
+    await prisma.category.deleteMany({ where: { companyId: id } });
+    await prisma.branch.deleteMany({ where: { companyId: id } });
+    await prisma.user.deleteMany({ where: { companyId: id } });
+
+    // Phir company delete
+    await prisma.company.delete({ where: { id } });
+
+    return { message: "Company permanently deleted" };
+};
 
 
 const passwordgenerated = (email: string) => {

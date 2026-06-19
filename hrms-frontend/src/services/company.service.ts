@@ -18,9 +18,10 @@ export const getCompanyById = (id: string) => {
 };
 
 // delete company
-export const deleteCompany = (id: string) => {
-  return api.delete(`/company/${id}`);
-};
+export const deactivateCompany = (id: string) => api.delete(`/company/${id}`);
+
+// permanent delete
+export const permanentDeleteCompany = (id: string) => api.delete(`/company/${id}/permanent`);
 
 // me company
 export const getMyCompany = () => {

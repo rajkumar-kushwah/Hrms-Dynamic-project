@@ -8,14 +8,16 @@ import { Toaster } from "sonner";
 import Unauthorized from "@/Unauthorized/Unauthorized";
 import ErrorPage from "@/ErrorHandling/ErrorPage";
 import CompanyList from "@/pages/CompanyList";
-import  Users  from "../pages/Users";
+import Users from "../pages/Users";
 import Roles from "@/pages/Roles";
 import BranchList from "@/pages/BranchList";
+import CategoryList from "@/pages/CategoryList";
+import EmployeeList from "@/pages/EmployeeList";
 
 const AppRoutes = () => {
     return (
         <BrowserRouter>
-        
+
             <Toaster position="top-right" />
             <Routes>
 
@@ -29,7 +31,9 @@ const AppRoutes = () => {
                         <Route path="/company" element={<CompanyList />} />
                         <Route path="/users" element={<Users />} />
                         <Route path="/roles" element={<Roles />} />
-                        <Route path="/branch" element={<BranchList/>} />
+                        <Route path="/branch" element={<BranchList />} />
+                        <Route path="/category" element={<CategoryList />} />
+                        <Route path="/employee" element={<EmployeeList />} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}
