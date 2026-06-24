@@ -5,7 +5,9 @@ import { prisma } from "../config/db.ts";
 export const getCompanyRoles = async (req: Request, res: Response) => {
     try {
         const companyId = req.user?.companyId ?? null;
-        const roles = await RoleService.getCompanyRoles(companyId);
+        const isSuperAdmin = req.user?.role?.name === "super_admin";
+
+        const roles = await RoleService.getCompanyRoles(companyId, isSuperAdmin);
         res.status(200).json({ success: true, data: roles });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -51,10 +53,15 @@ export const getRolePermissions = async (req: Request, res: Response) => {
 // Permissions update
 export const updateRolePermissions = async (req: Request, res: Response) => {
     try {
-        const companyId = req.user?.companyId!;
+        // const companyId = req.user?.companyId!;
         const id = (req.params.id as string);
         const roleId = parseInt(id);
         const { permissions } = req.body;
+
+        const companyId = req.user?.role?.name === "super_admin"
+            ? null
+            : req.user?.companyId!;
+
         const role = await RoleService.updateRolePermissions(
             roleId,
             companyId,

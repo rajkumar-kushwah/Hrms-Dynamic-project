@@ -41,9 +41,47 @@ export const createEmployee = async (
     });
     if (existingUser) throw new Error("Email already exists");
 
+    const lastcode = await prisma.user.findFirst({
+        where: {
+            companyId,
+            employeeCode: {
+                not: null
+            },
+        },
+        orderBy: {
+            employeeCode: "desc",
+        },
+        select: {
+            employeeCode: true,
+        },
+    })
+
+    let nextNumber = 1;
+    if (lastcode?.employeeCode) {
+        nextNumber = parseInt(lastcode.employeeCode.replace('EMP', '')) + 1;
+    }
+
     // Employee code auto generate
-    const empCount = await prisma.user.count({ where: { companyId } });
-    const employeeCode = `EMP${String(empCount + 1).padStart(4, "0")}`;
+    const employeeCode = `EMP${String(nextNumber).padStart(4, "0")}`;
+
+    if (data.branchId) {
+        const branch = await prisma.branch.findUnique({
+            where: { id: data.branchId },
+        });
+
+        if (!branch) throw new Error("Branch not found");
+        if (!branch.isActive) throw new Error("Branch is inactive");
+    }
+
+    if (data.categoryId) {
+        const category = await prisma.category.findUnique({
+            where: { id: data.categoryId },
+        });
+
+        if (!category) throw new Error("Category not found");
+        if (!category.isActive) throw new Error("Category is inactive");
+    }
+
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
@@ -93,14 +131,21 @@ export const createEmployee = async (
 };
 
 // Get All Employees
-export const getEmployees = async (companyId: string | null) => {
+export const getEmployees = async (
+    companyId: string | null,
+    requestingUserId: string,
+    requestingUserRole: string
+) => {
+    const isAdminRole = ["super_admin", "company_admin"].includes(requestingUserRole);
 
     return await prisma.user.findMany({
         where: {
             ...(companyId ? { companyId } : { companyId: { not: null } }),
             role: {
                 name: { not: "company_admin" },
-            }
+            },
+            ...(!isAdminRole && { id: requestingUserId }),
+
         },
         select: {
             id: true,
@@ -123,10 +168,27 @@ export const getEmployees = async (companyId: string | null) => {
 };
 
 // Get Single Employee
-export const getEmployeeById = async (id: string) => {
+export const getEmployeeById = async (
+    id: string,
+    requestingUserId: string,
+    requestingUserRoleId: string,
+    requestingCompanyId: string
+
+) => {
+
+    // ager requesting user "Employee" hai (Admin nhi )
+    // toh sirf khud ka data dekh sake
+    const isAdminRole = ["super_admin", "company_admin"].includes(requestingUserRoleId);
+    if (!isAdminRole && requestingUserId !== id) {
+        throw new Error("Access denied — you can only view your own profile");
+    }
+
+
+
     const employee = await prisma.user.findUnique({
         where: { id },
         select: {
+            companyId: true,
             id: true,
             name: true,
             email: true,
@@ -158,24 +220,110 @@ export const getEmployeeById = async (id: string) => {
             reportingManager: { select: { id: true, name: true } },
         }
     });
-
+    // comapny admin sirf apni company ke employees dekh skta hai
+    if (
+        requestingUserRoleId === "company_admin" &&
+        employee?.companyId !== requestingCompanyId
+    ) {
+        throw new Error("Access denied");
+    }
     if (!employee) throw new Error("Employee not found");
     return employee;
 };
 
 // Update Employee
-export const updateEmployee = async (id: string, data: any) => {
+export const updateEmployee = async (id: string,
+    requestingUserId: string,
+    requestingUserRole: string,
+    requestingCompanyId: string,
+    data: {
+        name?: string;
+        phone?: string;
+        dateOfBirth?: string;
+        gender?: string;
+        bloodGroup?: string;
+        maritalStatus?: string;
+        currentAddress?: string;
+        permanentAddress?: string;
+        designation?: string;
+        joiningDate?: string;
+        employmentType?: string;
+        workShift?: string;
+        roleId?: number;
+        branchId?: string;
+        categoryId?: string;
+        reportingManagerId?: string;
+        panNumber?: string;
+        aadharNumber?: string;
+        bankAccountNumber?: string;
+        bankIFSC?: string;
+        bankName?: string;
+        pfNumber?: string;
+        esiNumber?: string;
+        emergencyContactName?: string;
+        emergencyContactPhone?: string;
+        isActive?: boolean;
+    }) => {
     const existing = await prisma.user.findUnique({ where: { id } });
     if (!existing) throw new Error("Employee not found");
 
-    const { password, email, ...updateData } = data; // Password/email alag se handle
+    // status update 
+    const isAdminRole = ["super_admin", "company_admin"].includes(requestingUserRole);
+    const isSelf = requestingUserId === id;
 
-    if (updateData.dateOfBirth) updateData.dateOfBirth = new Date(updateData.dateOfBirth);
-    if (updateData.joiningDate) updateData.joiningDate = new Date(updateData.joiningDate);
+    // Access check - khud ya admin hi edit kr sake 
+    if (!isAdminRole && !isSelf) {
+        throw new Error("Access denied — you can only edit your own profile");
+    }
 
+    // Company Admin sirf apni company ke employee edit kare
+    if (requestingUserRole === "company_admin" && existing.companyId !== requestingCompanyId) {
+        throw new Error("Access denied — this employee doesn't belong to your company");
+    }
+
+    let safeData = { ...data };
+
+    // Ager khud Employee edit kr rha hai (Admin nhi ), sensitive  field block karo
+    if (!isAdminRole && !isSelf) {
+        const {
+            roleId, branchId, categoryId, isActive,
+            designation, joiningDate, employmentType,
+            reportingManagerId, panNumber, aadharNumber,
+            bankAccountNumber, bankIFSC, bankName,
+            pfNumber, esiNumber,
+            ...allowedSelfEdit
+        } = safeData;
+
+        safeData = allowedSelfEdit;
+    }
+
+    // status update — sirf admin
+    if (safeData.isActive !== undefined && !isAdminRole) {
+        throw new Error("You cannot change employee status");
+    }
+
+    // branch validation
+    if (safeData.branchId) {
+        const branch = await prisma.branch.findUnique({ where: { id: safeData.branchId } });
+        if (!branch) throw new Error("Branch not found");
+        if (!branch.isActive) throw new Error("Branch is inactive");
+    }
+
+    const { dateOfBirth, joiningDate, ...rest } = safeData;
+
+    
     return await prisma.user.update({
         where: { id },
-        data: updateData,
+        data: {
+            ...rest,
+            ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
+            ...(joiningDate && { joiningDate: new Date(joiningDate) }),
+        },
+        include: {
+            role: { select: { id: true, name: true } },
+            branch: { select: { id: true, name: true } },
+            category: { select: { id: true, name: true } },
+        }
     });
 };
 

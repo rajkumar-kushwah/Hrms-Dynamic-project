@@ -288,10 +288,11 @@ export const signin = async (req: Request, res: Response) => {
                         permissions: {
                             include: {
                                 module: true  // module detail bhi aaye
-                            }
-                        }
+                            },
+                        },
                     }
-                }
+                },
+                company: true
             }
         })
 
@@ -302,6 +303,17 @@ export const signin = async (req: Request, res: Response) => {
         // checked active user
         if (!user.isActive) {
             return res.status(403).json({ success: false, message: 'User is inactive' });
+        }
+
+        if (
+            user.role?.name !== "super_admin" &&
+            user.company &&
+            !user.company.isActive
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: "Company account is inactive"
+            });
         }
 
         // Check password

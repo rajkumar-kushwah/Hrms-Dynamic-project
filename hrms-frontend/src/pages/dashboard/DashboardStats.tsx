@@ -9,16 +9,19 @@ import type { Branch } from '@/types/branch.types';
 import { toast } from 'sonner';
 import { getBranches } from "@/services/branch.service";
 import { getCategories } from '@/services/category.service';
+import { getEmployees } from '@/services/employee.service';
 
 const DashboardStats = () => {
     const { user } = useAuthStore();
     const isCompanyAdmin = user?.role?.name === "company_admin";
     const isSuperAdmin = user?.role?.name === "super_admin";
+    const isEmployee = user?.role?.name === "Employee";
 
     const [companies, setCompanies] = useState<Company[]>([]);
     const [companyUsers, setCompanyUsers] = useState<CompanyUser[]>([]);
     const [branches, setBranches] = useState<Branch[]>([]);
     const [categories, setCategories] = useState([]);
+    const [employees, setEmployees] = useState([]);
 
     // React.useEffect(() => {
     //     const fetchCompanies = async () => {
@@ -48,32 +51,35 @@ const DashboardStats = () => {
 
             try {
                 if (isSuperAdmin) {
-                    const [companyRes, userRes, branchRes, categoryRes,] = await Promise.all([
+                    const [companyRes, userRes, branchRes, categoryRes, employeeRes] = await Promise.all([
                         getCompanies(),
                         getCompanyUsers(),
                         getBranches(),
                         getCategories(),
+                        getEmployees()
                     ])
 
                     setCompanies(companyRes.data.data);
                     setCompanyUsers(userRes.data.data);
                     setBranches(branchRes.data.data);
                     setCategories(categoryRes.data.data);
+                    setEmployees(employeeRes.data.data);
                 } else if (isCompanyAdmin) {
-                    const [companyRes, userRes, branchRes, categoryRes] = await Promise.all([
+                    const [companyRes, branchRes, userRes, categoryRes, employeeRes] = await Promise.all([
                         getMyCompany(),
                         getBranches(),
                         getCompanyUsers(),
                         getCategories(),
+                        getEmployees()
                     ])
                     // const companyRes = await getMyCompany();
 
 
                     setCompanyUsers(userRes.data.data);
-                    setCompanies([companyRes.data.data]);
                     setBranches(branchRes.data.data);
+                    setCompanies([companyRes.data.data]);
                     setCategories(categoryRes.data.data);
-
+                    setEmployees(employeeRes.data.data);
                 }
             } catch (err: any) {
                 toast.error(err.message || "Failed to fetch data");
@@ -92,6 +98,7 @@ const DashboardStats = () => {
     const inactiveUsers = companyUsers.filter((user) => !user.isActive).length;
     const totalBranches = branches.length;
     const totalCategories = categories.length;
+    const totalEmployees = employees.length;
 
     return (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2">
@@ -149,24 +156,37 @@ const DashboardStats = () => {
                             {totalCategories}
                         </CardDescription>
                     </Card>
+                    <Card className="p-4 border rounded-xl">
+                        <CardTitle className="text-sm md:text-sm">Total Employees</CardTitle>
+                        <CardDescription className="text-xl font-bold">{totalEmployees}</CardDescription>
+                    </Card>
+
+
                 </>
             )}
 
 
-            <Card className="p-4 border rounded-xl">
-                <CardTitle className="text-sm md:text-sm">Total Employees</CardTitle>
-                <CardDescription className="text-xl font-bold">0</CardDescription>
-            </Card>
 
-            <Card className="p-4 border rounded-xl">
-                <CardTitle className="text-sm md:text-sm">Total Departments</CardTitle>
-                <CardDescription className="text-xl font-bold">0</CardDescription>
-            </Card>
+            {(isEmployee || isCompanyAdmin || isSuperAdmin) && (
+                <>
+                    {/* <Card className="p-4 border rounded-xl">
+                        <CardTitle className="text-sm md:text-sm" >Status</CardTitle>
+                        <CardDescription className={user?.isActive ? "text-green-600" : "text-red-600"}>
+                            {user?.isActive ? "Active" : "Inactive"}
+                        </CardDescription>
+                    </Card> */}
 
-            <Card className="p-4 border rounded-xl">
-                <CardTitle className="text-sm md:text-sm">Today Attendance</CardTitle>
-                <CardDescription className="text-xl font-bold">0</CardDescription>
-            </Card>
+                    <Card className="p-4 border rounded-xl">
+                        <CardTitle className="text-sm md:text-sm">Attendance Today</CardTitle>
+                        <CardDescription className="text-xs font-bold">Present</CardDescription>
+                    </Card>
+
+                    <Card className="p-4 border rounded-xl">
+                        <CardTitle className="text-sm md:text-sm">Leave Balance</CardTitle>
+                        <CardDescription className="text-xl font-bold">0</CardDescription>
+                    </Card>
+                </>
+            )}
 
         </div>
     );

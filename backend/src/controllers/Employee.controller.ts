@@ -23,8 +23,10 @@ export const createEmployee = async (req: Request, res: Response) => {
 export const getEmployees = async (req: Request, res: Response) => {
     try {
         const companyId = req.user?.role.name === "super_admin" ? null : req.user?.companyId!;
+        const requestingUserId = req.user?.id!;
+        const requestingUserRole = req.user?.role?.name!;
 
-        const employees = await EmployeeService.getEmployees(companyId);
+        const employees = await EmployeeService.getEmployees(companyId, requestingUserId, requestingUserRole);
 
         return res.status(200).json({ success: true, data: employees });
     } catch (error: any) {
@@ -36,9 +38,12 @@ export const getEmployees = async (req: Request, res: Response) => {
 export const getEmployeeById = async (req: Request, res: Response) => {
     try {
         const id = (req.params.id as string);
+        const requestingUserId = req.user?.id!;
+        const requestingUserRole = req.user?.role?.name!;
+        const requestingCompanyId = req.user?.companyId!;
         if (!id) return res.status(400).json({ success: false, message: "Invalid employee id" });
 
-        const employee = await EmployeeService.getEmployeeById(id);
+        const employee = await EmployeeService.getEmployeeById(id, requestingUserId, requestingUserRole, requestingCompanyId);
 
         return res.status(200).json({ success: true, data: employee });
     } catch (error: any) {
@@ -50,9 +55,12 @@ export const getEmployeeById = async (req: Request, res: Response) => {
 export const updateEmployee = async (req: Request, res: Response) => {
     try {
         const id = (req.params.id as string);
+        const requestingUserId = req.user?.id!;
+        const requestingUserRole = req.user?.role?.name!;
+        const requestingCompanyId = req.user?.companyId!;
         if (!id) return res.status(400).json({ success: false, message: "Invalid employee id" });
 
-        const employee = await EmployeeService.updateEmployee(id, req.body);
+        const employee = await EmployeeService.updateEmployee(id, requestingUserId, requestingUserRole, requestingCompanyId, req.body);
 
         return res.status(200).json({ success: true, message: "Employee updated successfully", data: employee });
     } catch (error: any) {

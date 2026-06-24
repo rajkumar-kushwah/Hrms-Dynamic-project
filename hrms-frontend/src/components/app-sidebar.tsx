@@ -24,7 +24,8 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      // name: "Acme Inc",
+      name: "Nabu Corp.",
       logo: (
         <GalleryVerticalEndIcon
         />

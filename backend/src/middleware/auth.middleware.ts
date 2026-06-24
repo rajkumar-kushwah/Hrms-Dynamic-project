@@ -112,6 +112,16 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
       });
     }
 
+    if (
+      user.role?.name !== "super_admin" &&
+      (!user.companyId || !user.company?.isActive)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "User not found or inactive",
+      });
+    }
+
     req.user = user;
 
     next();

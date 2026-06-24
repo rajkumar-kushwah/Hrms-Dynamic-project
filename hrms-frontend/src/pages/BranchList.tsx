@@ -6,11 +6,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreVertical, PlusIcon } from "lucide-react";
+import { AlertTriangle, MoreVertical, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
-import type { Branch, CreateBranchPayload, UpdateBranchPayload } from "@/types/branch.types";
-import { getBranches, createBranch, updateBranch, deleteBranch } from "@/services/branch.service";
+import type { Branch, CreateBranchPayload } from "@/types/branch.types";
+import { getBranches, createBranch, updateBranch, deleteBranch, permanentDeleteBranch } from "@/services/branch.service";
 
 type EditForm = {
     name?: string;
@@ -32,6 +32,9 @@ const BranchList = () => {
     const [editOpen, setEditOpen] = React.useState(false);
     const [deleteOpen, setDeleteOpen] = React.useState(false);
     const [selectedBranch, setSelectedBranch] = React.useState<Branch | null>(null);
+
+    const [dangerOpen, setDangerOpen] = React.useState(false);
+    const [confirmText, setConfirmText] = React.useState("");
 
     const [form, setForm] = React.useState<CreateBranchPayload>({
         name: "",
@@ -97,6 +100,7 @@ const BranchList = () => {
         if (!selectedBranch) return;
         try {
             const res = await updateBranch(selectedBranch.id, payload);
+            setBranches(res.data.data);
             toast.success("Branch updated successfully!");
             setBranches((prev) => prev.map((b) => b.id === selectedBranch.id ? { ...b, ...editForm } : b));
             setEditOpen(false);
@@ -129,6 +133,27 @@ const BranchList = () => {
             toast.error(err?.message || "Failed to update branch");
         }
     }
+
+
+    // handle parmanet delete branch and confirmation text
+
+    const handlePermanentDelete = async () => {
+        if (confirmText !== selectedBranch?.name) {
+            toast.error("Branch name doesn't match");
+            return;
+        }
+        try {
+            await permanentDeleteBranch(selectedBranch.id);
+            toast.success("Branch permanently deleted!");
+            setBranches((prev) => prev.filter((b) => b.id !== selectedBranch.id));
+            setDangerOpen(false);
+            setEditOpen(false);
+            setConfirmText("");
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to delete branch");
+        }
+    }
+
 
     return (
         <div className="flex flex-col gap-4">
@@ -236,6 +261,38 @@ const BranchList = () => {
                         </div>
                         <Button onClick={handleUpdate}>Update Branch</Button>
                     </div>
+
+                    {/* edit Dialog ke ander dialog permanent delete confirmation hoga */}
+                    {isSuperAdmin && (
+                        <div className="border border-red-200 rounded-lg p-4 mt-4 bg-red-50">
+                            <h4 className="text-red-700 font-semibold flex items-center gap-2 text-sm">
+                                <AlertTriangle className="h-4 w-4" /> Danger Zone
+                            </h4>
+                            <p className="text-xs text-red-600 mt-1">
+                                Permanent Delete this branch. Only possible if no employee/Category is assigned to this branch.
+                            </p>
+                            <Button variant="destructive" size="sm" className="sm cursor-pointer" onClick={() => setDangerOpen(true)}>Delete Permanently</Button>
+                        </div>
+                    )}
+                    {/* Comfirmation Dialog */}
+                    <Dialog open={dangerOpen} onOpenChange={setDangerOpen}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle className="text-red-700"> Permanent Delete</DialogTitle>
+                                <DialogDescription> Are you sure you want to delete <strong className="font-semibold text-white">{selectedBranch?.name}</strong>This action cannot be undone.</DialogDescription>
+                            </DialogHeader>
+                            <div>
+                                <Label>Type<strong> {selectedBranch?.name}</strong> To Confirm</Label>
+                                <Input type="text" name="confirm" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Type branch name" />
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                                <Button variant="outline" onClick={() => setDangerOpen(false)}>Cancel</Button>
+                                <Button variant="destructive" disabled={confirmText !== selectedBranch?.name} onClick={handlePermanentDelete} className=" cursor-pointer"> I understand, delete permanently</Button>
+
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+
                 </DialogContent>
             </Dialog>
 
@@ -262,13 +319,13 @@ const BranchList = () => {
                         <TableHeader className="bg-muted sticky top-0 z-10">
                             <TableRow>
                                 <TableHead>#</TableHead>
-                                <TableHead className="min-w-[150px]">Name</TableHead>
-                                <TableHead className="min-w-[100px]">Code</TableHead>
-                                {isSuperAdmin && <TableHead className="min-w-[150px]">Company</TableHead>}
-                                <TableHead className="min-w-[100px]">City</TableHead>
-                                <TableHead className="min-w-[100px]">Phone</TableHead>
-                                <TableHead className="min-w-[150px]">Manager</TableHead>
-                                <TableHead className="min-w-[80px]">Status</TableHead>
+                                <TableHead className="min-w-37.5">Name</TableHead>
+                                <TableHead className="min-w-25">Code</TableHead>
+                                {isSuperAdmin && <TableHead className="min-w-37.5">Company</TableHead>}
+                                <TableHead className="min-w-25">City</TableHead>
+                                <TableHead className="min-w-25">Phone</TableHead>
+                                <TableHead className="min-w-37.5">Manager</TableHead>
+                                <TableHead className="min-w-20">Status</TableHead>
                                 <TableHead className="sticky right-0 bg-muted">Actions</TableHead>
                             </TableRow>
                         </TableHeader>

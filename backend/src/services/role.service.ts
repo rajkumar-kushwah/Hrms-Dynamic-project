@@ -1,9 +1,9 @@
 import { prisma } from "../config/db.ts";
 
 // Company ke sabhi roles
-export const getCompanyRoles = async (companyId: string | null) => {
+export const getCompanyRoles = async (companyId: string | null, isSuperAdmin: boolean) => {
     return await prisma.role.findMany({
-        where: { companyId: companyId ?? null },
+        where: isSuperAdmin ? {} : { companyId },
         include: {
             permissions: { include: { module: true, } },
             _count: { select: { user: true } },
@@ -65,7 +65,7 @@ export const createRole = async (
 // Role ki permissions dekho
 export const getRolePermissions = async (
     roleId: number,
-    companyId: string
+    companyId: string | null
 ) => {
     const role = await prisma.role.findFirst({
         where: {
@@ -96,7 +96,7 @@ export const getRolePermissions = async (
 // Permissions update karo
 export const updateRolePermissions = async (
     roleId: number,
-    companyId: string,
+    companyId: string | null,
     permissions: {
         moduleId: number;
         canView: boolean;
@@ -107,11 +107,18 @@ export const updateRolePermissions = async (
 ) => {
     // Role is company ka hai?
     const role = await prisma.role.findFirst({
-        where: { id: roleId, companyId },
+        where: { id: roleId },
     });
 
     if (!role) throw new Error("Role not found");
 
+    // Ager Company admin hai to apni hi company ka role edit kr sake 
+    if (companyId !== null && role.companyId !== companyId) {
+        throw new Error("Access denied - this role doesn't belong to your company")
+    }
+
+    // Permission ka companyId — role ka companyId
+    const targetCompanyId = role.companyId;
     // Har permission update karo
     for (const perm of permissions) {
         await prisma.permission.upsert({
@@ -119,7 +126,7 @@ export const updateRolePermissions = async (
                 roleId_moduleId_companyId: {
                     roleId,
                     moduleId: perm.moduleId,
-                    companyId,
+                    companyId: targetCompanyId!,
                 },
             },
             update: {
@@ -131,7 +138,7 @@ export const updateRolePermissions = async (
             create: {
                 roleId,
                 moduleId: perm.moduleId,
-                companyId,
+                companyId: targetCompanyId,
                 canView: perm.canView,
                 canCreate: perm.canCreate,
                 canEdit: perm.canEdit,
@@ -140,7 +147,7 @@ export const updateRolePermissions = async (
         });
     }
 
-    return await getRolePermissions(roleId, companyId);
+    return await getRolePermissions(roleId, targetCompanyId);
 };
 
 // Role delete karo

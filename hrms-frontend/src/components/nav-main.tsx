@@ -77,8 +77,8 @@ export function NavMain() {
   const { user } = useAuthStore();
   const location = useLocation();
   const permissions = user?.role?.permissions ?? [];
-  console.log("USER:", user);
-  console.log("PERMISSIONS:", permissions);
+  // console.log("USER:", user);
+  // console.log("PERMISSIONS:", permissions);
 
   const visibleModules = permissions
     .filter((p) => p.canView && p.module.parentId === null)

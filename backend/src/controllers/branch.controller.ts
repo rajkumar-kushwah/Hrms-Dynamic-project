@@ -86,3 +86,20 @@ export const deleteBranch = async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, message: error.message });
     }
 }
+
+// parmanent delete branch
+export const permanentDeleteBranch = async (req: Request, res: Response) => {
+    try {
+        const id = (req.params.id as string);
+        if (!id) return res.status(400).json({ success: false, message: "Invalid branch id" });
+
+        const result = await BranchService.permanentDeleteBranch(id);
+
+        return res.status(200).json({
+            success: true,
+            message: result.message
+        });
+    } catch (error: any) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+}

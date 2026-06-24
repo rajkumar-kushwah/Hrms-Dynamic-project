@@ -51,7 +51,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
     React.useEffect(() => {
         if (open) {
             loadDropdownData();
-            if (isEditeMode) {
+            if (isEditeMode && editEmployee) {
                 setForm({
                     ...editEmployee,
                     password: "",
@@ -109,7 +109,34 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
         }
         try {
             if (isEditeMode && editEmployee) {
-                const { password, email, ...updateData } = form;
+                const updateData = {
+                    name: form.name,
+                    phone: form.phone,
+                    roleId: form.roleId,
+                    branchId: form.branchId,
+                    categoryId: form.categoryId,
+                    dateOfBirth: form.dateOfBirth,
+                    gender: form.gender,
+                    bloodGroup: form.bloodGroup,
+                    maritalStatus: form.maritalStatus,
+                    currentAddress: form.currentAddress,
+                    permanentAddress: form.permanentAddress,
+                    designation: form.designation,
+                    joiningDate: form.joiningDate,
+                    employmentType: form.employmentType,
+                    workShift: form.workShift,
+                    reportingManagerId: form.reportingManagerId,
+                    panNumber: form.panNumber,
+                    aadharNumber: form.aadharNumber,
+                    bankAccountNumber: form.bankAccountNumber,
+                    bankIFSC: form.bankIFSC,
+                    bankName: form.bankName,
+                    pfNumber: form.pfNumber,
+                    esiNumber: form.esiNumber,
+                    emergencyContactName: form.emergencyContactName,
+                    emergencyContactPhone: form.emergencyContactPhone,
+                };
+                console.log("UPDATE DATA:", updateData);
                 const res = await updateEmployee(editEmployee.id, updateData);
                 toast.success("Employee updated successfully!");
                 onSuccess(res.data.data);

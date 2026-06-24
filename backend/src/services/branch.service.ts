@@ -20,9 +20,24 @@ export const createBranch = async (
     }
 ) => {
 
-    //  Code auto generate karo
-    const branchCount = await prisma.branch.count({ where: { companyId } });
-    const code = `BR${String(branchCount + 1).padStart(3, "0")}`;
+    const lastBranch = await prisma.branch.findFirst({
+        where: { companyId },
+        orderBy: {
+            code: "desc",
+        },
+        select: {
+            code: true,
+        },
+    });
+
+    let nextNumber = 1;
+
+    if (lastBranch?.code) {
+        nextNumber =
+            parseInt(lastBranch.code.replace("BR", "")) + 1;
+    }
+
+    const code = `BR${String(nextNumber).padStart(3, "0")}`;
 
     // code duplicat chek same company mein
     const codeCheck = await prisma.branch.findUnique({
@@ -115,5 +130,32 @@ export const deleteBranch = async (id: string) => {
     });
 
     return { message: "Branch deactivated successfully" };
+}
+
+// Danger Zone - Delete branch permanently
+export const permanentDeleteBranch = async (id: string) => {
+    const branch = await prisma.branch.findUnique({
+        where: { id },
+        include: {
+            _count: { select: { users: true } }
+        }
+    });
+
+    if (!branch) throw new Error("Branch not found");   
+
+    // Ager Employee hai to delete mat kro
+    if (branch._count.users > 0){
+        throw new Error(`Branch delete - ${branch._count.users} employees Assigned to this branch`);
+    }
+
+    // Category check 
+    const categoryCount = await prisma.category.count({
+        where: { branchId: id }
+    });
+    if (categoryCount > 0){
+        throw new Error(`Category delete - ${categoryCount} category exits under this branch`);
+    }
+     await prisma.branch.delete({ where: { id } });
+     return { message: "Branch permanently deleted" };
 }
 

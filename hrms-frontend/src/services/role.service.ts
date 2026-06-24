@@ -31,5 +31,5 @@ export const updateRole = (
 
 // Delete Role
 export const deleteRole = (id: number) => {
-  return api.delete(`/roles/${id}/permissions`);
+  return api.delete(`/roles/${id}`);
 };

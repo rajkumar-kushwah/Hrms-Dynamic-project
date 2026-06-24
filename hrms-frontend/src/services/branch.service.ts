@@ -17,3 +17,6 @@ export const updateBranch = (id: string, data: UpdateBranchPayload ) => api.put(
 
 // delete branch
 export const deleteBranch = (id: string) => api.delete(`/branch/${id}`);
+
+// permanent delete branch
+export const permanentDeleteBranch = (id: string) => api.delete(`/branch/${id}/permanent`);

@@ -16,6 +16,10 @@ const EmployeeList = () => {
   const { user } = useAuthStore();
   const isSuperAdmin = user?.role?.name === "super_admin";
 
+  // active and inactive super_admin kr skta h or  company admin (Employee nhi )
+  const roleName = user?.role?.name ?? "";
+  const canChangeStatus = ["super_admin", "company_admin"].includes(roleName);
+
   const [employees, setEmployees] = React.useState<Employee[]>([]);
   const [open, setOpen] = React.useState(false);
 
@@ -24,7 +28,7 @@ const EmployeeList = () => {
   const [selectedEmployee, setSelectedEmployee] = React.useState<EmployeeDetail | null>(null);
 
   const [editEmployee, setEditEmployee] = React.useState<EmployeeDetail | null>(null);
-const [editOpen, setEditOpen] = React.useState(false);
+  const [editOpen, setEditOpen] = React.useState(false);
 
   React.useEffect(() => {
     loadEmployees();
@@ -97,18 +101,18 @@ const [editOpen, setEditOpen] = React.useState(false);
         </Button>
 
         {/* Header Card */}
-        <div className="bg-card border rounded-xl p-6 flex items-center gap-4">
+        <div className="bg-card border rounded-sm p-6 flex items-center gap-4">
           <Avatar className="h-20 w-20">
-            <AvatarFallback className="text-xl">
+            <AvatarFallback className="text-sm">
               {getInitials(selectedEmployee.name)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <h2 className="text-xl font-semibold">{selectedEmployee.name}</h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm ">
               {selectedEmployee.designation ?? selectedEmployee.role?.name} • {selectedEmployee.employeeCode}
             </p>
-            <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
+            <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {selectedEmployee.email}</span>
               {selectedEmployee.phone && (
                 <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {selectedEmployee.phone}</span>
@@ -198,16 +202,16 @@ const [editOpen, setEditOpen] = React.useState(false);
         onSuccess={handleEmployeeCreated}
       />
 
-    <AddEmployeeDialog
-     open={editOpen}
-     onOpenChange={setEditOpen}
-     onSuccess={(updated)=> {
-      setEmployees((prev) => prev.map((e) => e.id === updated.id ? updated : e));
-      setEditOpen(false);
-      setEditEmployee(null);
-     }}
-     editEmployee={editEmployee}
-    />
+      <AddEmployeeDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSuccess={(updated) => {
+          setEmployees((prev) => prev.map((e) => e.id === updated.id ? updated : e));
+          setEditOpen(false);
+          setEditEmployee(null);
+        }}
+        editEmployee={editEmployee}
+      />
 
       <div className="bg-card grid grid-cols-1 rounded border w-full overflow-hidden">
         <div className="h-full overflow-auto">
@@ -215,15 +219,15 @@ const [editOpen, setEditOpen] = React.useState(false);
             <TableHeader className="bg-muted sticky top-0 z-10">
               <TableRow>
                 <TableHead>#</TableHead>
-                <TableHead className="min-w-[100px]">Code</TableHead>
-                <TableHead className="min-w-[150px]">Name</TableHead>
-                <TableHead className="min-w-[180px]">Email</TableHead>
-                <TableHead className="min-w-[120px]">Designation</TableHead>
-                <TableHead className="min-w-[120px]">Branch</TableHead>
-                <TableHead className="min-w-[120px]">Category</TableHead>
-                <TableHead className="min-w-[100px]">Role</TableHead>
-                {isSuperAdmin && <TableHead className="min-w-[150px]">Company</TableHead>}
-                <TableHead className="min-w-[80px]">Status</TableHead>
+                <TableHead className="min-w-25">Code</TableHead>
+                <TableHead className="min-w-37.5">Name</TableHead>
+                <TableHead className="min-w-45">Email</TableHead>
+                <TableHead className="min-w-30">Designation</TableHead>
+                <TableHead className="min-w-30">Branch</TableHead>
+                <TableHead className="min-w-30">Category</TableHead>
+                <TableHead className="min-w-25">Role</TableHead>
+                {isSuperAdmin && <TableHead className="min-w-37.5">Company</TableHead>}
+                <TableHead className="min-w-20">Status</TableHead>
                 <TableHead className="sticky right-0 bg-muted">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -253,7 +257,7 @@ const [editOpen, setEditOpen] = React.useState(false);
                         <DropdownMenuGroup>
                           <DropdownMenuItem onClick={() => handleViewDetails(emp.id)}>View Details</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditClick(emp.id)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleStatus(emp)}>
+                          <DropdownMenuItem onClick={() => handleToggleStatus(emp)} disabled={!canChangeStatus}>
                             {emp.isActive ? "Deactivate" : "Activate"}
                           </DropdownMenuItem>
                         </DropdownMenuGroup>

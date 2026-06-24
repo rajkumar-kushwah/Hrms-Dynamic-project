@@ -17,6 +17,8 @@ function CompanyList() {
   const isSuperAdmin = user?.role?.name === "super_admin";
   const isCompanyAdmin = user?.role?.name === "company_admin";
 
+  
+
   const [companies, setCompanies] = React.useState<Company[]>([])
   const [open, setOpen] = React.useState(false);
   const [assignOpen, setAssignOpen] = React.useState(false);
@@ -383,7 +385,7 @@ function CompanyList() {
           <DialogHeader>
             <DialogTitle className="text-red-700">Are you sure? Permanent Delete</DialogTitle>
             <DialogDescription>
-              This will permanently delete <strong>{selectedCompany?.name}</strong> and ALL related data
+              This will permanently delete <strong className='font-bold text-white'>{selectedCompany?.name}</strong> and ALL related data
               (users, branches, categories, roles). This CANNOT be undone.
             </DialogDescription>
           </DialogHeader>
@@ -482,7 +484,7 @@ function CompanyList() {
 
                           </>
                         )}
-                        <DropdownMenuItem onClick={() => handleToggleStatus(company)}>
+                        <DropdownMenuItem onClick={() => handleToggleStatus(company)} disabled={!isSuperAdmin}>
                           {company.isActive ? "Deactivate" : "Activate"}
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
