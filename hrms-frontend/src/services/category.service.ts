@@ -15,3 +15,6 @@ export const updateCategory = (id: string, data: UpdateCategoryPayload) => api.p
 
 // delete Category
 export const deleteCategory = (id: string) => api.delete(`/category/${id}`);
+
+// permanent delete Category
+export const permanentDeleteCategory = (id: string) => api.delete(`/category/${id}/permanent`);

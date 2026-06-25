@@ -17,7 +17,7 @@ function CompanyList() {
   const isSuperAdmin = user?.role?.name === "super_admin";
   const isCompanyAdmin = user?.role?.name === "company_admin";
 
-  
+
 
   const [companies, setCompanies] = React.useState<Company[]>([])
   const [open, setOpen] = React.useState(false);
@@ -101,20 +101,20 @@ function CompanyList() {
     }
   }
 
-  const handleDeactivate = async () => {
-    if (!selectedCompany) return;
-    try {
-      await deactivateCompany(selectedCompany.id); //  Naya function
-      toast.success("Company deactivated successfully");
-      setCompanies((prev) =>
-        prev.map((c) => c.id === selectedCompany.id ? { ...c, isActive: false } : c)
-      );
-      setDeleteConfirmOpen(false);
-      setSelectedCompany(null);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to deactivate company");
-    }
-  };
+  // const handleDeactivate = async () => {
+  //   if (!selectedCompany) return;
+  //   try {
+  //     await deactivateCompany(selectedCompany.id); //  Naya function
+  //     toast.success("Company deactivated successfully");
+  //     setCompanies((prev) =>
+  //       prev.map((c) => c.id === selectedCompany.id ? { ...c, isActive: false } : c)
+  //     );
+  //     setDeleteConfirmOpen(false);
+  //     setSelectedCompany(null);
+  //   } catch (err: any) {
+  //     toast.error(err?.message || "Failed to deactivate company");
+  //   }
+  // };
 
 
 
@@ -188,22 +188,20 @@ function CompanyList() {
       toast.error("Failed to assign admin");
     }
   };
-  const handleToggleStatus = async (company: Company) => {
-    if (company.isActive) {
-      setSelectedCompany(company);
-      setDeleteConfirmOpen(true);
-      return
-    }
+  const handleToggleStatus = async () => {
+    if (!selectedCompany) return;
     try {
-      if (company.isActive) {
-        await deactivateCompany(company.id);
+      if (selectedCompany.isActive) {
+        await deactivateCompany(selectedCompany.id);
       } else {
-        await updateCompany(company.id, { isActive: true }); // Activate back
+        await updateCompany(selectedCompany.id, { isActive: true }); // Activate back
       }
-      toast.success(`Company ${!company.isActive ? "activated" : "deactivated"} successfully!`);
+      toast.success(`Company ${!selectedCompany.isActive ? "activated" : "deactivated"} successfully!`);
       setCompanies((prev) =>
-        prev.map((c) => c.id === company.id ? { ...c, isActive: !c.isActive } : c)
+        prev.map((c) => c.id === selectedCompany.id ? { ...c, isActive: !c.isActive } : c)
       );
+      setDeleteConfirmOpen(false);
+      setSelectedCompany(null);
     } catch (err: any) {
       toast.error(err?.message || "Failed to update company");
     }
@@ -364,16 +362,21 @@ function CompanyList() {
           <DialogHeader>
             <DialogTitle>Deactivate Company</DialogTitle>
             <DialogDescription>
-              Are you sure you want to deactivate <strong className='text-card-foreground'>{selectedCompany?.name}</strong>?
-              You can activate it again later.
+              Are you sure you want to  <strong className="font-semibold ">
+                {" "}
+                {selectedCompany?.isActive ? "deactivate" : "activate"}
+              </strong> , <strong className='text-card-foreground'>{selectedCompany?.name}</strong>?
+              {selectedCompany?.isActive
+                ? " You can activate it again later."
+                : " You can deactivate it again later."}
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+            <Button variant="outline" className=" cursor-pointer" onClick={() => setDeleteConfirmOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeactivate}>
-              Deactivate
+            <Button variant="destructive" className=" cursor-pointer" onClick={handleToggleStatus}>
+              {selectedCompany?.isActive ? "Deactivate" : "Activate"}
             </Button>
           </div>
         </DialogContent>
@@ -385,7 +388,7 @@ function CompanyList() {
           <DialogHeader>
             <DialogTitle className="text-red-700">Are you sure? Permanent Delete</DialogTitle>
             <DialogDescription>
-              This will permanently delete <strong className='font-bold text-white'>{selectedCompany?.name}</strong> and ALL related data
+              This will permanently delete <strong className='font-bold bg-muted'>{selectedCompany?.name}</strong> and ALL related data
               (users, branches, categories, roles). This CANNOT be undone.
             </DialogDescription>
           </DialogHeader>
@@ -484,7 +487,12 @@ function CompanyList() {
 
                           </>
                         )}
-                        <DropdownMenuItem onClick={() => handleToggleStatus(company)} disabled={!isSuperAdmin}>
+                        <DropdownMenuItem onClick={() => {
+                          setSelectedCompany(company);
+                          setDeleteConfirmOpen(true);
+
+                        }}
+                          disabled={!isSuperAdmin}>
                           {company.isActive ? "Deactivate" : "Activate"}
                         </DropdownMenuItem>
                       </DropdownMenuGroup>

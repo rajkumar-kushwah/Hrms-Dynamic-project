@@ -100,3 +100,23 @@ export const deleteCategory = async (id: string) => {
     return { message: "Category deactivated successfully" };
 }
 
+// Permanent Delete category
+export const permanentDeleteCategory = async (id: string) => {
+    const category = await prisma.category.findUnique({
+        where: { id },
+        include: {
+            _count: { select: { users: true } }
+        }
+    });
+
+    if (!category) throw new Error("Category not found");
+
+    // Ager Employee hai to delete mat kro
+    if (category._count.users > 0){
+        throw new Error(`Category delete - ${category._count.users} employees Assigned to this category`);
+    }
+
+
+    await prisma.category.delete({ where: { id } });
+    return { message: "Category permanently deleted" };
+}

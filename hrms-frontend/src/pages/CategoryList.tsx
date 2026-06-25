@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreVertical, PlusIcon } from "lucide-react";
+import { AlertTriangle, MoreVertical, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from "@/types/category.types";
 import type { Branch } from "@/types/branch.types";
-import { getCategories, createCategory, updateCategory } from "@/services/category.service";
+import { getCategories, createCategory, updateCategory, permanentDeleteCategory } from "@/services/category.service";
 import { getBranches } from "@/services/branch.service";
 
 const CategoryList = () => {
@@ -25,6 +25,10 @@ const CategoryList = () => {
     const [editOpen, setEditOpen] = React.useState(false);
     //   const [deleteOpen, setDeleteOpen] = React.useState(false);
     const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
+    const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+
+    const [dangerOpen, setDangerOpen] = React.useState(false);
+    const [confirmText, setConfirmText] = React.useState("");
 
     const [form, setForm] = React.useState<CreateCategoryPayload>({
         name: "",
@@ -98,17 +102,37 @@ const CategoryList = () => {
     };
 
     //  Toggle Status
-    const handleToggleStatus = async (category: Category) => {
+    const handleToggleStatus = async () => {
+        if (!selectedCategory) return
         try {
-            await updateCategory(category.id, { isActive: !category.isActive });
-            toast.success(`Category ${!category.isActive ? "activated" : "deactivated"} successfully!`);
+            await updateCategory(selectedCategory.id, { isActive: !selectedCategory.isActive });
+            toast.success(`Category ${!selectedCategory.isActive ? "activated" : "deactivated"} successfully!`);
             setCategories((prev) =>
-                prev.map((c) => c.id === category.id ? { ...c, isActive: !c.isActive } : c)
+                prev.map((c) => c.id === selectedCategory.id ? { ...c, isActive: !c.isActive } : c)
             );
+            setStatusDialogOpen(false);
         } catch (err: any) {
             toast.error(err?.message || "Failed to update category");
         }
     };
+
+    // permanent danger delete fn
+    const handlePermanentDelete = async () => {
+        if (confirmText !== selectedCategory?.name) {
+            toast.error("Category name doesn't match");
+            return;
+        }
+        try {
+            await permanentDeleteCategory(selectedCategory.id);
+            toast.success("Category permanently deleted!");
+            setCategories((prev) => prev.filter((c) => c.id !== selectedCategory.id));
+            setDangerOpen(false);
+            setEditOpen(false);
+            setConfirmText("");
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to delete category");
+        }
+    }
 
     return (
         <div className="flex flex-col gap-4">
@@ -201,6 +225,61 @@ const CategoryList = () => {
                         </div>
                         <Button onClick={handleUpdate}>Update Category</Button>
                     </div>
+                    {isSuperAdmin && (
+                        <div className="border border-red-200 rounded-lg p-4 mt-4 bg-red-50">
+                            <h4 className="text-red-700 font-semibold flex items-center gap-2 text-sm">
+                                <AlertTriangle className="h-4 w-4" /> Danger Zone
+                            </h4>
+                            <p className="text-xs text-red-600 mt-1">
+                                Permanent Delete this Category. Only Possible if no employee/user is assigned to this category
+                            </p>
+                            <Button variant="destructive" size="sm" className="sm cursor-pointer" onClick={() => setDangerOpen(true)}>Permanent Delete</Button>
+                        </div>
+                    )}
+                    {/* Danger Dialog and confirm text */}
+                    <Dialog open={dangerOpen} onOpenChange={setDangerOpen}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle className="text-red-700">Permanent Delete Category</DialogTitle>
+                                <DialogDescription>Are you sure you want to delete <strong className="font-semibold bg-muted">{selectedCategory?.name}</strong> This action cannot be undone. Type</DialogDescription>
+                            </DialogHeader>
+                            <div>
+                                <Label>Type <strong>{selectedCategory?.name}</strong> To Confirm</Label>
+                                <Input type="text" name="confirm" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} />
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                                <Button variant="outline" onClick={() => setDangerOpen(false)}>Cancel</Button>
+                                <Button variant="destructive" disabled={confirmText !== selectedCategory?.name} onClick={handlePermanentDelete} className=" cursor-pointer"> I understand, delete permanently</Button>
+                            </div>
+
+                        </DialogContent>
+                    </Dialog>
+                </DialogContent>
+            </Dialog>
+
+            {/* Active Deactive dialog */}
+            <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+                <DialogContent className=" bg-card w-05">
+                    <DialogHeader>
+                        <DialogTitle>Update Status</DialogTitle>
+                        <DialogDescription>
+                            You are about to
+                            <strong className="font-semibold ">
+                                {" "}
+                                {selectedCategory?.isActive ? "deactivate" : "activate"}
+                            </strong>
+                            <strong> {selectedCategory?.name}</strong>.
+                            {selectedCategory?.isActive
+                                ? " You can activate it again later."
+                                : " You can deactivate it again later."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex gap-2 justify-end">
+                        <Button variant="outline" className=" cursor-pointer" onClick={() => setStatusDialogOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" className=" cursor-pointer" onClick={handleToggleStatus}>
+                            {selectedCategory?.isActive ? "Deactivate" : "Activate"}
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
 
@@ -253,7 +332,10 @@ const CategoryList = () => {
                                                     }}>
                                                         Edit
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleToggleStatus(category)}>
+                                                    <DropdownMenuItem onClick={() => {
+                                                        setSelectedCategory(category);
+                                                        setStatusDialogOpen(true);
+                                                    }}>
                                                         {category.isActive ? "Deactivate" : "Activate"}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuGroup>

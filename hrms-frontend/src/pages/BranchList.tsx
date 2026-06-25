@@ -32,6 +32,7 @@ const BranchList = () => {
     const [editOpen, setEditOpen] = React.useState(false);
     const [deleteOpen, setDeleteOpen] = React.useState(false);
     const [selectedBranch, setSelectedBranch] = React.useState<Branch | null>(null);
+    const [statusDialogOpen, setStatusDialogOpen] = React.useState(false);
 
     const [dangerOpen, setDangerOpen] = React.useState(false);
     const [confirmText, setConfirmText] = React.useState("");
@@ -124,11 +125,13 @@ const BranchList = () => {
         }
     };
 
-    const handleToggleStatus = async (branch: Branch) => {
+    const handleToggleStatus = async () => {
+        if (!selectedBranch) return
         try {
-            const res = await updateBranch(branch.id, { isActive: !branch.isActive });
-            toast.success(`Branch ${branch.isActive ? "deactivated" : "activated"} successfully!`);
-            setBranches((prev) => prev.map((b) => b.id === branch.id ? { ...b, ...res.data.data } : b));
+            const res = await updateBranch(selectedBranch.id, { isActive: !selectedBranch.isActive });
+            toast.success(`Branch ${selectedBranch.isActive ? "activated" : "deactivated"} successfully!`);
+            setBranches((prev) => prev.map((b) => b.id === selectedBranch.id ? { ...b, ...res.data.data } : b));
+            setStatusDialogOpen(false);
         } catch (err: any) {
             toast.error(err?.message || "Failed to update branch");
         }
@@ -269,7 +272,7 @@ const BranchList = () => {
                                 <AlertTriangle className="h-4 w-4" /> Danger Zone
                             </h4>
                             <p className="text-xs text-red-600 mt-1">
-                                Permanent Delete this branch. Only possible if no employee/Category is assigned to this branch.
+                                Permanent Delete this branch. Only possible if no employee/user is assigned to this branch.
                             </p>
                             <Button variant="destructive" size="sm" className="sm cursor-pointer" onClick={() => setDangerOpen(true)}>Delete Permanently</Button>
                         </div>
@@ -278,8 +281,8 @@ const BranchList = () => {
                     <Dialog open={dangerOpen} onOpenChange={setDangerOpen}>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle className="text-red-700"> Permanent Delete</DialogTitle>
-                                <DialogDescription> Are you sure you want to delete <strong className="font-semibold text-white">{selectedBranch?.name}</strong>This action cannot be undone.</DialogDescription>
+                                <DialogTitle className="text-red-700"> Permanent Delete Branch</DialogTitle>
+                                <DialogDescription> Are you sure you want to delete <strong className="font-semibold bg-muted">{selectedBranch?.name}</strong> This action cannot be undone.</DialogDescription>
                             </DialogHeader>
                             <div>
                                 <Label>Type<strong> {selectedBranch?.name}</strong> To Confirm</Label>
@@ -308,6 +311,31 @@ const BranchList = () => {
                     <div className="flex gap-2 justify-end">
                         <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
                         <Button variant="destructive" onClick={handleDelete}>Deactivate</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+
+            {/* dialog active and deactive  */}
+            <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Update Branch</DialogTitle>
+                        <DialogDescription>
+                            You are about to
+                            <strong className="font-semibold ">
+                                {" "}
+                                {selectedBranch?.isActive ? "deactivate" : "activate"}
+                            </strong>
+                            <strong> {selectedBranch?.name}</strong>.
+                            {selectedBranch?.isActive
+                                ? " You can activate it again later."
+                                : " You can deactivate it again later."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex gap-2 justify-end">
+                        <Button variant="outline" onClick={() => setStatusDialogOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleToggleStatus}>{selectedBranch?.isActive ? "Deactivate" : "Activate"}</Button>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -372,7 +400,10 @@ const BranchList = () => {
                                                         Edit
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
-                                                        className="text-red-600" onClick={() => handleToggleStatus(branch)}>
+                                                        className="text-red-600" onClick={() => {
+                                                            setSelectedBranch(branch);
+                                                            setStatusDialogOpen(true);
+                                                        }}>
                                                         {branch.isActive ? "Deactivate" : "Activate"}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuGroup>
