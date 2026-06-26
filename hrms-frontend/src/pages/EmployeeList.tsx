@@ -17,7 +17,7 @@ const EmployeeList = () => {
   const { user } = useAuthStore();
   const isSuperAdmin = user?.role?.name === "super_admin";
 
-  // active and inactive super_admin kr skta h or  company admin (Employee nhi )
+  // active and inactive super_admin kr skta h or  company admin (Employee nhi)
   const roleName = user?.role?.name ?? "";
   const canChangeStatus = ["super_admin", "company_admin"].includes(roleName);
 
