@@ -11,6 +11,7 @@ import { useAuthStore } from "@/store/auth.store";
 import type { Employee, EmployeeDetail } from "@/types/employee.types";
 import { getEmployeeById, getEmployees, updateEmployee } from "@/services/employee.service";
 import AddEmployeeDialog from "@/pages/AddEmployeeDialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const EmployeeList = () => {
   const { user } = useAuthStore();
@@ -26,6 +27,8 @@ const EmployeeList = () => {
   // Employee View mode toggle — "list" ya "profile"
   const [view, setView] = React.useState<"list" | "profile">("list");
   const [selectedEmployee, setSelectedEmployee] = React.useState<EmployeeDetail | null>(null);
+
+  const [statusDialogOpen, setStatusDialogOpen] = React.useState(false);
 
   const [editEmployee, setEditEmployee] = React.useState<EmployeeDetail | null>(null);
   const [editOpen, setEditOpen] = React.useState(false);
@@ -43,13 +46,16 @@ const EmployeeList = () => {
     }
   };
 
-  const handleToggleStatus = async (employee: Employee) => {
+  const handleToggleStatus = async () => {
+    if (!selectedEmployee) return
+
     try {
-      await updateEmployee(employee.id, { isActive: !employee.isActive });
-      toast.success(`Employee ${!employee.isActive ? "activated" : "deactivated"} successfully!`);
+      await updateEmployee(selectedEmployee.id, { isActive: !selectedEmployee.isActive });
+      toast.success(`Employee ${!selectedEmployee.isActive ? "activated" : "deactivated"} successfully!`);
       setEmployees((prev) =>
-        prev.map((e) => e.id === employee.id ? { ...e, isActive: !e.isActive } : e)
+        prev.map((e) => e.id === selectedEmployee.id ? { ...e, isActive: !e.isActive } : e)
       );
+      setStatusDialogOpen(false);
     } catch (err: any) {
       toast.error(err?.message || "Failed to update employee");
     }
@@ -93,7 +99,7 @@ const EmployeeList = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="w-fit"
+          className="w-fit cursor-pointer hover:bg-muted hover:text-muted-foreground"
           onClick={() => setView("list")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -211,7 +217,32 @@ const EmployeeList = () => {
           setEditEmployee(null);
         }}
         editEmployee={editEmployee}
+        
       />
+      
+      {/* dialog active and deactive  */}
+      <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Branch</DialogTitle>
+            <DialogDescription>
+              You are about to
+              <strong className="font-semibold ">
+                {" "}
+                {selectedEmployee?.isActive ? "deactivate" : "activate"}
+              </strong>
+              <strong> {selectedEmployee?.name}</strong>
+              {selectedEmployee?.isActive
+                ? " You can activate it again later."
+                : " You can deactivate it again later."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setStatusDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleToggleStatus}>{selectedEmployee?.isActive ? "Deactivate" : "Activate"}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="bg-card grid grid-cols-1 rounded border w-full overflow-hidden">
         <div className="h-full overflow-auto">
@@ -257,7 +288,12 @@ const EmployeeList = () => {
                         <DropdownMenuGroup>
                           <DropdownMenuItem onClick={() => handleViewDetails(emp.id)}>View Details</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditClick(emp.id)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleStatus(emp)} disabled={!canChangeStatus}>
+                          <DropdownMenuItem 
+                          onClick={() => {
+                            setSelectedEmployee(emp)
+                            setStatusDialogOpen(true)
+                          }}
+                          disabled={!canChangeStatus}>
                             {emp.isActive ? "Deactivate" : "Activate"}
                           </DropdownMenuItem>
                         </DropdownMenuGroup>

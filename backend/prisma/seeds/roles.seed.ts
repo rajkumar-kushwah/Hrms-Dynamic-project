@@ -11,12 +11,20 @@ export const seedSuperAdminRole = async () => {
                 name: "super_admin",
                 description: "Full access to everything",
                 isActive: true,
+                isSystemRole: true,
                 companyId: null,
             },
         });
-        console.log(" Super Admin role created!");
+        console.log("Super Admin role created!");
     } else {
-        console.log(" Super Admin role already exists!");
+        await prisma.role.update({
+            where: { id: superAdminRole.id },
+            data: {
+                isSystemRole: true,
+            },
+        });
+
+        console.log("Super Admin role updated!");
     }
 
     //  Early return hatao — upsert use karo

@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 export const createEmployee = async (
     companyId: string,
     createdBy: string,
+    requestingUserRole: string,
     data: {
         name: string;
         email: string;
@@ -82,6 +83,23 @@ export const createEmployee = async (
         if (!category.isActive) throw new Error("Category is inactive");
     }
 
+    
+    // Role validation
+    const role = await prisma.role.findUnique({
+        where: { id: data.roleId },
+    });
+
+    if (!role) {
+        throw new Error("Role not found");
+    }
+
+    // Company Admin cannot assign system roles
+    if (
+        requestingUserRole === "company_admin" &&
+        role.isSystemRole
+    ) {
+        throw new Error("Company Admin cannot assign system roles");
+    }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
@@ -283,6 +301,24 @@ export const updateEmployee = async (id: string,
 
     let safeData = { ...data };
 
+    // role validation
+    if (safeData.roleId) {
+        const role = await prisma.role.findUnique({
+            where: { id: safeData.roleId },
+        });
+
+        if (!role) {
+            throw new Error("Role not found");
+        }
+
+        if (
+            requestingUserRole === "company_admin" &&
+            role.isSystemRole
+        ) {
+            throw new Error("Company Admin cannot assign system roles.");
+        }
+    }
+
     // Ager khud Employee edit kr rha hai (Admin nhi ), sensitive  field block karo
     if (!isAdminRole && !isSelf) {
         const {
@@ -296,6 +332,7 @@ export const updateEmployee = async (id: string,
 
         safeData = allowedSelfEdit;
     }
+
 
     // status update — sirf admin
     if (safeData.isActive !== undefined && !isAdminRole) {
@@ -311,7 +348,7 @@ export const updateEmployee = async (id: string,
 
     const { dateOfBirth, joiningDate, ...rest } = safeData;
 
-    
+
     return await prisma.user.update({
         where: { id },
         data: {

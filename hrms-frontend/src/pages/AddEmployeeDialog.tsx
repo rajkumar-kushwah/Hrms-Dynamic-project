@@ -14,6 +14,7 @@ import { getBranches } from "@/services/branch.service";
 import { getCategories } from "@/services/category.service";
 import { getRoles } from "@/services/role.service";
 import type { Role } from "@/types/role.types";
+import { useAuthStore } from "@/store/auth.store";
 
 // interface Role {
 //   id: number;
@@ -41,11 +42,21 @@ const initialForm: CreateEmployeePayload = {
 };
 
 const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Props) => {
+    const { user } = useAuthStore();
+
+
     const [form, setForm] = React.useState<CreateEmployeePayload>(initialForm);
     const [branches, setBranches] = React.useState<Branch[]>([]);
     const [categories, setCategories] = React.useState<Category[]>([]);
     const [roles, setRoles] = React.useState<Role[]>([]);
     const [activeTab, setActiveTab] = React.useState("basic");
+
+    // const isSuperAdmin = user?.role?.name === "super_admin";
+    const isCompanyAdmin = user?.role?.name === "company_admin";
+
+    const filteredRoles = isCompanyAdmin
+        ? roles.filter((role) => !role.isSystemRole)
+        : roles;
 
     const isEditeMode = !!editEmployee;
     React.useEffect(() => {
@@ -195,7 +206,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                             >
                                 <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
                                 <SelectContent position="popper" align="start" >
-                                    {roles.map((role) => (
+                                    {filteredRoles.map((role) => (
                                         <SelectItem key={role.id} value={String(role.id)}>{role.name}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -361,6 +372,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                                 <Input name="esiNumber" value={form.esiNumber} onChange={handleChange} />
                             </div>
                         </div>
+                        
                     </TabsContent>
                 </Tabs>
 

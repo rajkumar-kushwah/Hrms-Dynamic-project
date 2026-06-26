@@ -17,6 +17,7 @@ export interface Role {
   name: string;
   description?: string;
   isActive: boolean;
+  isSystemRole: boolean;
   company?: {
     id: string;
     name: string;

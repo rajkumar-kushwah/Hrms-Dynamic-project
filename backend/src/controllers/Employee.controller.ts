@@ -7,7 +7,8 @@ export const createEmployee = async (req: Request, res: Response) => {
     try {
         const companyId = req.user?.companyId!;
         const createdBy = req.user?.id!;
-        const employee = await EmployeeService.createEmployee(companyId, createdBy, req.body);
+        const requestingUserRole = req.user?.role?.name!;
+        const employee = await EmployeeService.createEmployee(companyId, createdBy, requestingUserRole, req.body);
 
         res.status(201).json({
             success: true,

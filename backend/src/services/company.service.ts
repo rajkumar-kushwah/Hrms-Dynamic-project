@@ -166,6 +166,7 @@ export const assignCompanyAdmin = async (companyId: string, data: {
                 name: "company_admin",
                 description: "Company level admin",
                 isActive: true,
+                isSystemRole: true,
                 companyId: companyId,
             },
         });

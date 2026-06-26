@@ -30,7 +30,7 @@ const BranchList = () => {
     const [branches, setBranches] = React.useState<Branch[]>([]);
     const [open, setOpen] = React.useState(false);
     const [editOpen, setEditOpen] = React.useState(false);
-    const [deleteOpen, setDeleteOpen] = React.useState(false);
+    // const [deleteOpen, setDeleteOpen] = React.useState(false);
     const [selectedBranch, setSelectedBranch] = React.useState<Branch | null>(null);
     const [statusDialogOpen, setStatusDialogOpen] = React.useState(false);
 
@@ -112,18 +112,18 @@ const BranchList = () => {
     };
 
     //  Delete
-    const handleDelete = async () => {
-        if (!selectedBranch) return;
-        try {
-            await deleteBranch(selectedBranch.id);
-            toast.success("Branch deactivated successfully!");
-            setBranches((prev) => prev.map((b) => b.id === selectedBranch.id ? { ...b, isActive: false } : b));
-            setDeleteOpen(false);
-            setSelectedBranch(null);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to delete branch");
-        }
-    };
+    // const handleDelete = async () => {
+    //     if (!selectedBranch) return;
+    //     try {
+    //         await deleteBranch(selectedBranch.id);
+    //         toast.success("Branch deactivated successfully!");
+    //         setBranches((prev) => prev.map((b) => b.id === selectedBranch.id ? { ...b, isActive: false } : b));
+    //         setDeleteOpen(false);
+    //         setSelectedBranch(null);
+    //     } catch (err: any) {
+    //         toast.error(err?.message || "Failed to delete branch");
+    //     }
+    // };
 
     const handleToggleStatus = async () => {
         if (!selectedBranch) return
@@ -300,7 +300,7 @@ const BranchList = () => {
             </Dialog>
 
             {/* Delete Confirm */}
-            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            {/* <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Deactivate Branch</DialogTitle>
@@ -313,7 +313,7 @@ const BranchList = () => {
                         <Button variant="destructive" onClick={handleDelete}>Deactivate</Button>
                     </div>
                 </DialogContent>
-            </Dialog>
+            </Dialog> */}
 
 
             {/* dialog active and deactive  */}
@@ -327,7 +327,7 @@ const BranchList = () => {
                                 {" "}
                                 {selectedBranch?.isActive ? "deactivate" : "activate"}
                             </strong>
-                            <strong> {selectedBranch?.name}</strong>.
+                            <strong> {selectedBranch?.name}</strong>
                             {selectedBranch?.isActive
                                 ? " You can activate it again later."
                                 : " You can deactivate it again later."}

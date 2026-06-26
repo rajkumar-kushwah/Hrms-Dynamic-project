@@ -112,10 +112,11 @@ model User {
 
 //Roles Table — UI se banenge, hardcoded nahi
 model Role {
-  id          Int     @id @default(autoincrement())
-  name        String //  "HR Manager" , "Accountant" , "Branch Manager"
-  description String?
-  isActive    Boolean @default(true)
+  id           Int     @id @default(autoincrement())
+  name         String //  "HR Manager" , "Accountant" , "Branch Manager"
+  description  String?
+  isActive     Boolean @default(true)
+  isSystemRole Boolean @default(false)
 
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id])
@@ -216,8 +217,6 @@ model Category {
 
   @@unique([name, branchId])
 }
-
-
 
 // model Department {
 //   id        Int      @id @default(autoincrement())
