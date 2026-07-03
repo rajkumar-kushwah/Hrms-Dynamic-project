@@ -17,6 +17,7 @@ export const createBranch = async (
         latitude?: number;
         longitude?: number;
         geoRadius?: number;
+        locationName?: string;
     }
 ) => {
 
@@ -108,6 +109,7 @@ export const updateBranch = async (
         longitude?: number;
         geoRadius?: number;
         isActive?: boolean;
+        locationName?: string;
     }
 ) => {
     const exiting = await prisma.branch.findUnique({ where: { id } });

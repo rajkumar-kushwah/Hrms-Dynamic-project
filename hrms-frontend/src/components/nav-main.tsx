@@ -79,7 +79,8 @@ export function NavMain() {
   const permissions = user?.role?.permissions ?? [];
   // console.log("USER:", user);
   // console.log("PERMISSIONS:", permissions);
-
+console.log("USER:", user);
+console.log("PERMISSIONS:", permissions);
   const visibleModules = permissions
     .filter((p) => p.canView && p.module.parentId === null)
     .sort((a, b) => a.module.order - b.module.order);

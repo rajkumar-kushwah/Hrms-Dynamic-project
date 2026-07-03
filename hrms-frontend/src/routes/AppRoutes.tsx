@@ -13,6 +13,7 @@ import Roles from "@/pages/Roles";
 import BranchList from "@/pages/BranchList";
 import CategoryList from "@/pages/CategoryList";
 import EmployeeList from "@/pages/EmployeeList";
+import AttendanceList from "@/pages/punchCard/AttendanceList";
 
 const AppRoutes = () => {
     return (
@@ -34,6 +35,7 @@ const AppRoutes = () => {
                         <Route path="/branch" element={<BranchList />} />
                         <Route path="/category" element={<CategoryList />} />
                         <Route path="/employee" element={<EmployeeList />} />
+                        <Route path="/attendance/list" element={<AttendanceList />} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}

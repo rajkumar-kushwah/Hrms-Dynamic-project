@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import { getBranches } from "@/services/branch.service";
 import { getCategories } from '@/services/category.service';
 import { getEmployees } from '@/services/employee.service';
+import { getTodayAttendance } from '@/services/attendance.service';
+import type { Attendance } from '@/types/attendance.types';
 
 const DashboardStats = () => {
     const { user } = useAuthStore();
@@ -22,6 +24,7 @@ const DashboardStats = () => {
     const [branches, setBranches] = useState<Branch[]>([]);
     const [categories, setCategories] = useState([]);
     const [employees, setEmployees] = useState([]);
+    const [attendance, setAttendance] = useState<Attendance | null>(null);
 
     // React.useEffect(() => {
     //     const fetchCompanies = async () => {
@@ -45,6 +48,21 @@ const DashboardStats = () => {
     //     }
     //     fetchCompanies();
     // }, [])
+
+    React.useEffect(() => {
+        const loadAttendance = async () => {
+            try {
+                const res = await getTodayAttendance();
+                setAttendance(res.data.data);
+            } catch (err) {
+                console.log(err);
+                toast.error("Failed to load today's attendance");
+            }
+        }
+        if (user) {
+            loadAttendance();
+        }
+    }, [user])
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -99,6 +117,7 @@ const DashboardStats = () => {
     const totalBranches = branches.length;
     const totalCategories = categories.length;
     const totalEmployees = employees.length;
+
 
     return (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2">
@@ -176,16 +195,24 @@ const DashboardStats = () => {
                         </CardDescription>
                     </Card> */}
 
-                    <Card className="p-4 border rounded-xl">
-                        <CardTitle className="text-sm md:text-sm">Attendance Today</CardTitle>
-                        <CardDescription className="text-xs font-bold">Present</CardDescription>
-                    </Card>
+
 
                     <Card className="p-4 border rounded-xl">
                         <CardTitle className="text-sm md:text-sm">Leave Balance</CardTitle>
                         <CardDescription className="text-xl font-bold">0</CardDescription>
                     </Card>
                 </>
+            )}
+            {(isEmployee || isCompanyAdmin || isSuperAdmin) && (
+                <Card className="p-4 border rounded-xl">
+                    <CardTitle className="text-sm md:text-sm">
+                        Attendance Today
+                    </CardTitle>
+
+                    <CardDescription className="text-xs font-bold">
+                        {attendance?.status ?? "Not Marked"}
+                    </CardDescription>
+                </Card>
             )}
 
         </div>

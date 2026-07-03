@@ -16,6 +16,7 @@ import companyRouter from "./routes/company.route.ts";
 import userRoutes from "./routes/companyuser.routes.ts";
 import branchRouter from "./routes/branch.routes.ts";
 import categoryRoutes from "./routes/category.routes.ts";
+import attendanceRoutes from "./routes/attendance.routes.ts";
 
 dotenv.config();
 const app = express();
@@ -41,6 +42,7 @@ app.use("/api/users", userRoutes);
 app.use('/api/branch', branchRouter)
 app.use("/api/category", categoryRoutes);
 app.use('/api/employee', employeeRouter)
+app.use("/api/attendance", attendanceRoutes);
 
 app.use('/department', departmentRouter)
 app.use('/permission', permissionRouter)

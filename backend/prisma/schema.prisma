@@ -35,11 +35,12 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users      User[]
-  role       Role[]
-  permission Permission[]
-  branches   Branch[]
-  categories Category[]
+  users       User[]
+  role        Role[]
+  permission  Permission[]
+  branches    Branch[]
+  categories  Category[]
+  attendances Attendance[]
 }
 
 model User {
@@ -105,9 +106,10 @@ model User {
   emergencyContactName  String?
   emergencyContactPhone String?
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  lastLogin DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  lastLogin   DateTime?
+  attendances Attendance[]
 }
 
 //Roles Table — UI se banenge, hardcoded nahi
@@ -173,28 +175,30 @@ model Permission {
 }
 
 model Branch {
-  id          String  @id @default(uuid())
-  name        String
-  code        String
-  address     String?
-  phone       String?
-  email       String?
-  city        String?
-  state       String?
-  pincode     String?
-  managerName String?
-  latitude    Float? // 28.6139
-  longitude   Float? // 77.2090
-  geoRadius   Float? // 100 (meters)
-  isActive    Boolean @default(true)
+  id           String  @id @default(uuid())
+  name         String
+  code         String
+  address      String?
+  phone        String?
+  email        String?
+  city         String?
+  state        String?
+  pincode      String?
+  managerName  String?
+  latitude     Float? // 28.6139
+  longitude    Float? // 77.2090
+  geoRadius    Float? // 100 (meters)
+  locationName String?
+  isActive     Boolean @default(true)
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
 
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  categories Category[]
-  users      User[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  categories  Category[]
+  users       User[]
+  attendances Attendance[]
 
   @@unique([code, companyId])
 }
@@ -218,73 +222,36 @@ model Category {
   @@unique([name, branchId])
 }
 
-// model Department {
-//   id        Int      @id @default(autoincrement())
-//   name      String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
+model Attendance {
+  id String @id @default(uuid())
 
-//   employees Employee[]
-//   companyId Int
-//   company   Company    @relation(fields: [companyId], references: [id])
-// }
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-// model Employee {
-//   id Int @id @default(autoincrement())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-//   userId Int  @unique
-//   user   User @relation(fields: [userId], references: [id])
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id])
 
-//   // personal info
-//   firstName   String
-//   lastName    String
-//   phone       String?   @unique
-//   dateOfBirth DateTime?
+  date DateTime // Sirf date (00:00:00 time) — ek din ka unique record
 
-//   // profetional info
-//   employeeCode String   @unique
-//   joiningDate  DateTime
-//   designation  String
+  punchInTime  DateTime?
+  punchOutTime DateTime?
 
-//   departmentId Int
-//   department   Department @relation(fields: [departmentId], references: [id])
+  punchInLat  Float?
+  punchInLng  Float?
+  punchOutLat Float?
+  punchOutLng Float?
 
-//   // Address
-//   address String?
-//   city    String?
-//   state   String?
-//   pincode String?
+  isWithinGeoFence Boolean @default(true)
 
-//   // status
-//   isActive Boolean @default(true)
+  status String @default("Present") // Present / Absent / Half-day / Late
 
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
+  workingHours Float? // Auto calculate (punch out - punch in)
 
-//   companyId Int
-//   company   Company? @relation(fields: [companyId], references: [id])
-// }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-// model Attendance {
-//   id     Int  @id @default(autoincrement())
-//   userId Int
-//   user   User @relation(fields: [userId], references: [id])
-
-//   companyId Int
-//   company   Company? @relation(fields: [companyId], references: [id])
-
-//   date     DateTime // ek din ka record
-//   checkIn  DateTime?
-//   checkOut DateTime?
-
-//   totalMinutes    Int?
-//   overtimeMinutes Int? // >8 hrs
-//   workingHours    Float?
-//   lateMinutes     Int?
-//   status          String // present /late /Early
-
-//   createAt  DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   @@unique([userId, date]) // ek user ka ek din me ek record
-// }
+  @@unique([userId, date]) // Ek user ka ek din ka ek hi record
+}

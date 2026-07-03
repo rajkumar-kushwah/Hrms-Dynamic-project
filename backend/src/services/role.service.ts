@@ -43,7 +43,7 @@ export const createRole = async (
 
     // Default permissions - sab false
     const allModules = await prisma.module.findMany({
-        where: { parentId: null }, // Sirf parent modules
+        include: { children: true },
     });
 
     await prisma.permission.createMany({
@@ -117,8 +117,33 @@ export const updateRolePermissions = async (
         throw new Error("Access denied - this role doesn't belong to your company")
     }
 
-    // Permission ka companyId — role ka companyId
     const targetCompanyId = role.companyId;
+    // Ensure every module has a permission record
+    const allModules = await prisma.module.findMany();
+
+    for (const mod of allModules) {
+        await prisma.permission.upsert({
+            where: {
+                roleId_moduleId_companyId: {
+                    roleId,
+                    moduleId: mod.id,
+                    companyId: targetCompanyId!,
+                },
+            },
+            update: {},
+            create: {
+                roleId,
+                moduleId: mod.id,
+                companyId: targetCompanyId,
+                canView: false,
+                canCreate: false,
+                canEdit: false,
+                canDelete: false,
+            },
+        });
+    }
+
+    // Permission ka companyId — role ka companyId
     // Har permission update karo
     for (const perm of permissions) {
         await prisma.permission.upsert({

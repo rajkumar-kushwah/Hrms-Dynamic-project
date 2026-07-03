@@ -12,6 +12,7 @@ export interface Branch {
   latitude?: number;
   longitude?: number;
   geoRadius?: number;
+  locationName?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

@@ -95,6 +95,12 @@ export const getModules = async (req: Request, res: Response) => {
     try {
         const modules = await prisma.module.findMany({
             where: { isActive: true, parentId: null }, // Sirf parent modules
+            include: {
+                children: {
+                    where: { isActive: true },
+                    orderBy: { order: "asc" },
+                },
+            },
             orderBy: { order: "asc" },
         });
 

@@ -6,11 +6,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertTriangle, MoreVertical, PlusIcon } from "lucide-react";
+import { AlertTriangle, MapPin, MoreVertical, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
 import type { Branch, CreateBranchPayload } from "@/types/branch.types";
-import { getBranches, createBranch, updateBranch, deleteBranch, permanentDeleteBranch } from "@/services/branch.service";
+import { getBranches, createBranch, updateBranch, permanentDeleteBranch } from "@/services/branch.service";
+import LocationPicker from "@/pages/LocationPicker";
 
 type EditForm = {
     name?: string;
@@ -21,6 +22,11 @@ type EditForm = {
     state?: string;
     pincode?: string;
     managerName?: string;
+
+    latitude?: number;
+    longitude?: number;
+    geoRadius?: number;
+    locationName?: string;
 };
 
 const BranchList = () => {
@@ -36,6 +42,10 @@ const BranchList = () => {
 
     const [dangerOpen, setDangerOpen] = React.useState(false);
     const [confirmText, setConfirmText] = React.useState("");
+
+    // const [mapOpen, setMapOpen] = React.useState(false);
+    const [createMapOpen, setCreateMapOpen] = React.useState(false);
+    const [editMapOpen, setEditMapOpen] = React.useState(false);
 
     const [form, setForm] = React.useState<CreateBranchPayload>({
         name: "",
@@ -84,7 +94,6 @@ const BranchList = () => {
             toast.error(err?.message || "Failed to create branch");
         }
     };
-
     //  Edit
     const payload = {
         name: editForm.name,
@@ -95,15 +104,20 @@ const BranchList = () => {
         state: editForm.state,
         pincode: editForm.pincode,
         managerName: editForm.managerName,
+        latitude: editForm.latitude,
+        longitude: editForm.longitude,
+        geoRadius: editForm.geoRadius,
+        locationName: editForm.locationName
     };
     //  Update
     const handleUpdate = async () => {
         if (!selectedBranch) return;
         try {
             const res = await updateBranch(selectedBranch.id, payload);
-            setBranches(res.data.data);
+
+            // setBranches(res.data.data);
+            setBranches((prev) => prev.map((b) => b.id === selectedBranch.id ? { ...b, ...res.data.data } : b));
             toast.success("Branch updated successfully!");
-            setBranches((prev) => prev.map((b) => b.id === selectedBranch.id ? { ...b, ...editForm } : b));
             setEditOpen(false);
             setSelectedBranch(null);
         } catch (err: any) {
@@ -213,11 +227,41 @@ const BranchList = () => {
                             <Label>Manager Name</Label>
                             <Input type="text" name="managerName" placeholder="Manager Name" value={form.managerName} onChange={handleChange} />
                         </div>
+                        <div>
+                            <Label>Branch Location</Label>
+                            <div className="flex items-center gap-3">
+                                <Button variant="outline" onClick={() => setCreateMapOpen(true)} type="button">
+                                    <MapPin className="h-4 w-4 mr-2" />
+                                    {form.latitude ? "Update Location" : "Set Location"}
+                                </Button>
+                                {form.latitude !== undefined && form.longitude !== undefined && (
+                                    <span className="text-xs text-muted-foreground">
+                                        {form.latitude.toFixed(4)}, {form.longitude.toFixed(4)} — {form.geoRadius}m radius
+                                    </span>
+                                )}
+                            </div>
+                        </div>
                         <Button onClick={handleSubmit}>Create Branch</Button>
                     </div>
+
                 </DialogContent>
             </Dialog>
-
+            <LocationPicker
+                open={createMapOpen}
+                onOpenChange={setCreateMapOpen}
+                initialLat={form.latitude}
+                initialLng={form.longitude}
+                initialRadius={form.geoRadius}
+                onConfirm={(lat, lng, radius, locationName) => {
+                    setForm((prev) => ({
+                        ...prev,
+                        latitude: lat,
+                        longitude: lng,
+                        geoRadius: radius,
+                        locationName,
+                    }));
+                }}
+            />
             {/* Edit Dialog */}
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogContent>
@@ -258,13 +302,52 @@ const BranchList = () => {
                             <Label>Address</Label>
                             <Input type="text" name="address" value={editForm.address ?? ""} onChange={handleEditChange} />
                         </div>
+
+
                         <div>
                             <Label>Manager Name</Label>
                             <Input type="text" name="managerName" value={editForm.managerName ?? ""} onChange={handleEditChange} />
                         </div>
+                        <div>
+                            <Label>Branch Location</Label>
+
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => setEditMapOpen(true)}
+                                >
+                                    <MapPin className="h-4 w-4 mr-2" />
+                                    {editForm.latitude !== undefined ? "Update Location" : "Set Location"}
+                                </Button>
+
+                                {editForm.latitude != null &&
+                                    editForm.longitude != null && (
+                                        <span className="text-xs text-muted-foreground">
+                                            {editForm.latitude.toFixed(4)},{" "}
+                                            {editForm.longitude.toFixed(4)} — {editForm.geoRadius ?? 0}m radius
+                                        </span>
+                                    )}
+                            </div>
+                        </div>
                         <Button onClick={handleUpdate}>Update Branch</Button>
                     </div>
-
+                    <LocationPicker
+                        open={editMapOpen}
+                        onOpenChange={setEditMapOpen}
+                        initialLat={editForm.latitude}
+                        initialLng={editForm.longitude}
+                        initialRadius={editForm.geoRadius}
+                        onConfirm={(lat, lng, radius, locationName) => {
+                            setEditForm((prev) => ({
+                                ...prev,
+                                latitude: lat,
+                                longitude: lng,
+                                geoRadius: radius,
+                                locationName,
+                            }));
+                        }}
+                    />
                     {/* edit Dialog ke ander dialog permanent delete confirmation hoga */}
                     {isSuperAdmin && (
                         <div className="border border-red-200 rounded-lg p-4 mt-4 bg-red-50">
@@ -353,6 +436,7 @@ const BranchList = () => {
                                 <TableHead className="min-w-25">City</TableHead>
                                 <TableHead className="min-w-25">Phone</TableHead>
                                 <TableHead className="min-w-37.5">Manager</TableHead>
+                                <TableHead className="min-w-40">Location</TableHead>
                                 <TableHead className="min-w-20">Status</TableHead>
                                 <TableHead className="sticky right-0 bg-muted">Actions</TableHead>
                             </TableRow>
@@ -367,6 +451,9 @@ const BranchList = () => {
                                     <TableCell>{branch.city ?? "—"}</TableCell>
                                     <TableCell>{branch.phone ?? "—"}</TableCell>
                                     <TableCell>{branch.managerName ?? "—"}</TableCell>
+                                    <TableCell>
+                                        {branch.locationName ?? "—"}
+                                    </TableCell>
                                     <TableCell>
                                         <Badge className={branch.isActive
                                             ? "bg-green-100 text-green-700"
@@ -394,6 +481,11 @@ const BranchList = () => {
                                                             state: branch.state,
                                                             pincode: branch.pincode,
                                                             managerName: branch.managerName,
+                                                            latitude: branch.latitude,
+                                                            longitude: branch.longitude,
+                                                            geoRadius: branch.geoRadius,
+                                                            locationName: branch.locationName
+
                                                         });
                                                         setEditOpen(true);
                                                     }}>
