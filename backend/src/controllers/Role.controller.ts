@@ -94,14 +94,17 @@ export const deleteRole = async (req: Request, res: Response) => {
 export const getModules = async (req: Request, res: Response) => {
     try {
         const modules = await prisma.module.findMany({
-            where: { isActive: true, parentId: null }, // Sirf parent modules
-            include: {
-                children: {
-                    where: { isActive: true },
-                    orderBy: { order: "asc" },
-                },
+            where: { isActive: true }, // Sirf parent nahi — sab
+            select: {
+                id: true,
+                name: true,
+                displayName: true,
+                parentId: true,  // parentId include
+                order: true,
+                icon: true,
+                url: true,
             },
-            orderBy: { order: "asc" },
+            orderBy: { order: "asc" }
         });
 
         return res.status(200).json({

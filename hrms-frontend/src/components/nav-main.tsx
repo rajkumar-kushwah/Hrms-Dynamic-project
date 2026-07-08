@@ -79,8 +79,17 @@ export function NavMain() {
   const permissions = user?.role?.permissions ?? [];
   // console.log("USER:", user);
   // console.log("PERMISSIONS:", permissions);
-console.log("USER:", user);
-console.log("PERMISSIONS:", permissions);
+// console.log("USER:", user);
+// console.log("PERMISSIONS:", permissions);
+console.table( 
+  permissions
+    .filter((p) => p.module.name.includes("attendance"))
+    .map((p) => ({
+      module: p.module.name,
+      parentId: p.module.parentId,
+      canView: p.canView,
+    }))
+);
   const visibleModules = permissions
     .filter((p) => p.canView && p.module.parentId === null)
     .sort((a, b) => a.module.order - b.module.order);

@@ -2,6 +2,7 @@ export interface Module {
   id: number;
   name: string;
   displayName: string;
+  parentId?: number | null;
 }
 
 export interface Permission {

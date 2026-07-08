@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreVertical, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@/api/axios";
+// import { api } from "@/api/axios";
 import { useAuthStore } from "@/store/auth.store";
 import {
     getRoles,
@@ -25,6 +25,7 @@ interface Module {
     id: number;
     name: string;
     displayName: string;
+    parentId?: number | null;
 }
 
 interface Permission {
@@ -111,25 +112,78 @@ const Roles = () => {
         }
     };
 
+    // const loadModules = async () => {
+    //     try {
+    //         const res = await getModules();
+    //         setModules(res.data.data);
+    //     } catch (err) {
+    //         toast.error("Failed to load modules");
+    //     }
+    // };
+
     const loadModules = async () => {
         try {
             const res = await getModules();
-            setModules(res.data.data);
+            const flat = res.data.data;
+
+            //  Pehle parents, phir unke children — order maintain karo
+            const sorted: Module[] = [];
+            const parents = flat.filter((m: Module) => !m.parentId);
+
+            for (const parent of parents) {
+                sorted.push(parent);
+                const children = flat.filter((m: Module) => m.parentId === parent.id);
+                sorted.push(...children);
+            }
+
+            setModules(sorted);
         } catch (err) {
             toast.error("Failed to load modules");
         }
     };
 
     //  Permission toggle
+    // const togglePermission = (
+    //     moduleId: number,
+    //     field: "canView" | "canCreate" | "canEdit" | "canDelete"
+    // ) => {
+    //     setPermissions((prev) =>
+    //         prev.map((p) =>
+    //             p.moduleId === moduleId ? { ...p, [field]: !p[field] } : p
+    //         )
+    //     );
+    // };
     const togglePermission = (
         moduleId: number,
         field: "canView" | "canCreate" | "canEdit" | "canDelete"
     ) => {
-        setPermissions((prev) =>
-            prev.map((p) =>
+        setPermissions((prev) => {
+            const updated = prev.map((p) =>
                 p.moduleId === moduleId ? { ...p, [field]: !p[field] } : p
-            )
-        );
+            );
+
+            // canView toggle hone pe children sync karo
+            if (field === "canView") {
+                const parent = updated.find(p => p.moduleId === moduleId);
+                const isNowOn = parent?.canView ?? false;
+
+                return updated.map((p) => {
+                    const isChild = modules.find(m => m.id === p.moduleId)?.parentId === moduleId;
+                    if (isChild) {
+                        return {
+                            ...p,
+                            canView: isNowOn,
+                            canCreate: isNowOn ? p.canCreate : false,
+                            canEdit: isNowOn ? p.canEdit : false,
+                            canDelete: isNowOn ? p.canDelete : false,
+                        };
+                    }
+                    return p;
+                });
+            }
+
+            return updated;
+        });
     };
 
     //  Create Role
@@ -244,7 +298,13 @@ const Roles = () => {
                                         const perm = permissions.find(p => p.moduleId === mod.id);
                                         return (
                                             <TableRow key={mod.id}>
-                                                <TableCell className="font-medium">{mod.displayName}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    {mod.parentId ? (
+                                                        <span className="pl-4 text-muted-foreground">↳ {mod.displayName}</span>
+                                                    ) : (
+                                                        mod.displayName
+                                                    )}
+                                                </TableCell>
                                                 <TableCell className="text-center">
                                                     <Checkbox
                                                         checked={perm?.canView ?? false}

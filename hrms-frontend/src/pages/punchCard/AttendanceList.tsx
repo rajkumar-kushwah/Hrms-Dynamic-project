@@ -1,10 +1,10 @@
 import React from "react";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Clock, LogIn, LogOut, MapPin, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { Attendance } from "@/types/attendance.types";
 import { getAllAttendance, getMyAttendance } from "@/services/attendance.service";
@@ -20,12 +20,12 @@ const months = [
     { value: "11", label: "November" }, { value: "12", label: "December" },
 ];
 
-const statusColors: Record<string, string> = {
-    Present: "bg-green-500",
-    Late: "bg-yellow-500",
-    "Half-day": "bg-orange-400",
-    Absent: "bg-red-500",
-};
+// const statusColors: Record<string, string> = {
+//     Present: "bg-green-500",
+//     Late: "bg-yellow-500",
+//     "Half-day": "bg-orange-400",
+//     Absent: "bg-red-500",
+// };
 
 const statusBadge: Record<string, string> = {
     Present: "bg-green-100 text-green-700",
@@ -40,6 +40,7 @@ const MyAttendance = () => {
     const isAdmin = ["super_admin", "company_admin"].includes(user?.role?.name ?? "");
 
     const [loading, setLoading] = React.useState(true);
+    const [loading1, setLoading1] = React.useState(true);
     const [attendances, setAttendances] = React.useState<Attendance[]>([]);
     const [selectedMonth, setSelectedMonth] = React.useState(String(new Date().getMonth() + 1));
     const [selectedYear, setSelectedYear] = React.useState(String(new Date().getFullYear()));
@@ -61,7 +62,12 @@ const MyAttendance = () => {
 
     const loadAttendance = async () => {
         setLoading(true);
+        setLoading1(true);
+
         try {
+            // waiting 
+            const wait = new Promise((resolve) => setTimeout(resolve, 1000));
+            await wait;
             if (isAdmin) {
                 const res = await getAllAttendance(filterDate);
                 setAttendances(res.data.data);
@@ -77,6 +83,7 @@ const MyAttendance = () => {
             toast.error(err?.message || "Failed to load attendance");
         } finally {
             setLoading(false);
+            setLoading1(false);
         }
     }
 
@@ -144,10 +151,10 @@ const MyAttendance = () => {
             </div> */}
             {/* Filters */}
             <div className="flex items-center gap-3 flex-wrap">
-            
+
 
                 <h2>Filter By Date</h2>
-            
+
 
                 {/* Date — Admin only */}
                 {isAdmin && (
@@ -166,7 +173,7 @@ const MyAttendance = () => {
                             <SelectTrigger className="w-36">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent position="popper">
                                 {months.map((m) => (
                                     <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                                 ))}
@@ -196,7 +203,7 @@ const MyAttendance = () => {
                     <SelectTrigger className="w-32">
                         <SelectValue placeholder="Status" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper">
                         <SelectItem value="all">All Status</SelectItem>
                         <SelectItem value="Present">Present</SelectItem>
                         <SelectItem value="Late">Late</SelectItem>
@@ -211,7 +218,7 @@ const MyAttendance = () => {
                         <SelectTrigger className="w-36">
                             <SelectValue placeholder="All Branches" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper" align="start">
                             <SelectItem value="all">All Branches</SelectItem>
                             {/* Unique branches from attendance data */}
                             {[...new Map(attendances
@@ -229,6 +236,7 @@ const MyAttendance = () => {
                     variant="outline"
                     onClick={loadAttendance}
                     disabled={loading}
+                    className=" cursor-pointer"
                 >
                     <RefreshCw
                         className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
@@ -267,7 +275,7 @@ const MyAttendance = () => {
 
 
             {/* Full Month Table */}
-      <div className="bg-card  grid grid-cols-1 rounded border w-full overflow-x-auto">
+            <div className="bg-card  grid grid-cols-1 rounded border w-full overflow-x-auto">
                 <Card className='table-auto'>
                     <CardContent className="p-0 min-w-full">
                         <div className="overflow-auto">
@@ -286,7 +294,21 @@ const MyAttendance = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {attendances.length === 0 ? (
+
+
+                                    {loading1 ? (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={isAdmin ? 9 : 6}
+                                                className=" text-center"
+                                            >
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Loader2  className={`h-4 w-4 mr-2 ${loading1 ? "animate-spin" : ""}`} />
+                                                    <span>Loading attendance...</span>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : attendances.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                                                 No records for this month
@@ -297,7 +319,8 @@ const MyAttendance = () => {
                                             <TableRow
                                                 key={att.id}
                                                 className="cursor-pointer hover:bg-muted/50"
-                                                onClick={() => setFilterDate(String(new Date(att.date).getDate()))}
+                                                onClick={() => setFilterDate(new Date(att.date).toISOString().split("T")[0])
+                                                }
                                             >
                                                 <TableCell>{index + 1}</TableCell>
                                                 {isAdmin && (
@@ -341,7 +364,7 @@ const MyAttendance = () => {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 };
 

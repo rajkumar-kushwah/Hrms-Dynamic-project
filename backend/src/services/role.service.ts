@@ -120,57 +120,89 @@ export const updateRolePermissions = async (
     const targetCompanyId = role.companyId;
     // Ensure every module has a permission record
     const allModules = await prisma.module.findMany();
+    // Parent View ON hai to uske sabhi children ka View bhi ON kar do
 
-    for (const mod of allModules) {
+    const permissionMap = new Map(
+        permissions.map((p) => [p.moduleId, { ...p }])
+    );
+
+    for (const parent of permissions.filter((p) => p.canView)) {
+        const children = allModules.filter((m) => m.parentId === parent.moduleId);
+
+        for (const child of children) {
+            const existing = permissionMap.get(child.id);
+
+            if (existing) {
+                existing.canView = true;
+            } else {
+                permissionMap.set(child.id, {
+                    moduleId: child.id,
+                    canView: true,
+                    canCreate: false,
+                    canEdit: false,
+                    canDelete: false,
+                });
+            }
+        }
+    }
+
+    const finalPermissions = [...permissionMap.values()];
+
+    for (const mod of finalPermissions) {
         await prisma.permission.upsert({
             where: {
                 roleId_moduleId_companyId: {
                     roleId,
-                    moduleId: mod.id,
+                    moduleId: mod.moduleId,
                     companyId: targetCompanyId!,
                 },
             },
-            update: {},
+            update: {
+                canView: mod.canView,
+                canCreate: mod.canCreate,
+                canEdit: mod.canEdit,
+                canDelete: mod.canDelete,
+            },
             create: {
                 roleId,
-                moduleId: mod.id,
+                moduleId: mod.moduleId,
                 companyId: targetCompanyId,
-                canView: false,
-                canCreate: false,
-                canEdit: false,
-                canDelete: false,
+                canView: mod.canView,
+                canCreate: mod.canCreate,
+                canEdit: mod.canEdit,
+                canDelete: mod.canDelete,
             },
         });
     }
 
     // Permission ka companyId — role ka companyId
     // Har permission update karo
-    for (const perm of permissions) {
-        await prisma.permission.upsert({
-            where: {
-                roleId_moduleId_companyId: {
-                    roleId,
-                    moduleId: perm.moduleId,
-                    companyId: targetCompanyId!,
-                },
-            },
-            update: {
-                canView: perm.canView,
-                canCreate: perm.canCreate,
-                canEdit: perm.canEdit,
-                canDelete: perm.canDelete,
-            },
-            create: {
-                roleId,
-                moduleId: perm.moduleId,
-                companyId: targetCompanyId,
-                canView: perm.canView,
-                canCreate: perm.canCreate,
-                canEdit: perm.canEdit,
-                canDelete: perm.canDelete,
-            },
-        });
-    }
+    // for (const perm of permissions) {
+    //     await prisma.permission.upsert({
+    //         where: {
+    //             roleId_moduleId_companyId: {
+    //                 roleId,
+    //                 moduleId: perm.moduleId,
+    //                 companyId: targetCompanyId!,
+    //             },
+    //         },
+    //         update: {
+    //             canView: perm.canView,
+    //             canCreate: perm.canCreate,
+    //             canEdit: perm.canEdit,
+    //             canDelete: perm.canDelete,
+    //         },
+    //         create: {
+    //             roleId,
+    //             moduleId: perm.moduleId,
+    //             companyId: targetCompanyId,
+    //             canView: perm.canView,
+    //             canCreate: perm.canCreate,
+    //             canEdit: perm.canEdit,
+    //             canDelete: perm.canDelete,
+    //         },
+    //     });
+    // }
 
     return await getRolePermissions(roleId, targetCompanyId);
 };

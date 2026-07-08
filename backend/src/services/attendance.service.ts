@@ -49,9 +49,9 @@ export const punchIn = async (
 
     const now = new Date();
 
-    //  Late check (example: 9:30 AM cutoff)
-    const cutoffHour = 9;
-    const cutoffMinute = 30;
+    //  Late check (example: 10:15 AM cutoff)
+    const cutoffHour = 10;
+    const cutoffMinute = 15;
     const isLate = now.getHours() > cutoffHour ||
         (now.getHours() === cutoffHour && now.getMinutes() > cutoffMinute);
 
