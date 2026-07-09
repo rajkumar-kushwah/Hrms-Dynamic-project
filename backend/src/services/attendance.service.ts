@@ -157,15 +157,88 @@ export const getMyAttendance = async (
     const targetYear = year ?? new Date().getFullYear();
 
     const startDate = new Date(targetYear, targetMonth - 1, 1);
-    const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59);
+    startDate.setHours(0, 0, 0, 0);
 
-    return await prisma.attendance.findMany({
+    const endDate = new Date(targetYear, targetMonth, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    // Today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Attendance records from DB
+    const records = await prisma.attendance.findMany({
         where: {
             userId,
-            date: { gte: startDate, lte: endDate }
+            date: {
+                gte: startDate,
+                lte: endDate,
+            },
         },
-        orderBy: { date: "desc" }
+        orderBy: {
+            date: "asc",
+        },
     });
+
+    // Existing attendance map
+    const attendanceMap = new Map(
+        records.map((record) => [
+            record.date.toISOString().split("T")[0],
+            record,
+        ])
+    );
+
+    const result: any[] = [];
+
+    for (
+        let date = new Date(startDate);
+        date <= endDate;
+        date.setDate(date.getDate() + 1)
+    ) {
+        const currentDate = new Date(date);
+        currentDate.setHours(0, 0, 0, 0);
+
+        // Skip Sunday
+        if (currentDate.getDay() === 0) {
+            continue;
+        }
+
+        const key = currentDate.toISOString().split("T")[0];
+        const attendance = attendanceMap.get(key);
+
+        // Record exists
+        if (attendance) {
+            result.push(attendance);
+            continue;
+        }
+
+        // Future dates ko skip karo
+        if (currentDate > today) {
+            continue;
+        }
+
+        // Past working day without attendance => Absent
+        result.push({
+            id: `absent-${key}`,
+            userId,
+            companyId: null,
+            branchId: null,
+            date: new Date(currentDate),
+            punchInTime: null,
+            punchOutTime: null,
+            punchInLat: null,
+            punchInLng: null,
+            punchOutLat: null,
+            punchOutLng: null,
+            workingHours: 0,
+            isWithinGeoFence: false,
+            status: "Absent",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+    }
+
+    return result.reverse();
 };
 
 // ─── Get All Employees Attendance (Admin) ──
@@ -179,7 +252,7 @@ export const getAllAttendance = async (
     return await prisma.attendance.findMany({
         where: {
             // ...(companyId ? { companyId } : { companyId: { not: null } }),
-               ...(companyId && { companyId }),
+            ...(companyId && { companyId }),
             date: targetDate,
         },
         include: {
@@ -193,3 +266,25 @@ export const getAllAttendance = async (
         orderBy: { punchInTime: "desc" }
     });
 };
+
+// get live attendance
+export const getLiveAttendance = async (companyId: string | null) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return await prisma.attendance.findMany({
+        where: {
+            ...(companyId ? { companyId } : {}),
+            date: today,
+        },
+        include: {
+            user: {
+                select: { id: true, name: true, employeeCode: true, designation: true }
+            },
+            branch: {
+                select: { id: true, name: true }
+            }
+        },
+        orderBy: { punchInTime: "desc" }
+    })
+}

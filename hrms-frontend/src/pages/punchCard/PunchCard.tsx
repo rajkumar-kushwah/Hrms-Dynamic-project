@@ -52,7 +52,7 @@ function PunchCard() {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
                 }),
-                (error) => reject(new Error("Failed to get location — please allow location access")),
+                (_error) => reject(new Error("Failed to get location — please allow location access")),
                 { enableHighAccuracy: true, timeout: 10000 }
             );
         });

@@ -103,7 +103,7 @@ const EmployeeList = () => {
           onClick={() => setView("list")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Employees
+          Back to Employee List
         </Button>
 
         {/* Header Card */}

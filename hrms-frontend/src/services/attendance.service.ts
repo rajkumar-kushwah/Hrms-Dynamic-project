@@ -15,3 +15,6 @@ export const getMyAttendance = (month?: number, year?: number) =>  api.get("/att
 
 // get all attendance history
 export const getAllAttendance = (date?: string) => api.get("/attendance/all", { params: { date } });
+
+// get live attendance
+export const getLiveAttendance = () => api.get("/attendance/live");

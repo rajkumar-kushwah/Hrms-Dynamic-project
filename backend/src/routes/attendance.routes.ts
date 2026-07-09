@@ -5,6 +5,7 @@ import {
     getTodayAttendance,
     getMyAttendance,
     getAllAttendance,
+    getLiveAttendance
 } from "../controllers/attendance.controller.ts";
 import { protect } from "../middleware/auth.middleware.ts";
 import { authorize } from "../middleware/role.middleware.ts";
@@ -16,6 +17,7 @@ router.post("/punch-out", protect, authorize("attendance", "canCreate"), punchOu
 router.get("/today", protect, authorize("attendance", "canView"), getTodayAttendance);
 router.get("/my-history", protect, authorize("attendance", "canView"), getMyAttendance);
 router.get("/all", protect, authorize("attendance", "canView"), getAllAttendance);
+router.get("/live", protect, authorize("attendance_live", "canView"), getLiveAttendance);
 
 export default router;
 

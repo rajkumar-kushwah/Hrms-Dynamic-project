@@ -72,3 +72,18 @@ export const getAllAttendance = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+// get live attendance
+export const getLiveAttendance = async (req: Request, res: Response) => {
+    try {
+        const companyId = req.user?.role?.name === "super_admin"
+        ? null
+        : req.user?.companyId!;
+
+        const attendance = await AttendanceService.getLiveAttendance(companyId);
+
+        return res.status(200).json({ success: true, data: attendance });
+    } catch (error: any) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}

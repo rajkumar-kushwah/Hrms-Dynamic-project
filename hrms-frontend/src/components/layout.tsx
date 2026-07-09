@@ -10,8 +10,8 @@ export default function layout() {
         switch (location.pathname) {
             case "/dashboard":
                 return "Dashboard";
-            case "/monthly-attendance":
-                return "Monthly Attendance";
+            case "/attendance/live":
+                return "Live Attendance";
             case "/company":
                 return "Company";
             case "/branch":
@@ -21,7 +21,7 @@ export default function layout() {
             case "/check-in":
                 return "Check-in/Out";
             case "/employee":
-                return "Employees";
+                return "Employee";
             case "/department":
                 return "Department";
             case "/roles":
