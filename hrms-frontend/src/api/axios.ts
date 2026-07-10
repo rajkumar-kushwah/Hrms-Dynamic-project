@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://hrms-backend-ms3u.onrender.com/api",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
