@@ -19,11 +19,13 @@ import attendanceRoutes from "./routes/attendance.routes.js";
 
 dotenv.config();
 const app = express();
+app.set("trust proxy", 1);
 const port = 5000;
 
 
 app.use(cors({
     origin: ['http://localhost:5173',
+        "https://hrms-dynamic-project.vercel.app",
         'https://hoppscotch.io'],
     credentials: true,
 }));
