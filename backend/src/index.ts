@@ -33,7 +33,9 @@ app.use(express.urlencoded({ extended: true }));  // parse application/x-www-for
 
 app.use(sessionMiddleware);
 
-
+app.get("/", (req, res) => {
+    res.send("HRMS Backend API is running");
+});
 app.use('/api/auth', authRouter)
 app.use('/api/roles', roleRouter)
 app.use('/api/company', companyRouter)
