@@ -1,5 +1,5 @@
 import { type Request, type Response } from "express";
-import { prisma } from "../config/db.ts";
+import { prisma } from "../config/db.js";
 
 
 // permission create controller
@@ -29,8 +29,18 @@ export const createPermission = async (req: Request, res: Response) => {
 
 export const getPermissions = async (req: Request, res: Response) => {
     try {
-        const permissions = await prisma.permission.findMany(
-            { orderBy: { name: 'asc' } }
+        const permissions = await prisma.permission.findMany({
+            include: {
+                role: true,
+                module: true,
+            },
+            orderBy: {
+                module: {
+                    name: "asc",
+                },
+            },
+        }
+
         );
 
         res.status(200).json({ message: 'Permissions fetched successfully', data: permissions });
@@ -44,20 +54,21 @@ export const getPermissions = async (req: Request, res: Response) => {
 export const updatePermission = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
-        const { name } = req.body;
+        const data = req.body;
 
 
         if (!id) {
             return res.status(400).json({ message: 'Permission id is required' });
         }
 
-        if (!name) {
+        if (!data) {
             return res.status(400).json({ message: 'Permission name required' });
         }
 
+
         const permission = await prisma.permission.update({
             where: { id },
-            data: { name },
+            data,
         });
 
         res.status(200).json({ message: 'Permission updated successfully', data: permission });

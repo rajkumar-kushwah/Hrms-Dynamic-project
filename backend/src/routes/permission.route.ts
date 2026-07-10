@@ -1,6 +1,6 @@
 import express from "express";
 
-import { createPermission, updatePermission, deletePermission, getPermissions } from "../controllers/Permission.controller.ts";
+import { createPermission, updatePermission, deletePermission, getPermissions } from "../controllers/Permission.controller.js";
 
 
 const router = express.Router();

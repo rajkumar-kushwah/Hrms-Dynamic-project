@@ -1,4 +1,4 @@
-import { prisma } from "../config/db.ts";
+import { prisma } from "../config/db.js";
 
 // Company ke sabhi roles
 export const getCompanyRoles = async (companyId: string | null, isSuperAdmin: boolean) => {

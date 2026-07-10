@@ -1,4 +1,4 @@
-import { prisma } from "../config/db.ts";
+import { prisma } from "../config/db.js";
 import { type Request, type Response } from "express";
 
 
@@ -37,7 +37,7 @@ export const getMonthlyAttendance = async (req: Request, res: Response) => {
                 id: userId,
             },
             include: {
-                roles: {
+                role: {
                     select: {
                         name: true,
                     },
@@ -51,7 +51,7 @@ export const getMonthlyAttendance = async (req: Request, res: Response) => {
             });
         }
 
-        const roles = user.roles.map((role) => role.name);
+        const roles = user.role ? [user.role.name] : [];
 
         let attendance;
 
@@ -63,7 +63,7 @@ export const getMonthlyAttendance = async (req: Request, res: Response) => {
             attendance = await prisma.attendance.findMany({
                 where: {
                     companyId: companyId,
-                    checkIn: {
+                    punchInTime: {
                         gte: start,
                         lte: end,
                     },
@@ -71,16 +71,14 @@ export const getMonthlyAttendance = async (req: Request, res: Response) => {
                 include: {
                     user: {
                         include: {
-                            employee: {
-                                include: {
-                                    department: true,
-                                },
-                            },
+                            role: true,
+                            branch: true,
+                            category: true,
                         },
                     },
                 },
                 orderBy: {
-                    checkIn: "asc",
+                    punchInTime: "asc",
                 },
             });
         }
@@ -91,7 +89,7 @@ export const getMonthlyAttendance = async (req: Request, res: Response) => {
                 where: {
                     companyId,
                     userId: userId,
-                    checkIn: {
+                    punchInTime: {
                         gte: start,
                         lte: end,
                     },
@@ -99,16 +97,14 @@ export const getMonthlyAttendance = async (req: Request, res: Response) => {
                 include: {
                     user: {
                         include: {
-                            employee: {
-                                include: {
-                                    department: true,
-                                },
-                            },
+                            role: true,
+                            branch: true,
+                            category: true,
                         },
                     },
                 },
                 orderBy: {
-                    checkIn: "asc",
+                    punchInTime: "asc",
                 },
             });
         }
@@ -171,7 +167,7 @@ export const FilteredMonthlyAttendance = async (
                 id: userId,
             },
             include: {
-                roles: {
+                role: {
                     select: {
                         name: true,
                     },
@@ -185,9 +181,7 @@ export const FilteredMonthlyAttendance = async (
             });
         }
 
-        const roles = user.roles.map(
-            (role) => role.name
-        );
+        const roles = user.role ? [user.role.name] : [];
 
         // dynamic where
         const where: any = {
@@ -239,16 +233,14 @@ export const FilteredMonthlyAttendance = async (
                 include: {
                     user: {
                         include: {
-                            employee: {
-                                include: {
-                                    department: true,
-                                },
-                            },
+                            role: true,
+                            branch: true,
+                            category: true,
                         },
                     },
                 },
                 orderBy: {
-                    checkIn: "asc",
+                    punchInTime: "asc",
                 },
             });
 

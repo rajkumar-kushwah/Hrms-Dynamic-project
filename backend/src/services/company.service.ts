@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { prisma } from "../config/db.ts";
+import { prisma } from "../config/db.js";
 
 
 // Auto company code generate krna 

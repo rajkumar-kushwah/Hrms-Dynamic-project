@@ -3,14 +3,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MapPin, RefreshCw, Users, Clock, LogIn, LogOut } from "lucide-react";
+import { MapPin, RefreshCw, Users, Clock, LogIn, LogOut, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Attendance } from "@/types/attendance.types";
 import { getLiveAttendance } from "@/services/attendance.service";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { useAuthStore } from "@/store/auth.store";
 
 const AttendanceLive = () => {
+    const { user } = useAuthStore();
+    const isAdmin = ["super_admin", "company_admin"].includes(user?.role?.name ?? "");
+
     const [attendances, setAttendances] = React.useState<Attendance[]>([]);
     const [loading, setLoading] = React.useState(false);
+    const [loading1, setLoading1] = React.useState(false);
     const [lastUpdated, setLastUpdated] = React.useState<Date>(new Date());
 
     React.useEffect(() => {
@@ -24,6 +30,7 @@ const AttendanceLive = () => {
 
     const loadLiveAttendance = async () => {
         setLoading(true);
+        setLoading1(true);
         try {
             const wait = new Promise((resolve) => setTimeout(resolve, 1000));
             await wait;
@@ -34,6 +41,7 @@ const AttendanceLive = () => {
             toast.error(err?.message || "Failed to load live attendance");
         } finally {
             setLoading(false);
+            setLoading1(false);
         }
     };
 
@@ -121,7 +129,16 @@ const AttendanceLive = () => {
             </div>
 
             {/* Employee Cards */}
-            {attendances.length === 0 ? (
+            { loading1 ? (
+                <TableRow>
+                    <TableCell colSpan={isAdmin ? 7 : 6}>
+                        <div className="flex items-center justify-center">
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <span>Loading...</span>
+                        </div>
+                    </TableCell>
+                </TableRow>
+            ): attendances.length === 0 ? (
                 <Card className="p-8 text-center text-muted-foreground">
                     No attendance records for today yet
                 </Card>

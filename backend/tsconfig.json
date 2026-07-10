@@ -32,14 +32,15 @@
     // Recommended Options
     "moduleResolution": "NodeNext",
     "strict": true,
-    "jsx": "react-jsx",
+    // "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    "emitDeclarationOnly": true,
-    "allowImportingTsExtensions": true
+    // "rewriteRelativeImportExtensions": true,
+    // "emitDeclarationOnly": true,
+    // "allowImportingTsExtensions": true
   },
   "include": [
     "src/**/*"

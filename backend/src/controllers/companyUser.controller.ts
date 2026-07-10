@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { prisma } from "../config/db.ts";
+import { prisma } from "../config/db.js";
 import bcrypt from "bcrypt";
 
 // Get All Users

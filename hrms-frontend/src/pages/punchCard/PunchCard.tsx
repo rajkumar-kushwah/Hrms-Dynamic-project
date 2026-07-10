@@ -151,14 +151,14 @@ function PunchCard() {
 
                         {/* Punch In/Out Info */}
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-muted rounded-lg p-3">
+                            <div className="bg-muted rounded-lg p-3 ">
                                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                                     <LogIn className="h-3 w-3" /> Punch In
                                 </p>
                                 <p className="font-semibold mt-1">{formatTime(attendance?.punchInTime)}</p>
                             </div>
                             <div className="bg-muted rounded-lg p-3">
-                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 ">
                                     <LogOut className="h-3 w-3" /> Punch Out
                                 </p>
                                 <p className="font-semibold mt-1">{formatTime(attendance?.punchOutTime)}</p>
@@ -188,7 +188,7 @@ function PunchCard() {
                         <div className='flex gap-2'>
                             {!attendance?.punchInTime && (
                                 <Button
-                                    className="flex-1 bg-green-600 hover:bg-green-700"
+                                    className="flex-1 bg-green-600 hover:bg-green-700 cursor-pointer"
                                     onClick={handlePunchIn}
                                     disabled={loading}
                                 >
@@ -202,7 +202,7 @@ function PunchCard() {
                             )}
                             {attendance?.punchInTime && !attendance?.punchOutTime && (
                                 <Button
-                                    className="flex-1 bg-red-600 hover:bg-red-700"
+                                    className="flex-1 bg-red-600 hover:bg-red-700 cursor-pointer"
                                     onClick={handlePunchOut}
                                     disabled={loading}
                                 >

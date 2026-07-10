@@ -149,30 +149,30 @@ const data = {
     },
   ],
   projects: [
-    // {
-    //   name: "Design Engineering",
-    //   url: "#",
-    //   icon: (
-    //     <FrameIcon
-    //     />
-    //   ),
-    // },
-    // {
-    //   name: "Sales & Marketing",
-    //   url: "#",
-    //   icon: (
-    //     <PieChartIcon
-    //     />
-    //   ),
-    // },
-    // {
-    //   name: "Travel",
-    //   url: "#",
-    //   icon: (
-    //     <MapIcon
-    //     />
-    //   ),
-    // },
+    {
+      name: "Design Engineering",
+      url: "#",
+      icon: (
+        <FrameIcon
+        />
+      ),
+    },
+    {
+      name: "Sales & Marketing",
+      url: "#",
+      icon: (
+        <PieChartIcon
+        />
+      ),
+    },
+    {
+      name: "Travel",
+      url: "#",
+      icon: (
+        <MapIcon
+        />
+      ),
+    },
   ],
 }
 
@@ -185,7 +185,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain  />
         {/* <NavMain items={data.navMain} /> */}
-        <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser  />

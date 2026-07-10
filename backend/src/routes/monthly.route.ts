@@ -1,5 +1,5 @@
-import { protect } from "../middleware/auth.middleware.ts";
-import { getMonthlyAttendance, FilteredMonthlyAttendance } from "../controllers/MonthlyAttendance.controller.ts";
+import { protect } from "../middleware/auth.middleware.js";
+import { getMonthlyAttendance, FilteredMonthlyAttendance } from "../controllers/MonthlyAttendance.controller.js";
 // import { checkPermissions } from "../middleware/role.middleware.ts";
 import express from "express";
 

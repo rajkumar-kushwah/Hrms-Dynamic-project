@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import * as CategoryService from "../services/category.service.ts";
+import * as CategoryService from "../services/category.service.js";
 
 
 // create category controller

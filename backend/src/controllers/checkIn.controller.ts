@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { prisma } from "../config/db.ts";
+import { prisma } from "../config/db.js";
 
 // check in controller
 
@@ -14,14 +14,16 @@ export const checkIn = async (req: Request, res: Response) => {
         //  check role 
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                roles: {
+            select: {
+                companyId: true,
+                branchId: true,
+                role: {
                     select: { name: true }
                 }
             }
         });
 
-        const roles = user?.roles?.map(r => r.name) || [];
+        const roles = user?.role ? [user.role.name] : [];
 
         if (!roles.includes("EMPLOYEE")) {
             return res.status(403).json({
@@ -42,7 +44,7 @@ export const checkIn = async (req: Request, res: Response) => {
         const existing = await prisma.attendance.findFirst({
             where: {
                 userId,
-                checkIn: {
+                punchInTime: {
                     gte: start,
                     lte: end,
                 },
@@ -80,16 +82,22 @@ export const checkIn = async (req: Request, res: Response) => {
         const lateMinutes = Math.floor(
             (now.getTime() - officeTime.getTime()) / (1000 * 60)
         );
-        const companyId = (req.session as any).companyId;
+        if (!user?.companyId || !user?.branchId) {
+            return res.status(400).json({
+                message: "Company or Branch not assigned.",
+            });
+        }
+
+        // const companyId = (req.session as any).companyId;
         // create entry
         const attendance = await prisma.attendance.create({
             data: {
                 userId,
-                companyId,
+                companyId: user.companyId,
+                branchId: user.branchId,
                 date: now,       //  fix (no mismatch)
-                checkIn: now,
+                punchInTime: now,
                 status,
-                lateMinutes,
             },
             include: {
                 user: {
@@ -128,13 +136,13 @@ export const checkOut = async (req: Request, res: Response) => {
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: {
-                roles: {
+                role: {
                     select: { name: true }
                 }
             }
         });
 
-        const roles = user?.roles?.map(r => r.name) || [];
+        const roles = user?.role ? [user.role.name] : [];
 
         if (!roles.includes("EMPLOYEE")) {
             return res.status(403).json({
@@ -156,23 +164,23 @@ export const checkOut = async (req: Request, res: Response) => {
             where: {
                 userId,
                 companyId,
-                checkOut: null, //  important
-                checkIn: {
+                punchOutTime: null, //  important
+                punchInTime: {
                     gte: start,
                     lte: end,
                 },
             },
             orderBy: {
-                checkIn: "desc",
+                punchInTime: "desc",
             },
         });
 
-        if (!attendance || !attendance.checkIn) {
+        if (!attendance || !attendance.punchInTime) {
             return res.status(400).json({ message: "Invalid check-in data" });
         }
 
 
-        const diffMs = now.getTime() - attendance.checkIn!.getTime();
+        const diffMs = now.getTime() - attendance.punchInTime!.getTime();
 
         const totalMinutes = Math.floor(diffMs / (1000 * 60));
         const totalHours = totalMinutes / 60;
@@ -181,21 +189,20 @@ export const checkOut = async (req: Request, res: Response) => {
         const overtimeMinutes =
             totalMinutes > 480 ? totalMinutes - 480 : 0;
 
-            let finalStatus = attendance.status;
+        let finalStatus = attendance.status;
 
-            if(workingHours < 4){
-                finalStatus = "Absent";
-            } else if(workingHours < 8) {
-                finalStatus = "Half Day";
-            }
+        if (workingHours < 4) {
+            finalStatus = "Absent";
+        } else if (workingHours < 8) {
+            finalStatus = "Half Day";
+        }
 
         //  update
         const updated = await prisma.attendance.update({
             where: { id: attendance.id },
             data: {
-                checkOut: now,
-                totalMinutes,
-                overtimeMinutes,
+                punchOutTime: now,
+                workingHours,
                 status: finalStatus
             },
             include: {
@@ -234,14 +241,14 @@ export const getAttendance = async (req: Request, res: Response) => {
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: {
-                roles: {
+                role: {
                     select: { name: true }
                 }
             }
         });
 
         // const role = user?.roles?.[0]?.name;
-        const role = user?.roles?.map(r => r.name) || [];
+        const role = user?.role ? [user.role.name] : [];
 
         // checkin / checkout data fetch and condition
         const start = new Date();
@@ -253,14 +260,14 @@ export const getAttendance = async (req: Request, res: Response) => {
         const activeAttendance = await prisma.attendance.findFirst({
             where: {
                 userId,
-                checkOut: null, //  important
-                checkIn: {
+                punchOutTime: null, //  important
+                punchInTime: {
                     gte: start,
                     lte: end,
                 },
             },
             orderBy: {
-                checkIn: "desc",
+                punchInTime: "desc",
             },
         });
 
@@ -386,11 +393,10 @@ export const filterAttendance = async (req: Request, res: Response) => {
         // get user + roles
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: { roles: true },
+            include: { role: true },
         });
 
-        const roles = user?.roles?.map((r) => r.name) || [];
-
+        const roles = user?.role ? [user.role.name] : [];
         // base where
         let where: any = { companyId: (req.session as any).companyId };
 

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import * as AttendanceService from "../services/attendance.service.ts";
+import * as AttendanceService from "../services/attendance.service.js";
 
 export const punchIn = async (req: Request, res: Response) => {
     try {

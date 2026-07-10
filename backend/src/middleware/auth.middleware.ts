@@ -1,6 +1,6 @@
 
 import type { Request, Response, NextFunction } from "express";
-import { prisma } from "../config/db.ts";
+import { prisma } from "../config/db.js";
 
 // export const protect = async (req: any, res: Response, next: NextFunction) => {
 //   try {

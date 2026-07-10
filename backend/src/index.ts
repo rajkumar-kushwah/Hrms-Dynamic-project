@@ -2,21 +2,20 @@ import "dotenv/config";
 import dotenv from "dotenv";
 import express from "express";
 import cors from 'cors'
-import { prisma } from "./config/db.ts";
-import authRouter from "./routes/auth.route.ts";
-// import { sessionMiddlewere } from "./config/session.ts";
-import departmentRouter from "./routes/department.route.ts";
-import permissionRouter from "./routes/permission.route.ts";
-import roleRouter from "./routes/Role.route.ts";
-import employeeRouter from "./routes/employee.route.ts";
-import checkInRouter from "./routes/checkIn.route.ts";
-import monthlyRouter from "./routes/monthly.route.ts";
-import { sessionMiddleware } from "./config/session.ts";
-import companyRouter from "./routes/company.route.ts";
-import userRoutes from "./routes/companyuser.routes.ts";
-import branchRouter from "./routes/branch.routes.ts";
-import categoryRoutes from "./routes/category.routes.ts";
-import attendanceRoutes from "./routes/attendance.routes.ts";
+import { prisma } from "./config/db.js";
+import authRouter from "./routes/auth.route.js";
+// import { sessionMiddlewere } from "./config/session.js";
+import permissionRouter from "./routes/permission.route.js";
+import roleRouter from "./routes/Role.route.js";
+import employeeRouter from "./routes/employee.route.js";
+import checkInRouter from "./routes/checkIn.route.js";
+import monthlyRouter from "./routes/monthly.route.js";
+import { sessionMiddleware } from "./config/session.js";
+import companyRouter from "./routes/company.route.js";
+import userRoutes from "./routes/companyuser.routes.js";
+import branchRouter from "./routes/branch.routes.js";
+import categoryRoutes from "./routes/category.routes.js";
+import attendanceRoutes from "./routes/attendance.routes.js";
 
 dotenv.config();
 const app = express();
@@ -44,7 +43,6 @@ app.use("/api/category", categoryRoutes);
 app.use('/api/employee', employeeRouter)
 app.use("/api/attendance", attendanceRoutes);
 
-app.use('/department', departmentRouter)
 app.use('/permission', permissionRouter)
 app.use('/checkin', checkInRouter)
 app.use('/monthly-attendance', monthlyRouter)

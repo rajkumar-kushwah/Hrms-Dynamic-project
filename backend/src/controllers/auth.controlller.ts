@@ -1,5 +1,5 @@
 import { type Request, type Response } from "express";
-import { prisma } from "../config/db.ts";
+import { prisma } from "../config/db.js";
 import bcrypt from "bcrypt";
 
 

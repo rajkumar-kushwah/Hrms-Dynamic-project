@@ -8,9 +8,9 @@ import {
     getMyCompany,
     permanentDeleteCompany,
     deactivateCompany,
-} from "../controllers/company.controller.ts";
-import { protect } from "../middleware/auth.middleware.ts";
-import { authorize, checkSuperAdmin } from "../middleware/role.middleware.ts";
+} from "../controllers/company.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authorize, checkSuperAdmin } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 

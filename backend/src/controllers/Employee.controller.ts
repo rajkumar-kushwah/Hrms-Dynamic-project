@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import * as EmployeeService from "../services/employee.service.ts";
+import * as EmployeeService from "../services/employee.service.js";
 
 
 // create employee controller

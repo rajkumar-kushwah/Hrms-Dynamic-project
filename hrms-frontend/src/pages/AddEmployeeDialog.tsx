@@ -378,12 +378,12 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
 
 
                 {/* basic tab main password field conditionally visible */}
-                {!isEditeMode && (
+                {/* {!isEditeMode && (
                     <div>
                         <Label className="mt-4">Password</Label>
                         <Input name="password" type="password" value={form.password} onChange={handleChange} />
                     </div>
-                )}
+                )} */}
                 <Button onClick={handleSubmit} className="mt-4">{isEditeMode ? "Update Employee" : "Add Employee"}</Button>
             </DialogContent>
         </Dialog>

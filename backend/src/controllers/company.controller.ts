@@ -1,6 +1,6 @@
 import { type Request, type Response } from "express";
-import { prisma } from "../config/db.ts";
-import * as CompanyService from "../services/company.service.ts";
+import { prisma } from "../config/db.js";
+import * as CompanyService from "../services/company.service.js";
 
 // create company controller
 export const createCompany = async (req: Request, res: Response) => {

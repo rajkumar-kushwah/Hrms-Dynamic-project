@@ -5,7 +5,7 @@
 
 
 import type { NextFunction, Request, Response } from "express";
-import { prisma } from "../config/db.ts";
+import { prisma } from "../config/db.js";
 
 
 // export const checkPermissions = (permissionName: string) => {

@@ -1,5 +1,5 @@
-import { prisma } from "../config/db.ts";
-import { isWithinGeoFence, calculateDistance } from "../utilis/geoFencing.ts";
+import { prisma } from "../config/db.js";
+import { isWithinGeoFence, calculateDistance } from "../utilis/geoFencing.js";
 
 // ─── Punch In ─────────────────────────────
 export const punchIn = async (

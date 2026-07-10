@@ -1,6 +1,6 @@
-import { protect } from "../middleware/auth.middleware.ts";
-// import { checkPermissions } from "../middleware/role.middleware.ts";
-import { checkIn, checkOut, getAttendance, filterAttendance, deleteAttendance } from "../controllers/checkIn.controller.ts";
+import { protect } from "../middleware/auth.middleware.js";
+// import { checkPermissions } from "../middleware/role.middleware.js";
+import { checkIn, checkOut, getAttendance, filterAttendance, deleteAttendance } from "../controllers/checkIn.controller.js";
 import express from "express";
 
 const router = express.Router();

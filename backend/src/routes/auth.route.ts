@@ -1,7 +1,7 @@
-import { signin, logout } from "../controllers/auth.controlller.ts";
+import { signin, logout } from "../controllers/auth.controlller.js";
 import express from "express";
-import { protect } from "../middleware/auth.middleware.ts";
-import { getProfile } from "../controllers/profile.controller.ts";
+import { protect } from "../middleware/auth.middleware.js";
+import { getProfile } from "../controllers/profile.controller.js";
 
 // signup, deleteUser, logout, UpdateUser
 

@@ -8,9 +8,9 @@ import {
     updateRolePermissions,
     deleteRole,
     getModules
-} from "../controllers/Role.controller.ts";
-import { protect } from "../middleware/auth.middleware.ts";
-import { authorize } from "../middleware/role.middleware.ts";
+} from "../controllers/Role.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authorize } from "../middleware/role.middleware.js";
 
 const router = Router();
 

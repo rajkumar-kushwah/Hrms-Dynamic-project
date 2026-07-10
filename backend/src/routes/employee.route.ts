@@ -5,9 +5,9 @@ import {
     getEmployeeById,
     updateEmployee,
     deleteEmployee,
-} from "../controllers/Employee.controller.ts";
-import { protect } from "../middleware/auth.middleware.ts";
-import { authorize } from "../middleware/role.middleware.ts";
+} from "../controllers/Employee.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authorize } from "../middleware/role.middleware.js";
 
 const router = Router();
 

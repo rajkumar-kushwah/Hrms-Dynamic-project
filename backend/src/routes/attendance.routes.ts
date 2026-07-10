@@ -6,9 +6,9 @@ import {
     getMyAttendance,
     getAllAttendance,
     getLiveAttendance
-} from "../controllers/attendance.controller.ts";
-import { protect } from "../middleware/auth.middleware.ts";
-import { authorize } from "../middleware/role.middleware.ts";
+} from "../controllers/attendance.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authorize } from "../middleware/role.middleware.js";
 
 const router = Router();
 

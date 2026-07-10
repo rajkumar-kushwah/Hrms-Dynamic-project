@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import * as RoleService from "../services/role.service.ts";
-import { prisma } from "../config/db.ts";
+import * as RoleService from "../services/role.service.js";
+import { prisma } from "../config/db.js";
 // Sabhi roles
 export const getCompanyRoles = async (req: Request, res: Response) => {
     try {
