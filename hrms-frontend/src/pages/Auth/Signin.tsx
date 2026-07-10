@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import axios from "axios";
+// import axios from "axios";
 import { signinUser } from '@/services/auth.service'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from "@/store/auth.store"
@@ -16,7 +16,7 @@ function Signin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
-    const { setUser, setLoading, setInitialized } = useAuthStore();
+    const { setUser, setLoading } = useAuthStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

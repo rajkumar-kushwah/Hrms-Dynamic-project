@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/auth.store";
-import { Building2, Clock, Calendar, Phone, Mail, User, ShieldCheck, UserCheck } from "lucide-react";
+import { Building2, Clock, Calendar, Mail, User, ShieldCheck, UserCheck } from "lucide-react";
 
 const Profile = () => {
     const { user } = useAuthStore();

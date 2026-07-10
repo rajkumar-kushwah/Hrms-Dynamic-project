@@ -169,12 +169,12 @@ const DashboardStats = () => {
                         </CardDescription>
                     </Card>
 
-                    {/* <Card className="p-4 border rounded-xl">
+                    <Card className="p-4 border rounded-xl">
                         <CardTitle className="text-sm md:text-sm">Total Categories</CardTitle>
                         <CardDescription className="text-xl font-bold">
                             {totalCategories}
                         </CardDescription>
-                    </Card> */}
+                    </Card>
                     <Card className="p-4 border rounded-xl">
                         <CardTitle className="text-sm md:text-sm">Total Employees</CardTitle>
                         <CardDescription className="text-xl font-bold">{totalEmployees}</CardDescription>
