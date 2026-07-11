@@ -269,21 +269,21 @@ const EmployeeList = () => {
         </DialogContent>
       </Dialog>
 
-      {/* reset password dialog */}
+      {/* Reset Password Dialog */}
       <Dialog open={resetOpen} onOpenChange={setResetOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-            <DialogDescription>Reset password for {selectedForReset?.name}</DialogDescription>
+            <DialogTitle>Reset Password — {selectedForReset?.name}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-3">
-            <Label htmlFor="name">New Password</Label>
+            <Label>New Password</Label>
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="Min 6 characters"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
+            <Button onClick={handleResetPassword}>Reset Password</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -340,10 +340,11 @@ const EmployeeList = () => {
                             disabled={!canChangeStatus}>
                             {emp.isActive ? "Deactivate" : "Activate"}
                           </DropdownMenuItem>
+                          {/* Dropdown mein add karo */}
                           <DropdownMenuItem
                             onClick={() => {
-                              setSelectedForReset(emp)
-                              setResetOpen(true)
+                              setSelectedForReset(emp);
+                              setResetOpen(true);
                             }}
                           >
                             Reset Password
