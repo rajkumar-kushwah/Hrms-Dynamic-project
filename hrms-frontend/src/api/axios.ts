@@ -2,15 +2,14 @@ import axios from "axios";
 
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: "https://hrms-backend-ms3u.onrender.com/api",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
+//  import.meta.env.VITE_API_URL,
 
-
-// baseURL: "https://hrms-backend-ms3u.onrender.com/api",
 
 api.interceptors.response.use(
   (response) => response,
