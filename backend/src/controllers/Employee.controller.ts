@@ -81,3 +81,25 @@ export const deleteEmployee = async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, message: error.message });
     }
 }
+
+export const resetEmployeePassword = async (req: Request, res: Response) => {
+    try {
+        const id = (req.params.id as string);
+        const { password } = req.body
+        
+        if (!id) return res.status(400).json({ success: false, message: "Invalid employee id" });
+
+        if (!password || password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 6 characters"
+            });
+        } 
+
+        const employee = await EmployeeService.resetEmployeePassword(id, password);
+
+        return res.status(200).json({ success: true, message: employee.message });
+    } catch (error: any) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+}

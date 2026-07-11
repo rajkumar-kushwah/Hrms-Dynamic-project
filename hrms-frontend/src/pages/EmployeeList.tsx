@@ -9,9 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
 import type { Employee, EmployeeDetail } from "@/types/employee.types";
-import { getEmployeeById, getEmployees, updateEmployee } from "@/services/employee.service";
+import { getEmployeeById, getEmployees, resetEmployeePassword, updateEmployee } from "@/services/employee.service";
 import AddEmployeeDialog from "@/pages/AddEmployeeDialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const EmployeeList = () => {
   const { user } = useAuthStore();
@@ -33,6 +35,10 @@ const EmployeeList = () => {
   const [editEmployee, setEditEmployee] = React.useState<EmployeeDetail | null>(null);
   const [editOpen, setEditOpen] = React.useState(false);
 
+  const [resetOpen, setResetOpen] = React.useState(false);
+  const [selectedForReset, setSelectedForReset] = React.useState<Employee | null>(null);
+  const [newPassword, setNewPassword] = React.useState("");
+
   React.useEffect(() => {
     loadEmployees();
   }, []);
@@ -45,6 +51,25 @@ const EmployeeList = () => {
       toast.error(err?.message || "Failed to load employees");
     }
   };
+
+  const handleResetPassword = async () => {
+    if (!selectedForReset) return;
+
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      await resetEmployeePassword(selectedForReset.id, newPassword);
+      toast.success("Password reset successfully!");
+      setResetOpen(false);
+      setNewPassword("");
+      setSelectedForReset(null);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to reset password");
+    }
+  }
 
   const handleToggleStatus = async () => {
     if (!selectedEmployee) return
@@ -217,9 +242,9 @@ const EmployeeList = () => {
           setEditEmployee(null);
         }}
         editEmployee={editEmployee}
-        
+
       />
-      
+
       {/* dialog active and deactive  */}
       <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
         <DialogContent>
@@ -240,6 +265,25 @@ const EmployeeList = () => {
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setStatusDialogOpen(false)}>Cancel</Button>
             <Button variant="destructive" onClick={handleToggleStatus}>{selectedEmployee?.isActive ? "Deactivate" : "Activate"}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* reset password dialog */}
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>Reset password for {selectedForReset?.name}</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="name">New Password</Label>
+            <Input
+              type="password"
+              placeholder="Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
           </div>
         </DialogContent>
       </Dialog>
@@ -288,13 +332,21 @@ const EmployeeList = () => {
                         <DropdownMenuGroup>
                           <DropdownMenuItem onClick={() => handleViewDetails(emp.id)}>View Details</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditClick(emp.id)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem 
-                          onClick={() => {
-                            setSelectedEmployee(emp)
-                            setStatusDialogOpen(true)
-                          }}
-                          disabled={!canChangeStatus}>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedEmployee(emp)
+                              setStatusDialogOpen(true)
+                            }}
+                            disabled={!canChangeStatus}>
                             {emp.isActive ? "Deactivate" : "Activate"}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedForReset(emp)
+                              setResetOpen(true)
+                            }}
+                          >
+                            Reset Password
                           </DropdownMenuItem>
                         </DropdownMenuGroup>
                       </DropdownMenuContent>

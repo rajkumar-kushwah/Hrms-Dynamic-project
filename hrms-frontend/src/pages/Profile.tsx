@@ -2,32 +2,90 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store/auth.store";
-import { Building2, Clock, Calendar, Mail, User, ShieldCheck, UserCheck } from "lucide-react";
+import { Building2, Clock, Calendar, Mail, User, ShieldCheck, UserCheck, KeyRound, Pencil } from "lucide-react";
+import React from "react";
+import { toast } from "sonner";
+import { updateProfile, changePassword } from "@/services/profile.service";
 
 const Profile = () => {
-    const { user } = useAuthStore();
+    const { user, setUser } = useAuthStore();
 
-    const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase();
+    //  Edit Profile Popup
+    const [editOpen, setEditOpen] = React.useState(false);
+    const [name, setName] = React.useState(user?.name ?? "");
+    const [updating, setUpdating] = React.useState(false);
+
+    //  Change Password Popup
+    const [pwOpen, setPwOpen] = React.useState(false);
+    const [oldPassword, setOldPassword] = React.useState("");
+    const [newPassword, setNewPassword] = React.useState("");
+
+    const getInitials = (name: string) =>
+        name.split(" ").map((n) => n[0]).join("").toUpperCase();
+
+    const formatRole = (role: string) =>
+        role.split("_").map((r) => r.charAt(0).toUpperCase() + r.slice(1)).join(" ");
+
+    //  Update Profile
+    const handleUpdateProfile = async () => {
+        if (!name.trim()) {
+            toast.error("Name cannot be empty");
+            return;
+        }
+        setUpdating(true);
+        try {
+            const res = await updateProfile({ name });
+            toast.success("Profile updated successfully!");
+            setUser({ ...user!, name: res.data.data.name });
+            setEditOpen(false);
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to update profile");
+        } finally {
+            setUpdating(false);
+        }
     };
 
-    const formatRole = (role: string) => {
-        return role
-            .split("_")
-            .map((r) => r.charAt(0).toUpperCase() + r.slice(1))
-            .join(" ");
+    //  Change Password
+    const handleChangePassword = async () => {
+        if (!oldPassword || !newPassword) {
+            toast.error("Both fields are required");
+            return;
+        }
+        if (newPassword.length < 6) {
+            toast.error("New password must be at least 6 characters");
+            return;
+        }
+        try {
+            await changePassword({ oldPassword, newPassword });
+            toast.success("Password changed successfully!");
+            setPwOpen(false);
+            setOldPassword("");
+            setNewPassword("");
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to change password");
+        }
     };
 
     return (
         <div className='flex justify-center'>
             <Card className='bg-card text-card-foreground border-border max-w-md w-full'>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Profile</CardTitle>
+                    {/*  Edit Icon Button */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                            setName(user?.name ?? "");
+                            setEditOpen(true);
+                        }}
+                    >
+                        <Pencil className="h-4 w-4" />
+                    </Button>
                 </CardHeader>
                 <CardContent className='grid gap-6'>
 
@@ -41,7 +99,6 @@ const Profile = () => {
                         </Avatar>
                         <h2 className="text-lg font-semibold">{user?.name}</h2>
 
-                        {/* Role Badge */}
                         {user?.role && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 <ShieldCheck className="h-3 w-3" />
@@ -49,11 +106,10 @@ const Profile = () => {
                             </Badge>
                         )}
 
-                        {/* Company */}
                         {user?.company && (
                             <span className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <Building2 className="h-3 w-3" />
-                                {user?.company?.name}
+                                {user.company.name}
                             </span>
                         )}
                     </div>
@@ -61,9 +117,9 @@ const Profile = () => {
                     {/* Created By */}
                     {user?.createdByUser && (
                         <div className="flex flex-col gap-1">
-                            <label className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Label className="text-sm text-muted-foreground flex items-center gap-1">
                                 <UserCheck className="h-3 w-3" /> Created By
-                            </label>
+                            </Label>
                             <Input
                                 type="text"
                                 defaultValue={user.createdByUser.name ?? "—"}
@@ -73,34 +129,28 @@ const Profile = () => {
                         </div>
                     )}
 
-                    {/* Info Fields */}
+                    {/* Info Fields — Read Only */}
                     <div className='flex flex-col gap-4'>
 
-                        {/* Name */}
                         <div className="flex flex-col gap-1">
-                            <label className='text-sm text-muted-foreground flex items-center gap-1'>
+                            <Label className='text-sm text-muted-foreground flex items-center gap-1'>
                                 <User className="h-3 w-3" /> Name
-                            </label>
-                            <Input type='text' defaultValue={user?.name} />
+                            </Label>
+                            <Input type='text' defaultValue={user?.name} readOnly className="opacity-60 cursor-not-allowed" />
                         </div>
 
-                        {/* Email */}
                         <div className="flex flex-col gap-1">
-                            <label className='text-sm text-muted-foreground flex items-center gap-1'>
+                            <Label className='text-sm text-muted-foreground flex items-center gap-1'>
                                 <Mail className="h-3 w-3" /> Email
-                            </label>
-                            <Input type='email' defaultValue={user?.email} readOnly
-                                className="opacity-60 cursor-not-allowed"
-                            />
+                            </Label>
+                            <Input type='email' defaultValue={user?.email} readOnly className="opacity-60 cursor-not-allowed" />
                         </div>
 
-                        {/* Phone */}
-                        {/* <div className="flex flex-col gap-1">
-                            <label className='text-sm text-muted-foreground flex items-center gap-1'>
-                                <Phone className="h-3 w-3" /> Phone
-                            </label>
-                            <Input type='tel' defaultValue={user?.phone} />
-                        </div> */}
+                        {/*  Change Password Button */}
+                        <Button variant="outline" onClick={() => setPwOpen(true)}>
+                            <KeyRound className="h-4 w-4 mr-2" />
+                            Change Password
+                        </Button>
 
                         {/* Dates */}
                         <div className="flex flex-col gap-2 pt-2 border-t border-border">
@@ -121,6 +171,58 @@ const Profile = () => {
                     </div>
                 </CardContent>
             </Card>
+
+            {/*  Edit Profile Dialog */}
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Profile</DialogTitle>
+                        <DialogDescription>Edite your profile information</DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3">
+                        <div>
+                            <Label>Name</Label>
+                            <Input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
+                        <Button onClick={handleUpdateProfile} disabled={updating}>
+                            {updating ? "Updating..." : "Save Changes"}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Change Password Dialog */}
+            <Dialog open={pwOpen} onOpenChange={setPwOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Change Password</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3">
+                        <div>
+                            <Label>Current Password</Label>
+                            <Input
+                                type="password"
+                                value={oldPassword}
+                                onChange={(e) => setOldPassword(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <Label>New Password</Label>
+                            <Input
+                                type="password"
+                                placeholder="Min 6 characters"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                            />
+                        </div>
+                        <Button onClick={handleChangePassword}>Change Password</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

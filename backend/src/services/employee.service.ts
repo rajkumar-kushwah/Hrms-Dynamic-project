@@ -376,3 +376,18 @@ export const deleteEmployee = async (id: string) => {
 
     return { message: "Employee deactivated successfully" };
 };
+
+
+export const resetEmployeePassword = async (id: string, password: string) => {
+    const employee = await prisma.user.findUnique({ where: { id } });
+    if (!employee) throw new Error("Employee not found");
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.update({
+        where: { id },
+        data: { password: hashedPassword },
+    });
+
+    return { message: "Password reset successfully" };
+};
