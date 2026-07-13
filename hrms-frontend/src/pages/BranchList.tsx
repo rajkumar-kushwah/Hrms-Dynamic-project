@@ -263,6 +263,7 @@ const BranchList = () => {
                 }}
             />
             {/* Edit Dialog */}
+            <div className="flex flex-col gap-3 overflow-y-auto pr-2">
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -332,6 +333,7 @@ const BranchList = () => {
                         </div>
                         <Button onClick={handleUpdate}>Update Branch</Button>
                     </div>
+                    <div >
                     <LocationPicker
                         open={editMapOpen}
                         onOpenChange={setEditMapOpen}
@@ -348,6 +350,7 @@ const BranchList = () => {
                             }));
                         }}
                     />
+                    </div>
                     {/* edit Dialog ke ander dialog permanent delete confirmation hoga */}
                     {isSuperAdmin && (
                         <div className="border border-red-200 rounded-lg p-4 mt-4 bg-red-50">
@@ -381,6 +384,7 @@ const BranchList = () => {
 
                 </DialogContent>
             </Dialog>
+            </div>
 
             {/* Delete Confirm */}
             {/* <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>

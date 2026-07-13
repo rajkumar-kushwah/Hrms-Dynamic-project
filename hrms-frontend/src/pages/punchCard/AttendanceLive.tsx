@@ -7,7 +7,7 @@ import { MapPin, RefreshCw, Users, Clock, LogIn, LogOut, Loader2 } from "lucide-
 import { toast } from "sonner";
 import type { Attendance } from "@/types/attendance.types";
 import { getLiveAttendance } from "@/services/attendance.service";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { Table, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore } from "@/store/auth.store";
 
 const AttendanceLive = () => {
@@ -129,16 +129,20 @@ const AttendanceLive = () => {
             </div>
 
             {/* Employee Cards */}
-            { loading1 ? (
-                <TableRow>
-                    <TableCell colSpan={isAdmin ? 7 : 6}>
-                        <div className="flex items-center justify-center">
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            <span>Loading...</span>
-                        </div>
-                    </TableCell>
-                </TableRow>
-            ): attendances.length === 0 ? (
+            {loading1 ? (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableCell colSpan={isAdmin ? 7 : 6}>
+                                <div className="flex items-center justify-center">
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <span>Loading...</span>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    </TableHeader>
+                </Table>
+            ) : attendances.length === 0 ? (
                 <Card className="p-8 text-center text-muted-foreground">
                     No attendance records for today yet
                 </Card>
@@ -217,7 +221,8 @@ const AttendanceLive = () => {
                     ))}
                 </div>
             )}
-        </div>
+
+        </div >
     );
 };
 
