@@ -10,6 +10,7 @@ import type { Attendance } from "@/types/attendance.types";
 import { getAllAttendance, getMyAttendance } from "@/services/attendance.service";
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const months = [
     { value: "1", label: "January" }, { value: "2", label: "February" },
@@ -32,10 +33,12 @@ const statusBadge: Record<string, string> = {
     Late: "bg-yellow-100 text-yellow-700",
     "Half-day": "bg-orange-100 text-orange-700",
     Absent: "bg-red-100 text-red-700",
+    Weekoff: "bg-gray-100 text-gray-700",
 };
 
-const MyAttendance = () => {
 
+const MyAttendance = () => {
+    const navigate = useNavigate();
     const { user } = useAuthStore();
     const isAdmin = ["super_admin", "company_admin"].includes(user?.role?.name ?? "");
 
@@ -297,13 +300,13 @@ const MyAttendance = () => {
 
 
                                     {loading1 ? (
-                                        <TableRow>
+                                        <TableRow >
                                             <TableCell
                                                 colSpan={isAdmin ? 9 : 6}
                                                 className=" text-center"
                                             >
                                                 <div className="flex items-center justify-center gap-2">
-                                                    <Loader2  className={`h-4 w-4 mr-2 ${loading1 ? "animate-spin" : ""}`} />
+                                                    <Loader2 className={`h-4 w-4 mr-2 ${loading1 ? "animate-spin" : ""}`} />
                                                     <span>Loading attendance...</span>
                                                 </div>
                                             </TableCell>
@@ -319,8 +322,12 @@ const MyAttendance = () => {
                                             <TableRow
                                                 key={att.id}
                                                 className="cursor-pointer hover:bg-muted/50"
-                                                onClick={() => setFilterDate(new Date(att.date).toISOString().split("T")[0])
-                                                }
+                                                onClick={() => {
+                                                    if (isAdmin) {
+                                                        navigate(`/attendance/employee/${att.userId}`);
+                                                    }
+                                                }}
+
                                             >
                                                 <TableCell>{index + 1}</TableCell>
                                                 {isAdmin && (

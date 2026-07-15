@@ -60,6 +60,8 @@ const AttendanceLive = () => {
             case "Present": return "bg-green-100 text-green-700";
             case "Late": return "bg-yellow-100 text-yellow-700";
             case "Half-day": return "bg-orange-100 text-orange-700";
+            case "Absent": return "bg-red-100 text-red-700";
+            case "Week off": return "bg-blue-100 text-blue-700";
             default: return "bg-gray-100 text-gray-700";
         }
     };

@@ -249,9 +249,25 @@ export const getAllAttendance = async (
     const targetDate = date ? new Date(date) : new Date();
     targetDate.setHours(0, 0, 0, 0);
 
-    return await prisma.attendance.findMany({
+    // saare active employees lo (company ke)
+    const employees = await prisma.user.findMany({
         where: {
-            // ...(companyId ? { companyId } : { companyId: { not: null } }),
+            ...(companyId ? { companyId } : { companyId: { not: null } }),
+            isActive: true,
+            role: { name: { notIn: ["company_admin", "super_admin"] } },
+        },
+        select: {
+            id: true,
+            name: true,
+            employeeCode: true,
+            designation: true,
+            branch: { select: { id: true, name: true } },
+        }
+    });
+
+    // Us din ki attendance record lo 
+    const records = await prisma.attendance.findMany({
+        where: {
             ...(companyId && { companyId }),
             date: targetDate,
         },
@@ -263,8 +279,44 @@ export const getAllAttendance = async (
                 select: { id: true, name: true }
             }
         },
-        orderBy: { punchInTime: "desc" }
     });
+
+    const recordMap = new Map(records.map((record) => [record.userId, record]));
+    const isSunday = targetDate.getDay() === 0;
+
+    // her employee ke liye row create karo
+    const result = employees.map((employee) => {
+        const existing = recordMap.get(employee.id);
+        if (existing) return existing;
+
+        return {
+            id: `${isSunday ? "weekoff" : "absent"}-${employee.id}-${targetDate.toISOString().split("T")[0]}`,
+            userId: employee.id,
+            companyId,
+            branchId: employee.branch?.id ?? null,
+            date: targetDate,
+            punchInTime: null,
+            punchOutTime: null,
+            punchInLat: null,
+            punchInLng: null,
+            punchOutLat: null,
+            punchOutLng: null,
+            workingHours: 0,
+            isWithinGeoFence: false,
+            status: isSunday ? "Week Off" : "Absent",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            user: {
+                id: employee.id,
+                name: employee.name,
+                employeeCode: employee.employeeCode,
+                designation: employee.designation,
+            },
+            branch: employee.branch
+        };
+    });
+
+    return result;
 };
 
 // get live attendance
@@ -288,3 +340,30 @@ export const getLiveAttendance = async (companyId: string | null) => {
         orderBy: { punchInTime: "desc" }
     })
 }
+
+// attendance.service.ts mein add karo
+export const getEmployeeAttendance = async (
+    userId: string,
+    month?: number,
+    year?: number
+) => {
+    //  Reuse existing logic
+    return await getMyAttendance(userId, month, year);
+};
+
+// Employee basic info bhi chahiye header ke liye
+export const getEmployeeBasicInfo = async (userId: string) => {
+    const employee = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            employeeCode: true,
+            designation: true,
+            branch: { select: { id: true, name: true } },
+        }
+    });
+    if (!employee) throw new Error("Employee not found");
+    return employee;
+};

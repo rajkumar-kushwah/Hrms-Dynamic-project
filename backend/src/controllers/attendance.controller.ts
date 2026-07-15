@@ -87,3 +87,25 @@ export const getLiveAttendance = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 }
+
+
+// monthly attendance
+export const getEmployeeAttendance = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.userId as string;
+        const month = req.query.month ? Number(req.query.month) : undefined;
+        const year = req.query.year ? Number(req.query.year) : undefined;
+
+        const [attendance, employee] = await Promise.all([
+            AttendanceService.getEmployeeAttendance(userId, month, year),
+            AttendanceService.getEmployeeBasicInfo(userId),
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            data: { attendance, employee }
+        });
+    } catch (error: any) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
