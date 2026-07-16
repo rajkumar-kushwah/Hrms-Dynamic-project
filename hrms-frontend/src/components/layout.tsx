@@ -36,6 +36,8 @@ export default function layout() {
                 return "Users";
             case "/attendance/list":
                 return "Attendance List";
+            case "/settings":
+                return "Settings";
             default:
                 return "Dashboard";
         }

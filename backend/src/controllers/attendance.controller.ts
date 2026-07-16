@@ -21,7 +21,8 @@ export const punchIn = async (req: Request, res: Response) => {
 export const punchOut = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id!;
-        const result = await AttendanceService.punchOut(userId, req.body);
+        const companyId = req.user?.companyId!;
+        const result = await AttendanceService.punchOut(userId, companyId, req.body);
 
         return res.status(200).json({
             success: true,
@@ -47,10 +48,11 @@ export const getTodayAttendance = async (req: Request, res: Response) => {
 export const getMyAttendance = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id!;
+        const companyId = req.user?.companyId!;
         const month = req.query.month ? Number(req.query.month) : undefined;
         const year = req.query.year ? Number(req.query.year) : undefined;
 
-        const attendance = await AttendanceService.getMyAttendance(userId, month, year);
+        const attendance = await AttendanceService.getMyAttendance(userId, companyId, month, year);
 
         return res.status(200).json({ success: true, data: attendance });
     } catch (error: any) {
@@ -93,11 +95,12 @@ export const getLiveAttendance = async (req: Request, res: Response) => {
 export const getEmployeeAttendance = async (req: Request, res: Response) => {
     try {
         const userId = req.params.userId as string;
+        const companyId = req.user?.companyId!;
         const month = req.query.month ? Number(req.query.month) : undefined;
         const year = req.query.year ? Number(req.query.year) : undefined;
 
         const [attendance, employee] = await Promise.all([
-            AttendanceService.getEmployeeAttendance(userId, month, year),
+            AttendanceService.getEmployeeAttendance(userId, companyId, month, year),
             AttendanceService.getEmployeeBasicInfo(userId),
         ]);
 

@@ -1,14 +1,27 @@
 import { prisma } from "../config/db.js";
 import { isWithinGeoFence, calculateDistance } from "../utilis/geoFencing.js";
 
+//  Helper — Settings lo (default fallback ke saath)
+const getCompanySettings = async (companyId: string) => {
+    let settings = await prisma.companySettings.findUnique({
+        where: { companyId },
+    });
+
+    if (!settings) {
+        // Agar settings nahi bani, default create karo
+        settings = await prisma.companySettings.create({
+            data: { companyId },
+        });
+    }
+
+    return settings;
+};
+
 // ─── Punch In ─────────────────────────────
 export const punchIn = async (
     userId: string,
     companyId: string,
-    data: {
-        latitude: number;
-        longitude: number;
-    }
+    data: { latitude: number; longitude: number; }
 ) => {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -20,27 +33,23 @@ export const punchIn = async (
 
     const branch = user.branch;
 
-    //  Geo Fencing Check
+    //  Settings lo
+    const settings = await getCompanySettings(companyId);
+
     let isWithinFence = true;
     if (branch.latitude && branch.longitude && branch.geoRadius) {
         isWithinFence = isWithinGeoFence(
-            data.latitude,
-            data.longitude,
-            branch.latitude,
-            branch.longitude,
+            data.latitude, data.longitude,
+            branch.latitude, branch.longitude,
             branch.geoRadius
         );
     }
 
-    //  Aaj ki date (sirf date, time nahi)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    //  Already punch in kiya hai aaj?
     const existing = await prisma.attendance.findUnique({
-        where: {
-            userId_date: { userId, date: today }
-        }
+        where: { userId_date: { userId, date: today } }
     });
 
     if (existing && existing.punchInTime) {
@@ -49,16 +58,14 @@ export const punchIn = async (
 
     const now = new Date();
 
-    //  Late check (example: 10:15 AM cutoff)
-    const cutoffHour = 10;
-    const cutoffMinute = 15;
+    //  Settings se cutoff lo
+    const cutoffHour = settings.lateMarkHour;
+    const cutoffMinute = settings.lateMarkMinute;
     const isLate = now.getHours() > cutoffHour ||
         (now.getHours() === cutoffHour && now.getMinutes() > cutoffMinute);
 
     const attendance = await prisma.attendance.upsert({
-        where: {
-            userId_date: { userId, date: today }
-        },
+        where: { userId_date: { userId, date: today } },
         update: {
             punchInTime: now,
             punchInLat: data.latitude,
@@ -67,10 +74,7 @@ export const punchIn = async (
             status: isLate ? "Late" : "Present",
         },
         create: {
-            userId,
-            companyId,
-            branchId: user.branchId,
-            date: today,
+            userId, companyId, branchId: user.branchId, date: today,
             punchInTime: now,
             punchInLat: data.latitude,
             punchInLng: data.longitude,
@@ -91,10 +95,8 @@ export const punchIn = async (
 // ─── Punch Out ────────────────────────────
 export const punchOut = async (
     userId: string,
-    data: {
-        latitude: number;
-        longitude: number;
-    }
+    companyId: string, //  Naya parameter add kiya
+    data: { latitude: number; longitude: number; }
 ) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -111,15 +113,16 @@ export const punchOut = async (
         throw new Error("You have already punched out today");
     }
 
-    const now = new Date();
+    //  Settings lo
+    const settings = await getCompanySettings(companyId);
 
-    //  Working hours calculate karo
+    const now = new Date();
     const workingHours =
         (now.getTime() - attendance.punchInTime.getTime()) / (1000 * 60 * 60);
 
-    //  Half-day check (< 4 hours)
+    //  Settings se half-day threshold lo
     let status = attendance.status;
-    if (workingHours < 4) {
+    if (workingHours < settings.halfDayHours) {
         status = "Half-day";
     }
 
@@ -150,91 +153,92 @@ export const getTodayAttendance = async (userId: string) => {
 // ─── Get My Attendance History ───────────
 export const getMyAttendance = async (
     userId: string,
+    companyId: string,
     month?: number,
     year?: number
 ) => {
+    const settings = await getCompanySettings(companyId);
+    const weekOffDays = settings.weekOffDays;
+
     const targetMonth = month ?? new Date().getMonth() + 1;
     const targetYear = year ?? new Date().getFullYear();
 
+    //  Purana logic wapas — local Date, but simple hours reset
     const startDate = new Date(targetYear, targetMonth - 1, 1);
     startDate.setHours(0, 0, 0, 0);
 
     const endDate = new Date(targetYear, targetMonth, 0);
-    endDate.setHours(23, 59, 59, 999);
+    endDate.setHours(0, 0, 0, 0); //  23:59:59 nahi — 0,0,0,0 taaki loop clean rahe
 
-    // Today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Attendance records from DB
     const records = await prisma.attendance.findMany({
         where: {
             userId,
-            date: {
-                gte: startDate,
-                lte: endDate,
-            },
+            date: { gte: startDate, lte: endDate },
         },
-        orderBy: {
-            date: "asc",
-        },
+        orderBy: { date: "asc" },
     });
 
-    // Existing attendance map
+    // ✅ Key banane ka tarika — sirf Y-M-D use karo, local se
+    const getDateKey = (d: Date) => {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+
     const attendanceMap = new Map(
-        records.map((record) => [
-            record.date.toISOString().split("T")[0],
-            record,
-        ])
+        records.map((record) => [getDateKey(new Date(record.date)), record])
     );
 
     const result: any[] = [];
+    const todayKey = getDateKey(today);
 
     for (
-        let date = new Date(startDate);
-        date <= endDate;
-        date.setDate(date.getDate() + 1)
+        let d = new Date(startDate);
+        d <= endDate;
+        d.setDate(d.getDate() + 1)
     ) {
-        const currentDate = new Date(date);
-        currentDate.setHours(0, 0, 0, 0);
+        const currentDate = new Date(d);
+        const key = getDateKey(currentDate);
 
-        // Skip Sunday
-        if (currentDate.getDay() === 0) {
+        //  Future date hai — turant skip karo, sabse pehle check karo
+        if (key > todayKey) {
             continue;
         }
 
-        const key = currentDate.toISOString().split("T")[0];
+        const isWeekOff = weekOffDays.includes(currentDate.getDay());
         const attendance = attendanceMap.get(key);
 
-        // Record exists
         if (attendance) {
             result.push(attendance);
             continue;
         }
 
-        // Future dates ko skip karo
-        if (currentDate > today) {
+        if (isWeekOff) {
+            result.push({
+                id: `weekoff-${key}`,
+                userId, companyId, branchId: null,
+                date: new Date(currentDate),
+                punchInTime: null, punchOutTime: null,
+                punchInLat: null, punchInLng: null,
+                punchOutLat: null, punchOutLng: null,
+                workingHours: 0, isWithinGeoFence: false,
+                status: "Week Off",
+                createdAt: new Date(), updatedAt: new Date(),
+            });
             continue;
         }
 
-        // Past working day without attendance => Absent
         result.push({
             id: `absent-${key}`,
-            userId,
-            companyId: null,
-            branchId: null,
+            userId, companyId, branchId: null,
             date: new Date(currentDate),
-            punchInTime: null,
-            punchOutTime: null,
-            punchInLat: null,
-            punchInLng: null,
-            punchOutLat: null,
-            punchOutLng: null,
-            workingHours: 0,
-            isWithinGeoFence: false,
+            punchInTime: null, punchOutTime: null,
+            punchInLat: null, punchInLng: null,
+            punchOutLat: null, punchOutLng: null,
+            workingHours: 0, isWithinGeoFence: false,
             status: "Absent",
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: new Date(), updatedAt: new Date(),
         });
     }
 
@@ -249,7 +253,13 @@ export const getAllAttendance = async (
     const targetDate = date ? new Date(date) : new Date();
     targetDate.setHours(0, 0, 0, 0);
 
-    // saare active employees lo (company ke)
+    //  Settings lo (agar companyId hai)
+    let weekOffDays = [0]; // default Sunday
+    if (companyId) {
+        const settings = await getCompanySettings(companyId);
+        weekOffDays = settings.weekOffDays;
+    }
+
     const employees = await prisma.user.findMany({
         where: {
             ...(companyId ? { companyId } : { companyId: { not: null } }),
@@ -265,32 +275,28 @@ export const getAllAttendance = async (
         }
     });
 
-    // Us din ki attendance record lo 
     const records = await prisma.attendance.findMany({
         where: {
             ...(companyId && { companyId }),
             date: targetDate,
         },
         include: {
-            user: {
-                select: { id: true, name: true, employeeCode: true, designation: true }
-            },
-            branch: {
-                select: { id: true, name: true }
-            }
+            user: { select: { id: true, name: true, employeeCode: true, designation: true } },
+            branch: { select: { id: true, name: true } }
         },
     });
 
     const recordMap = new Map(records.map((record) => [record.userId, record]));
-    const isSunday = targetDate.getDay() === 0;
 
-    // her employee ke liye row create karo
+    //  Dynamic week off check (Settings se)
+    const isWeekOff = weekOffDays.includes(targetDate.getDay());
+
     const result = employees.map((employee) => {
         const existing = recordMap.get(employee.id);
         if (existing) return existing;
 
         return {
-            id: `${isSunday ? "weekoff" : "absent"}-${employee.id}-${targetDate.toISOString().split("T")[0]}`,
+            id: `${isWeekOff ? "weekoff" : "absent"}-${employee.id}-${targetDate.toISOString().split("T")[0]}`,
             userId: employee.id,
             companyId,
             branchId: employee.branch?.id ?? null,
@@ -303,7 +309,7 @@ export const getAllAttendance = async (
             punchOutLng: null,
             workingHours: 0,
             isWithinGeoFence: false,
-            status: isSunday ? "Week Off" : "Absent",
+            status: isWeekOff ? "Week Off" : "Absent",
             createdAt: new Date(),
             updatedAt: new Date(),
             user: {
@@ -330,37 +336,28 @@ export const getLiveAttendance = async (companyId: string | null) => {
             date: today,
         },
         include: {
-            user: {
-                select: { id: true, name: true, employeeCode: true, designation: true }
-            },
-            branch: {
-                select: { id: true, name: true }
-            }
+            user: { select: { id: true, name: true, employeeCode: true, designation: true } },
+            branch: { select: { id: true, name: true } }
         },
         orderBy: { punchInTime: "desc" }
     })
 }
 
-// attendance.service.ts mein add karo
 export const getEmployeeAttendance = async (
     userId: string,
+    companyId: string, //  Naya parameter add kiya
     month?: number,
     year?: number
 ) => {
-    //  Reuse existing logic
-    return await getMyAttendance(userId, month, year);
+    return await getMyAttendance(userId, companyId, month, year);
 };
 
-// Employee basic info bhi chahiye header ke liye
 export const getEmployeeBasicInfo = async (userId: string) => {
     const employee = await prisma.user.findUnique({
         where: { id: userId },
         select: {
-            id: true,
-            name: true,
-            email: true,
-            employeeCode: true,
-            designation: true,
+            id: true, name: true, email: true,
+            employeeCode: true, designation: true,
             branch: { select: { id: true, name: true } },
         }
     });

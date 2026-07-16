@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { getEmployeeAttendance } from "@/services/attendance.service";
+import type { Attendance, EmployeeBasicInfo } from "@/types/attendance.types";
 
 const months = [
     { value: "1", label: "January" }, { value: "2", label: "February" },
@@ -40,12 +41,12 @@ const EmployeeAttendanceDetail = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
 
-    const [attendances, setAttendances] = React.useState<any[]>([]);
-    const [employee, setEmployee] = React.useState<any>(null);
+    const [attendances, setAttendances] = React.useState<Attendance[]>([]);
+    const [employee, setEmployee] = React.useState<EmployeeBasicInfo | null>(null);
     const [selectedMonth, setSelectedMonth] = React.useState(String(new Date().getMonth() + 1));
     const [selectedYear, setSelectedYear] = React.useState(String(new Date().getFullYear()));
 
-    React.useEffect(() => {
+    React.useEffect(() => { 
         loadData();
     }, [selectedMonth, selectedYear]);
 
