@@ -26,14 +26,11 @@
     "tsx": "^4.23.0",
     "typescript": "^5.9.3"
   },
+  
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.8.0",
     "@types/node": "^26.1.1",
-    "@types/express": "^5.0.6",
-    "@types/cors": "^2.8.19",
-    "@types/express-session": "^1.18.2",
-    "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -42,9 +39,11 @@
     "jsonwebtoken": "^9.0.3",
     "prisma": "^7.4.1"
   },
+  
   "engines": {
     "node": "22.x"
   },
+
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   }
