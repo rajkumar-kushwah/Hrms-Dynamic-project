@@ -56,13 +56,20 @@ export const punchIn = async (
         throw new Error("You have already punched in today");
     }
 
+    //  Proper timezone conversion — DST safe, reliable
+    const getISTTime = (date: Date) => {
+        const istString = date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+        return new Date(istString);
+    };
+
     const now = new Date();
+    const nowIST = getISTTime(now);
 
     //  Settings se cutoff lo
     const cutoffHour = settings.lateMarkHour;
     const cutoffMinute = settings.lateMarkMinute;
-    const isLate = now.getHours() > cutoffHour ||
-        (now.getHours() === cutoffHour && now.getMinutes() > cutoffMinute);
+    const isLate = nowIST.getHours() > cutoffHour ||
+        (nowIST.getHours() === cutoffHour && nowIST.getMinutes() > cutoffMinute);
 
     const attendance = await prisma.attendance.upsert({
         where: { userId_date: { userId, date: today } },
