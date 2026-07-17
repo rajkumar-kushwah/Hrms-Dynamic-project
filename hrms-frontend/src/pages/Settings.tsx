@@ -112,25 +112,17 @@ const Settings = () => {
                         <Label>Late Mark Cutoff Time</Label>
                         <div className="flex items-center gap-2 mt-1">
                             <Input
-                                type="number"
-                                min={0}
-                                max={23}
-                                value={settings.lateMarkHour}
-                                onChange={(e) => setSettings({ ...settings, lateMarkHour: Number(e.target.value) })}
-                                className="w-20"
+                                type="time"  //  Browser native time picker — AM/PM automatic dikhata hai
+                                value={`${String(settings.lateMarkHour).padStart(2, "0")}:${String(settings.lateMarkMinute).padStart(2, "0")}`}
+                                onChange={(e) => {
+                                    const [hour, minute] = e.target.value.split(":").map(Number);
+                                    setSettings({ ...settings, lateMarkHour: hour, lateMarkMinute: minute });
+                                }}
+                                className="w-32"
                             />
-                            <span>:</span>
-                            <Input
-                                type="number"
-                                min={0}
-                                max={59}
-                                value={settings.lateMarkMinute}
-                                onChange={(e) => setSettings({ ...settings, lateMarkMinute: Number(e.target.value) })}
-                                className="w-20"
-                            />
-                            <span className="text-sm text-muted-foreground">
-                                (24-hour format — employees punching in after this time are marked "Late")
-                            </span>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Employees punching in after this time will be marked "Late"
+                            </p>
                         </div>
                     </div>
 
