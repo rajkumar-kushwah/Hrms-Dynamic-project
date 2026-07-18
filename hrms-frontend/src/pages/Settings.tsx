@@ -138,7 +138,8 @@ const Settings = () => {
                             className="w-32 mt-1"
                         />
                         <p className="text-xs text-muted-foreground mt-1">
-                            If working hours are less than this, attendance is marked "Half-day"
+                            If working hours are less than {settings.halfDayHours} hours,
+                            attendance is marked "Half-day"
                         </p>
                     </div>
 
