@@ -118,7 +118,7 @@ const Settings = () => {
                                     const [hour, minute] = e.target.value.split(":").map(Number);
                                     setSettings({ ...settings, lateMarkHour: hour, lateMarkMinute: minute });
                                 }}
-                                className="w-32"
+                                className="w-35"
                             />
                             <p className="text-xs text-muted-foreground mt-1">
                                 Employees punching in after this time will be marked "Late"
