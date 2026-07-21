@@ -38,6 +38,8 @@ export default function layout() {
                 return "Attendance List";
             case "/settings":
                 return "Settings";
+            case "/geo-fencing":
+                return "Geo Fencing";
             default:
                 return "Dashboard";
         }

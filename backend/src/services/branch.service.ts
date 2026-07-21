@@ -143,10 +143,10 @@ export const permanentDeleteBranch = async (id: string) => {
         }
     });
 
-    if (!branch) throw new Error("Branch not found");   
+    if (!branch) throw new Error("Branch not found");
 
     // Ager Employee hai to delete mat kro
-    if (branch._count.users > 0){
+    if (branch._count.users > 0) {
         throw new Error(`Branch delete - ${branch._count.users} employees Assigned to this branch`);
     }
 
@@ -154,10 +154,61 @@ export const permanentDeleteBranch = async (id: string) => {
     const categoryCount = await prisma.category.count({
         where: { branchId: id }
     });
-    if (categoryCount > 0){
+    if (categoryCount > 0) {
         throw new Error(`Category delete - ${categoryCount} category exits under this branch`);
     }
-     await prisma.branch.delete({ where: { id } });
-     return { message: "Branch permanently deleted" };
+    await prisma.branch.delete({ where: { id } });
+    return { message: "Branch permanently deleted" };
 }
 
+// getGeoFencingOverview
+export const getGeoFencingOverview = async (companyId: string | null) => {
+    const branches = await prisma.branch.findMany({
+        where: {
+            ...(companyId ? { companyId } : {}),
+            isActive: true,
+        },
+        select: {
+            id: true,
+            name: true,
+            city: true,
+            latitude: true,
+            longitude: true,
+            geoRadius: true,
+            locationName: true,
+            _count: { select: { users: true } }
+        }
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayattendance = await prisma.attendance.findMany({
+        where: {
+            branchId: { in: branches.map((branch) => branch.id) },
+            date: today,
+            punchInTime: { not: null },
+        },
+        select: {
+            branchId: true,
+            isWithinGeoFence: true
+        }
+    });
+
+    return branches.map((branch) => {
+        const branchAttendance = todayattendance.filter((a) => a.branchId === branch.id);
+        return {
+            id: branch.id,
+            name: branch.name,
+            city: branch.city,
+            latitude: branch.latitude,
+            longitude: branch.longitude,
+            geoRadius: branch.geoRadius,
+            locationName: branch.locationName,
+            totalEmployees: branch._count.users,
+            insideFence: branchAttendance.filter(a => a.isWithinGeoFence).length,
+            outsideFence: branchAttendance.filter(a => !a.isWithinGeoFence).length,
+            totalPunchedInToday: branchAttendance.length,
+        };
+    });
+};

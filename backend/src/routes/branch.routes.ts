@@ -6,6 +6,7 @@ import {
     updateBranch,
     deleteBranch,
     permanentDeleteBranch,
+    getGeoFencingOverview,
 } from "../controllers/branch.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authorize, checkSuperAdmin } from "../middleware/role.middleware.js";
@@ -19,5 +20,6 @@ router.put("/:id", protect, authorize("branch", "canEdit"), updateBranch);
 router.delete("/:id", protect, authorize("branch", "canDelete"), deleteBranch);
 
 router.delete("/:id/permanent", protect,checkSuperAdmin, permanentDeleteBranch );
+router.get("/geo-fencing/overview", protect, authorize("geo_fencing", "canView"), getGeoFencingOverview);
 
 export default router;

@@ -17,6 +17,7 @@ import AttendanceList from "@/pages/punchCard/AttendanceList";
 import AttendanceLive from "@/pages/punchCard/AttendanceLive";
 import EmployeeAttendanceDetail from "@/pages/punchCard/EmployeeAttendanceDetail";
 import Settings from "@/pages/Settings";
+import GeoFencing from "@/pages/punchCard/GeoFencing";
 
 const AppRoutes = () => {
     return (
@@ -42,6 +43,7 @@ const AppRoutes = () => {
                         <Route path="/attendance/live" element={<AttendanceLive />} />
                         <Route path="/attendance/employee/:userId" element={<EmployeeAttendanceDetail />} />
                         <Route path="/settings" element={<Settings />} />
+                        <Route path="/attendance/geo-fencing" element={<GeoFencing />} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}

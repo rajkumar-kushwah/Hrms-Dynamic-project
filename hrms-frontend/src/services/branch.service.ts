@@ -20,3 +20,6 @@ export const deleteBranch = (id: string) => api.delete(`/branch/${id}`);
 
 // permanent delete branch
 export const permanentDeleteBranch = (id: string) => api.delete(`/branch/${id}/permanent`);
+
+// get geo fencing
+export const getGeoFencingOverview = () => api.get("/branch/geo-fencing/overview");
