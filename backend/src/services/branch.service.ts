@@ -191,7 +191,9 @@ export const getGeoFencingOverview = async (companyId: string | null) => {
         },
         select: {
             branchId: true,
-            isWithinGeoFence: true
+            isWithinGeoFence: true,
+            punchInTime: true,
+            user: { select: { id: true, name: true, employeeCode: true } },
         }
     });
 
@@ -209,6 +211,13 @@ export const getGeoFencingOverview = async (companyId: string | null) => {
             insideFence: branchAttendance.filter(a => a.isWithinGeoFence).length,
             outsideFence: branchAttendance.filter(a => !a.isWithinGeoFence).length,
             totalPunchedInToday: branchAttendance.length,
+             employees: branchAttendance.map(a => ({
+                id: a.user.id,
+                name: a.user.name,
+                employeeCode: a.user.employeeCode,
+                isWithinGeoFence: a.isWithinGeoFence,
+                punchInTime: a.punchInTime,
+            })),
         };
     });
 };

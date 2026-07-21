@@ -5,6 +5,15 @@ import { MapPin, Users, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getGeoFencingOverview } from "@/services/branch.service";
 
+
+interface GeoFenceEmployee {
+    id: string;
+    name: string;
+    employeeCode?: string;
+    isWithinGeoFence: boolean;
+    punchInTime: string;
+}
+
 interface GeoFenceBranch {
     id: string;
     name: string;
@@ -17,6 +26,7 @@ interface GeoFenceBranch {
     insideFence: number;
     outsideFence: number;
     totalPunchedInToday: number;
+    employees: GeoFenceEmployee[];
 }
 
 const GeoFencing = () => {
@@ -110,6 +120,29 @@ const GeoFencing = () => {
                                         <p className="font-bold text-red-600">{branch.outsideFence}</p>
                                     </div>
                                 </div>
+                                 {/* Card ke andar, Inside/Outside count ke neeche add karo: */}
+
+                                {/* Employee List */}
+                                {branch.employees.length > 0 && (
+                                    <div className="border-t pt-2 mt-1">
+                                        <p className="text-xs text-muted-foreground mb-2">Punched In Today</p>
+                                        <div className="flex flex-col gap-1.5 max-h-32 overflow-y-auto">
+                                            {branch.employees.map((emp) => (
+                                                <div key={emp.id} className="flex items-center justify-between text-xs">
+                                                    <div>
+                                                        <span className="font-medium">{emp.name}</span>
+                                                        <span className="text-muted-foreground ml-1">({emp.employeeCode})</span>
+                                                    </div>
+                                                    <Badge className={emp.isWithinGeoFence
+                                                        ? "bg-green-100 text-green-700 text-[10px] px-1.5 py-0"
+                                                        : "bg-red-100 text-red-700 text-[10px] px-1.5 py-0"}>
+                                                        {emp.isWithinGeoFence ? "Inside" : "Outside"}
+                                                    </Badge>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 <p className="text-xs text-muted-foreground text-center">
                                     {branch.totalPunchedInToday} punched in today
