@@ -72,6 +72,11 @@ const LocationPicker = ({
       setLocationName(data.display_name ?? "");
     } catch (err) {
       console.error(err);
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to get location name");
+      }
       setLocationName("");
     }
   }
@@ -99,6 +104,11 @@ const LocationPicker = ({
       }
     } catch (err) {
       console.error(err);
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to search location");
+      }
     } finally {
       setSearching(false);
     }
@@ -160,7 +170,7 @@ const LocationPicker = ({
           {locationName && (
             <p className="text-sm font-medium bg-muted p-2 rounded">{locationName}</p>
           )}
-          
+
 
           <p className="text-xs text-muted-foreground">
             Click anywhere on the map to set the branch location, or search above.

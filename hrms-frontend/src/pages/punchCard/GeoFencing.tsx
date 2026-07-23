@@ -41,11 +41,15 @@ const GeoFencing = () => {
         try {
             const res = await getGeoFencingOverview();
             setBranches(res.data.data);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to load geo fencing data");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load geo fencing data")
+            }
         } finally {
             setLoading(false);
-        }
+        } 
     };
 
     if (loading) {
@@ -88,7 +92,7 @@ const GeoFencing = () => {
                                             {branch.locationName ?? `${branch.latitude.toFixed(4)}, ${branch.longitude.toFixed(4)}`}
                                         </p>
                                         <Badge variant="outline" className="mt-2">
-                                            Radius: {branch.geoRadius ?? 100}m
+                                            Radius: {branch.geoRadius ?? 0}m
                                         </Badge>
                                     </div>
                                 ) : (
@@ -120,7 +124,7 @@ const GeoFencing = () => {
                                         <p className="font-bold text-red-600">{branch.outsideFence}</p>
                                     </div>
                                 </div>
-                                 {/* Card ke andar, Inside/Outside count ke neeche add karo: */}
+                                {/* Card ke andar, Inside/Outside count ke neeche add karo: */}
 
                                 {/* Employee List */}
                                 {branch.employees.length > 0 && (

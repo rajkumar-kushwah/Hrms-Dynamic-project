@@ -40,6 +40,12 @@ export default function layout() {
                 return "Settings";
             case "/geo-fencing":
                 return "Geo Fencing";
+            case "/leave/policy":
+                return "Leave Policy";
+            case "/leave/request":
+                return "Leave Request";
+            case "/leave/approval":
+                return "Leave Approval";
             default:
                 return "Dashboard";
         }

@@ -37,8 +37,12 @@ const AttendanceLive = () => {
             const res = await getLiveAttendance();
             setAttendances(res.data.data);
             setLastUpdated(new Date());
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to load live attendance");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load live attendance");
+            }
         } finally {
             setLoading(false);
             setLoading1(false);

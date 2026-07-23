@@ -18,6 +18,9 @@ import AttendanceLive from "@/pages/punchCard/AttendanceLive";
 import EmployeeAttendanceDetail from "@/pages/punchCard/EmployeeAttendanceDetail";
 import Settings from "@/pages/Settings";
 import GeoFencing from "@/pages/punchCard/GeoFencing";
+import LeavePolicy from "@/pages/LeavePolicy";
+import LeaveRequestPage from "@/pages/LeaveRequestPage";
+import LeaveApproval from "@/pages/LeaveApproval";
 
 const AppRoutes = () => {
     return (
@@ -44,6 +47,9 @@ const AppRoutes = () => {
                         <Route path="/attendance/employee/:userId" element={<EmployeeAttendanceDetail />} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/attendance/geo-fencing" element={<GeoFencing />} />
+                        <Route path="/leave/request" element={<LeaveRequestPage />} />
+                        <Route path="/leave/approval" element={<LeaveApproval />} />
+                        <Route path="/leave/policy" element={<LeavePolicy />} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}

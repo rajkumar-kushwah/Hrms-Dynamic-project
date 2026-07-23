@@ -108,7 +108,11 @@ const Roles = () => {
             const res = await getRoles();
             setRoles(res.data.data);
         } catch (err) {
-            toast.error("Failed to load roles");
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load roles");
+            }
         }
     };
 
@@ -138,7 +142,11 @@ const Roles = () => {
 
             setModules(sorted);
         } catch (err) {
-            toast.error("Failed to load modules");
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load modules");
+            }
         }
     };
 
@@ -209,8 +217,12 @@ const Roles = () => {
             }
             loadRoles();
             handleClose();
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to save role");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else { 
+                toast.error("Failed to create role");
+            }
         }
     };
 
@@ -229,8 +241,12 @@ const Roles = () => {
             await deleteRole(id);
             toast.success("Role deleted successfully!");
             loadRoles();
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to delete role");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else[
+                toast.error("Failed to delete role")
+            ]
         }
     };
 

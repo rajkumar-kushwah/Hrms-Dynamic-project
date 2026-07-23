@@ -72,7 +72,11 @@ function CompanyList() {
       }
     } catch (err) {
       console.log(err);
-      toast.error("Failed to load companies");
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to load companies");
+      }
     }
   };
 
@@ -96,8 +100,12 @@ function CompanyList() {
       setCompanies((prev) => prev.map((c) => c.id === selectedCompany.id ? { ...c, ...editForm } : c));
       setEditOpen(false);
       setSelectedCompany(null);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update company");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to update company");
+      }
     }
   }
 
@@ -130,8 +138,12 @@ function CompanyList() {
       setDangerOpen(false);
       setEditOpen(false);
       setConfirmText("");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to delete company");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to delete company");
+      }
     }
   };
 
@@ -169,7 +181,11 @@ function CompanyList() {
       });
       setOpen(false);
     } catch (err) {
-      toast.error("Failed to create company");
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to create company");
+      }
     }
   };
 
@@ -185,7 +201,11 @@ function CompanyList() {
       setAssignOpen(false);
       setAdminForm({ name: "", email: "", password: "" });
     } catch (err) {
-      toast.error("Failed to assign admin");
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to assign admin");
+      }
     }
   };
   const handleToggleStatus = async () => {
@@ -202,8 +222,12 @@ function CompanyList() {
       );
       setDeleteConfirmOpen(false);
       setSelectedCompany(null);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update company");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to update company");
+      }
     }
   };
 

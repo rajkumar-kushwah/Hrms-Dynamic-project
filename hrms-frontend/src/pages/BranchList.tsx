@@ -166,8 +166,12 @@ const BranchList = () => {
             setDangerOpen(false);
             setEditOpen(false);
             setConfirmText("");
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to delete branch");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to delete branch");
+            }
         }
     }
 
@@ -264,126 +268,126 @@ const BranchList = () => {
             />
             {/* Edit Dialog */}
             <div className="flex flex-col gap-3 overflow-y-auto pr-2">
-            <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Edit Branch — {selectedBranch?.name}</DialogTitle>
-                        <DialogDescription>Fill branch details</DialogDescription>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-3">
-                        <div>
-                            <Label>Branch Name</Label>
-                            <Input type="text" name="name" value={editForm.name ?? ""} onChange={handleEditChange} />
-                        </div>
-                        <div className="flex gap-2">
-                            <div className="flex-1">
-                                <Label>Phone</Label>
-                                <Input type="tel" name="phone" value={editForm.phone ?? ""} onChange={handleEditChange} />
-                            </div>
-                            <div className="flex-1">
-                                <Label>Email</Label>
-                                <Input type="email" name="email" value={editForm.email ?? ""} onChange={handleEditChange} />
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <div className="flex-1">
-                                <Label>City</Label>
-                                <Input type="text" name="city" value={editForm.city ?? ""} onChange={handleEditChange} />
-                            </div>
-                            <div className="flex-1">
-                                <Label>State</Label>
-                                <Input type="text" name="state" value={editForm.state ?? ""} onChange={handleEditChange} />
-                            </div>
-                            <div className="flex-1">
-                                <Label>Pincode</Label>
-                                <Input type="number" name="pincode" value={editForm.pincode ?? ""} onChange={handleEditChange} />
-                            </div>
-                        </div>
-                        <div>
-                            <Label>Address</Label>
-                            <Input type="text" name="address" value={editForm.address ?? ""} onChange={handleEditChange} />
-                        </div>
-
-
-                        <div>
-                            <Label>Manager Name</Label>
-                            <Input type="text" name="managerName" value={editForm.managerName ?? ""} onChange={handleEditChange} />
-                        </div>
-                        <div>
-                            <Label>Branch Location</Label>
-
-                            <div className="flex items-center gap-3">
-                                <Button
-                                    variant="outline"
-                                    type="button"
-                                    onClick={() => setEditMapOpen(true)}
-                                >
-                                    <MapPin className="h-4 w-4 mr-2" />
-                                    {editForm.latitude !== undefined ? "Update Location" : "Set Location"}
-                                </Button>
-
-                                {editForm.latitude != null &&
-                                    editForm.longitude != null && (
-                                        <span className="text-xs text-muted-foreground">
-                                            {editForm.latitude.toFixed(4)},{" "}
-                                            {editForm.longitude.toFixed(4)} — {editForm.geoRadius ?? 0}m radius
-                                        </span>
-                                    )}
-                            </div>
-                        </div>
-                        <Button onClick={handleUpdate}>Update Branch</Button>
-                    </div>
-                    <div >
-                    <LocationPicker
-                        open={editMapOpen}
-                        onOpenChange={setEditMapOpen}
-                        initialLat={editForm.latitude}
-                        initialLng={editForm.longitude}
-                        initialRadius={editForm.geoRadius}
-                        onConfirm={(lat, lng, radius, locationName) => {
-                            setEditForm((prev) => ({
-                                ...prev,
-                                latitude: lat,
-                                longitude: lng,
-                                geoRadius: radius,
-                                locationName,
-                            }));
-                        }}
-                    />
-                    </div>
-                    {/* edit Dialog ke ander dialog permanent delete confirmation hoga */}
-                    {isSuperAdmin && (
-                        <div className="border border-red-200 rounded-lg p-4 mt-4 bg-red-50">
-                            <h4 className="text-red-700 font-semibold flex items-center gap-2 text-sm">
-                                <AlertTriangle className="h-4 w-4" /> Danger Zone
-                            </h4>
-                            <p className="text-xs text-red-600 mt-1">
-                                Permanent Delete this branch. Only possible if no employee/user is assigned to this branch.
-                            </p>
-                            <Button variant="destructive" size="sm" className="sm cursor-pointer" onClick={() => setDangerOpen(true)}>Delete Permanently</Button>
-                        </div>
-                    )}
-                    {/* Comfirmation Dialog */}
-                    <Dialog open={dangerOpen} onOpenChange={setDangerOpen}>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle className="text-red-700"> Permanent Delete Branch</DialogTitle>
-                                <DialogDescription> Are you sure you want to delete <strong className="font-semibold bg-muted">{selectedBranch?.name}</strong> This action cannot be undone.</DialogDescription>
-                            </DialogHeader>
+                <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Edit Branch — {selectedBranch?.name}</DialogTitle>
+                            <DialogDescription>Fill branch details</DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3">
                             <div>
-                                <Label>Type<strong> {selectedBranch?.name}</strong> To Confirm</Label>
-                                <Input type="text" name="confirm" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Type branch name" />
+                                <Label>Branch Name</Label>
+                                <Input type="text" name="name" value={editForm.name ?? ""} onChange={handleEditChange} />
                             </div>
-                            <div className="flex gap-2 justify-end">
-                                <Button variant="outline" onClick={() => setDangerOpen(false)}>Cancel</Button>
-                                <Button variant="destructive" disabled={confirmText !== selectedBranch?.name} onClick={handlePermanentDelete} className=" cursor-pointer"> I understand, delete permanently</Button>
-
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <Label>Phone</Label>
+                                    <Input type="tel" name="phone" value={editForm.phone ?? ""} onChange={handleEditChange} />
+                                </div>
+                                <div className="flex-1">
+                                    <Label>Email</Label>
+                                    <Input type="email" name="email" value={editForm.email ?? ""} onChange={handleEditChange} />
+                                </div>
                             </div>
-                        </DialogContent>
-                    </Dialog>
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <Label>City</Label>
+                                    <Input type="text" name="city" value={editForm.city ?? ""} onChange={handleEditChange} />
+                                </div>
+                                <div className="flex-1">
+                                    <Label>State</Label>
+                                    <Input type="text" name="state" value={editForm.state ?? ""} onChange={handleEditChange} />
+                                </div>
+                                <div className="flex-1">
+                                    <Label>Pincode</Label>
+                                    <Input type="number" name="pincode" value={editForm.pincode ?? ""} onChange={handleEditChange} />
+                                </div>
+                            </div>
+                            <div>
+                                <Label>Address</Label>
+                                <Input type="text" name="address" value={editForm.address ?? ""} onChange={handleEditChange} />
+                            </div>
 
-                </DialogContent>
-            </Dialog>
+
+                            <div>
+                                <Label>Manager Name</Label>
+                                <Input type="text" name="managerName" value={editForm.managerName ?? ""} onChange={handleEditChange} />
+                            </div>
+                            <div>
+                                <Label>Branch Location</Label>
+
+                                <div className="flex items-center gap-3">
+                                    <Button
+                                        variant="outline"
+                                        type="button"
+                                        onClick={() => setEditMapOpen(true)}
+                                    >
+                                        <MapPin className="h-4 w-4 mr-2" />
+                                        {editForm.latitude !== undefined ? "Update Location" : "Set Location"}
+                                    </Button>
+
+                                    {editForm.latitude != null &&
+                                        editForm.longitude != null && (
+                                            <span className="text-xs text-muted-foreground">
+                                                {editForm.latitude.toFixed(4)},{" "}
+                                                {editForm.longitude.toFixed(4)} — {editForm.geoRadius ?? 0}m radius
+                                            </span>
+                                        )}
+                                </div>
+                            </div>
+                            <Button onClick={handleUpdate}>Update Branch</Button>
+                        </div>
+                        <div >
+                            <LocationPicker
+                                open={editMapOpen}
+                                onOpenChange={setEditMapOpen}
+                                initialLat={editForm.latitude}
+                                initialLng={editForm.longitude}
+                                initialRadius={editForm.geoRadius}
+                                onConfirm={(lat, lng, radius, locationName) => {
+                                    setEditForm((prev) => ({
+                                        ...prev,
+                                        latitude: lat,
+                                        longitude: lng,
+                                        geoRadius: radius,
+                                        locationName,
+                                    }));
+                                }}
+                            />
+                        </div>
+                        {/* edit Dialog ke ander dialog permanent delete confirmation hoga */}
+                        {isSuperAdmin && (
+                            <div className="border border-red-200 rounded-lg p-4 mt-4 bg-red-50">
+                                <h4 className="text-red-700 font-semibold flex items-center gap-2 text-sm">
+                                    <AlertTriangle className="h-4 w-4" /> Danger Zone
+                                </h4>
+                                <p className="text-xs text-red-600 mt-1">
+                                    Permanent Delete this branch. Only possible if no employee/user is assigned to this branch.
+                                </p>
+                                <Button variant="destructive" size="sm" className="sm cursor-pointer" onClick={() => setDangerOpen(true)}>Delete Permanently</Button>
+                            </div>
+                        )}
+                        {/* Comfirmation Dialog */}
+                        <Dialog open={dangerOpen} onOpenChange={setDangerOpen}>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle className="text-red-700"> Permanent Delete Branch</DialogTitle>
+                                    <DialogDescription> Are you sure you want to delete <strong className="font-semibold bg-muted">{selectedBranch?.name}</strong> This action cannot be undone.</DialogDescription>
+                                </DialogHeader>
+                                <div>
+                                    <Label>Type<strong> {selectedBranch?.name}</strong> To Confirm</Label>
+                                    <Input type="text" name="confirm" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Type branch name" />
+                                </div>
+                                <div className="flex gap-2 justify-end">
+                                    <Button variant="outline" onClick={() => setDangerOpen(false)}>Cancel</Button>
+                                    <Button variant="destructive" disabled={confirmText !== selectedBranch?.name} onClick={handlePermanentDelete} className=" cursor-pointer"> I understand, delete permanently</Button>
+
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+
+                    </DialogContent>
+                </Dialog>
             </div>
 
             {/* Delete Confirm */}

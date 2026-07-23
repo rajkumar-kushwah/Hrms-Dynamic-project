@@ -47,8 +47,12 @@ const CategoryList = () => {
         try {
             const res = await getCategories();
             setCategories(res.data.data);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to load categories");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load categories");
+            }
         }
     };
 
@@ -57,8 +61,12 @@ const CategoryList = () => {
             const res = await getBranches();
             //  Sirf active branches
             setBranches(res.data.data.filter((b: Branch) => b.isActive));
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to load branches");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load branches");
+            }
         }
     };
 
@@ -80,8 +88,12 @@ const CategoryList = () => {
             setCategories((prev) => [res.data.data, ...prev]);
             setForm({ name: "", description: "", branchId: "" });
             setOpen(false);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to create category");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to create category");
+            }
         }
     };
 
@@ -96,8 +108,12 @@ const CategoryList = () => {
             );
             setEditOpen(false);
             setSelectedCategory(null);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to update category");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to update category");
+            }
         }
     };
 
@@ -111,8 +127,12 @@ const CategoryList = () => {
                 prev.map((c) => c.id === selectedCategory.id ? { ...c, isActive: !c.isActive } : c)
             );
             setStatusDialogOpen(false);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to update category");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to update category");
+            }
         }
     };
 
@@ -129,8 +149,12 @@ const CategoryList = () => {
             setDangerOpen(false);
             setEditOpen(false);
             setConfirmText("");
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to delete category");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to delete category");
+            }
         }
     }
 

@@ -98,7 +98,11 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
 
         } catch (error) {
             console.error(error);
-            toast.error("Failed to load dropdown data");
+            if (error instanceof Error) {
+                toast.error(error.message);
+            } else {
+                toast.error("Failed to load dropdown data");
+            }
         }
     };
 
@@ -161,8 +165,12 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
             setForm(initialForm);
             setActiveTab("basic");
 
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to create employee");
+        } catch (err) {
+            if (err instanceof Error) {
+                console.log(err.message);
+            } else {
+                toast.error("Failed to create employee");
+            }
         }
     };
 
@@ -372,7 +380,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                                 <Input name="esiNumber" value={form.esiNumber} onChange={handleChange} />
                             </div>
                         </div>
-                        
+
                     </TabsContent>
                 </Tabs>
 

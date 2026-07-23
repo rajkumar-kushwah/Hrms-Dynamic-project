@@ -43,6 +43,8 @@ model Company {
   attendances Attendance[]
 
   companySettings CompanySettings[]
+  leaveTypes      LeaveType[]
+  leaveRequests   LeaveRequest[]
 }
 
 model User {
@@ -108,10 +110,12 @@ model User {
   emergencyContactName  String?
   emergencyContactPhone String?
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  lastLogin   DateTime?
-  attendances Attendance[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  lastLogin      DateTime?
+  attendances    Attendance[]
+  leaveRequests  LeaveRequest[] @relation("LeaveRequests")
+  approvedLeaves LeaveRequest[] @relation("ApprovedLeaves")
 }
 
 //Roles Table — UI se banenge, hardcoded nahi
@@ -263,12 +267,56 @@ model CompanySettings {
   companyId String  @unique
   company   Company @relation(fields: [companyId], references: [id])
 
-  lateMarkHour    Int     @default(10)
-  lateMarkMinute  Int     @default(15)
-  halfDayHours    Float   @default(4)
-  defaultGeoRadius Float  @default(100)
+  lateMarkHour     Int   @default(10)
+  lateMarkMinute   Int   @default(15)
+  halfDayHours     Float @default(4)
+  defaultGeoRadius Float @default(100)
 
-  weekOffDays     Int[]   @default([0]) // 0 = Sunday, 6 = Saturday
+  weekOffDays Int[] @default([0]) // 0 = Sunday, 6 = Saturday
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LeaveType {
+  id          String  @id @default(uuid())
+  name        String // "Sick Leave", "Casual Leave", "Earned Leave"
+  description String?
+  daysPerYear Int     @default(12)
+  isActive    Boolean @default(true)
+  companyId   String
+  company     Company @relation(fields: [companyId], references: [id])
+
+  leaveRequest LeaveRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LeaveRequest {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation("LeaveRequests", fields: [userId], references: [id])
+
+  leaveTypeId String
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  startDate DateTime
+  endDate   DateTime
+  totalDays Float
+  reason    String?
+
+  status String @default("Pending") // Pending/Approved/Rejected
+
+  approvedBy     String?
+  approvedByUser User?   @relation("ApprovedLeaves", fields: [approvedBy], references: [id])
+
+  approvedAt   DateTime?
+  rejectReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

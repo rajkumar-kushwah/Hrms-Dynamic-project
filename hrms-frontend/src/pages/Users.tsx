@@ -30,7 +30,11 @@ const Users = () => {
             const res = await getCompanyUsers();
             setUsers(res.data.data);
         } catch (err) {
-            toast.error("Failed to load users");
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load users");
+            }
         }
     };
 
@@ -46,7 +50,11 @@ const Users = () => {
                 )
             );
         } catch (err) {
-            toast.error("Failed to update status");
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to update status");
+            }
         }
     };
 
@@ -63,8 +71,12 @@ const Users = () => {
             setResetOpen(false);
             setNewPassword("");
             setSelectedUser(null);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to reset password");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to reset password");
+            }
         }
     };
 

@@ -17,13 +17,15 @@ import branchRouter from "./routes/branch.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
+import leaveTypeRoutes from "./routes/leaveType.routes.js";
+import leaveRequestRoutes from "./routes/leaveRequest.routes.js";
 
 dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 const port = 5000;
 
-
+ 
 app.use(cors({
     origin: ['http://localhost:5173',
         "https://hrms-dynamic-project.vercel.app",
@@ -48,6 +50,8 @@ app.use("/api/category", categoryRoutes);
 app.use('/api/employee', employeeRouter)
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/leave-type", leaveTypeRoutes);
+app.use("/api/leave-request", leaveRequestRoutes);
 
 app.use('/permission', permissionRouter)
 app.use('/checkin', checkInRouter)

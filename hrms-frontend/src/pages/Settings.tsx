@@ -41,8 +41,12 @@ const Settings = () => {
         try {
             const res = await getSettings();
             setSettings(res.data.data);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to load settings");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load settings");
+            }
         } finally {
             setLoading(false);
         }
@@ -61,8 +65,12 @@ const Settings = () => {
             });
             setSettings(res.data.data);
             toast.success("Settings updated successfully!");
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to update settings");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to update settings");
+            }
         } finally {
             setSaving(false);
         }

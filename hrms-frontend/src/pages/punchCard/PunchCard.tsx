@@ -34,7 +34,11 @@ function PunchCard() {
             setAttendance(res.data.data);
         } catch (err) {
             console.log(err as Error);
-            toast.error("Failed to load today's attendance");
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load today's attendance");
+            }
         } finally {
             setFetching(false);
         }
@@ -121,109 +125,109 @@ function PunchCard() {
     );
 
     return (
-       
-            <div>
-                <Card className='p-4 border rounded-xl'>
-                    <CardContent className="p-0 flex flex-col gap-4" >
-                        {/* Live clock */}
-                        <div className='flex items-center justify-between' >
-                            <div>
-                                <CardTitle className='bg-card text-sm text-muted-foreground' >Today's Attendance</CardTitle>
-                                <CardDescription>Live clock</CardDescription>
-                                <p className='text-2xl font-bold mt-1'>
-                                    {currentTime.toLocaleTimeString("en-IN", {
-                                        hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
-                                    })}
-                                </p>
-                                <p className='bg-card text-xs text-muted-foreground'>
-                                    {currentTime.toLocaleDateString("en-IN", {
-                                        weekday: "long", day: "numeric", month: "long", year: "numeric"
-                                    })}
-                                </p>
-                            </div>
-                            {/*  Status Badge */}
-                            {attendance?.status && (
-                                <Badge className={getStatusColor(attendance.status)}>
-                                    {attendance.status}
-                                </Badge>
-                            )}
-                        </div>
 
-                        {/* Punch In/Out Info */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-muted rounded-lg p-3 ">
-                                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <LogIn className="h-3 w-3" /> Punch In
-                                </p>
-                                <p className="font-semibold mt-1">{formatTime(attendance?.punchInTime)}</p>
-                            </div>
-                            <div className="bg-muted rounded-lg p-3">
-                                <p className="text-xs text-muted-foreground flex items-center gap-1 ">
-                                    <LogOut className="h-3 w-3" /> Punch Out
-                                </p>
-                                <p className="font-semibold mt-1">{formatTime(attendance?.punchOutTime)}</p>
-                            </div>
+        <div>
+            <Card className='p-4 border rounded-xl'>
+                <CardContent className="p-0 flex flex-col gap-4" >
+                    {/* Live clock */}
+                    <div className='flex items-center justify-between' >
+                        <div>
+                            <CardTitle className='bg-card text-sm text-muted-foreground' >Today's Attendance</CardTitle>
+                            <CardDescription>Live clock</CardDescription>
+                            <p className='text-2xl font-bold mt-1'>
+                                {currentTime.toLocaleTimeString("en-IN", {
+                                    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+                                })}
+                            </p>
+                            <p className='bg-card text-xs text-muted-foreground'>
+                                {currentTime.toLocaleDateString("en-IN", {
+                                    weekday: "long", day: "numeric", month: "long", year: "numeric"
+                                })}
+                            </p>
                         </div>
+                        {/*  Status Badge */}
+                        {attendance?.status && (
+                            <Badge className={getStatusColor(attendance.status)}>
+                                {attendance.status}
+                            </Badge>
+                        )}
+                    </div>
 
-                        {/* Working Hours */}
-                        {attendance?.workingHours && (
-                            <div className="bg-muted rounded-lg p-3">
-                                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <Clock className="h-3 w-3" /> Working Hours
-                                </p>
-                                <p className="font-semibold mt-1">{formatWorkingHours(attendance.workingHours)}</p>
+                    {/* Punch In/Out Info */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-muted rounded-lg p-3 ">
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <LogIn className="h-3 w-3" /> Punch In
+                            </p>
+                            <p className="font-semibold mt-1">{formatTime(attendance?.punchInTime)}</p>
+                        </div>
+                        <div className="bg-muted rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 ">
+                                <LogOut className="h-3 w-3" /> Punch Out
+                            </p>
+                            <p className="font-semibold mt-1">{formatTime(attendance?.punchOutTime)}</p>
+                        </div>
+                    </div>
+
+                    {/* Working Hours */}
+                    {attendance?.workingHours && (
+                        <div className="bg-muted rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3" /> Working Hours
+                            </p>
+                            <p className="font-semibold mt-1">{formatWorkingHours(attendance.workingHours)}</p>
+                        </div>
+                    )}
+                    {/* Geo Fence Warning */}
+                    {attendance && !attendance.isWithinGeoFence && (
+                        <div className=" bg-red-50 border border-red-200 rounded-lg p-3">
+                            <p className="text-xs text-red-600 flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                Attendance marked outside branch location
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Punch In/Out Button */}
+                    <div className='flex gap-2'>
+                        {!attendance?.punchInTime && (
+                            <Button
+                                className="flex-1 bg-green-600 hover:bg-green-700 cursor-pointer"
+                                onClick={handlePunchIn}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <LogIn className="mr-2 h-4 w-4" />
+                                )}
+                                Punch In
+                            </Button>
+                        )}
+                        {attendance?.punchInTime && !attendance?.punchOutTime && (
+                            <Button
+                                className="flex-1 bg-red-600 hover:bg-red-700 cursor-pointer"
+                                onClick={handlePunchOut}
+                                disabled={loading}
+                            >
+                                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <LogOut className="h-4 w-4 mr-2" />}
+                                Punch Out
+                            </Button>
+                        )}
+
+                        {attendance?.punchInTime && attendance?.punchOutTime && (
+                            <div className="flex-1 text-center text-sm text-muted-foreground py-2">
+                                Attendance complete for today
                             </div>
                         )}
-                        {/* Geo Fence Warning */}
-                        {attendance && !attendance.isWithinGeoFence && (
-                            <div className=" bg-red-50 border border-red-200 rounded-lg p-3">
-                                <p className="text-xs text-red-600 flex items-center gap-1">
-                                    <MapPin className="h-3 w-3" />
-                                    Attendance marked outside branch location
-                                </p>
-                            </div>
-                        )}
 
-                        {/* Punch In/Out Button */}
-                        <div className='flex gap-2'>
-                            {!attendance?.punchInTime && (
-                                <Button
-                                    className="flex-1 bg-green-600 hover:bg-green-700 cursor-pointer"
-                                    onClick={handlePunchIn}
-                                    disabled={loading}
-                                >
-                                    {loading ? (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <LogIn className="mr-2 h-4 w-4" />
-                                    )}
-                                    Punch In
-                                </Button>
-                            )}
-                            {attendance?.punchInTime && !attendance?.punchOutTime && (
-                                <Button
-                                    className="flex-1 bg-red-600 hover:bg-red-700 cursor-pointer"
-                                    onClick={handlePunchOut}
-                                    disabled={loading}
-                                >
-                                    {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <LogOut className="h-4 w-4 mr-2" />}
-                                    Punch Out
-                                </Button>
-                            )}
+                    </div>
 
-                            {attendance?.punchInTime && attendance?.punchOutTime && (
-                                <div className="flex-1 text-center text-sm text-muted-foreground py-2">
-                                    Attendance complete for today
-                                </div>
-                            )}
+                </CardContent>
+            </Card>
 
-                        </div>
+        </div>
 
-                    </CardContent>
-                </Card>
-
-            </div>
-       
     )
 }
 

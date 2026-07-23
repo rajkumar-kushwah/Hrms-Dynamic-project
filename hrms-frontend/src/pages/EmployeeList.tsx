@@ -47,8 +47,12 @@ const EmployeeList = () => {
     try {
       const res = await getEmployees();
       setEmployees(res.data.data);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to load employees");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to load employees");
+      }
     }
   };
 
@@ -66,8 +70,12 @@ const EmployeeList = () => {
       setResetOpen(false);
       setNewPassword("");
       setSelectedForReset(null);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to reset password");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to reset password");
+      }
     }
   }
 
@@ -81,8 +89,12 @@ const EmployeeList = () => {
         prev.map((e) => e.id === selectedEmployee.id ? { ...e, isActive: !e.isActive } : e)
       );
       setStatusDialogOpen(false);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update employee");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to update employee");
+      }
     }
   };
 
@@ -91,8 +103,12 @@ const EmployeeList = () => {
       const res = await getEmployeeById(id);
       setEditEmployee(res.data.data);
       setEditOpen(true);
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to load employee details");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to load employee details");
+      }
     }
   }
 
@@ -107,8 +123,12 @@ const EmployeeList = () => {
       const res = await getEmployeeById(id);
       setSelectedEmployee(res.data.data);
       setView("profile");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to load employee details");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to load employee details");
+      }
     }
   };
 
