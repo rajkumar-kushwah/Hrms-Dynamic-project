@@ -170,12 +170,11 @@ export const getMyAttendance = async (
     const targetMonth = month ?? new Date().getMonth() + 1;
     const targetYear = year ?? new Date().getFullYear();
 
-    //  Purana logic wapas — local Date, but simple hours reset
     const startDate = new Date(targetYear, targetMonth - 1, 1);
     startDate.setHours(0, 0, 0, 0);
 
     const endDate = new Date(targetYear, targetMonth, 0);
-    endDate.setHours(0, 0, 0, 0); //  23:59:59 nahi — 0,0,0,0 taaki loop clean rahe
+    endDate.setHours(0, 0, 0, 0);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -188,7 +187,17 @@ export const getMyAttendance = async (
         orderBy: { date: "asc" },
     });
 
-    // ✅ Key banane ka tarika — sirf Y-M-D use karo, local se
+    //  Naya — Approved leaves is month ke liye fetch karo
+    const approvedLeaves = await prisma.leaveRequest.findMany({
+        where: {
+            userId,
+            status: "Approved",
+            startDate: { lte: endDate },
+            endDate: { gte: startDate },
+        },
+        include: { leaveType: { select: { name: true } } }
+    });
+
     const getDateKey = (d: Date) => {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     };
@@ -196,6 +205,16 @@ export const getMyAttendance = async (
     const attendanceMap = new Map(
         records.map((record) => [getDateKey(new Date(record.date)), record])
     );
+
+    //  Naya — Leave dates ka map banao
+    const leaveMap = new Map<string, string>();
+    for (const leave of approvedLeaves) {
+        const lStart = new Date(Math.max(leave.startDate.getTime(), startDate.getTime()));
+        const lEnd = new Date(Math.min(leave.endDate.getTime(), endDate.getTime()));
+        for (let d = new Date(lStart); d <= lEnd; d.setDate(d.getDate() + 1)) {
+            leaveMap.set(getDateKey(new Date(d)), leave.leaveType.name);
+        }
+    }
 
     const result: any[] = [];
     const todayKey = getDateKey(today);
@@ -208,19 +227,37 @@ export const getMyAttendance = async (
         const currentDate = new Date(d);
         const key = getDateKey(currentDate);
 
-        //  Future date hai — turant skip karo, sabse pehle check karo
         if (key > todayKey) {
             continue;
         }
 
         const isWeekOff = weekOffDays.includes(currentDate.getDay());
         const attendance = attendanceMap.get(key);
+        const leaveTypeName = leaveMap.get(key); //  Naya
 
+        //  Priority 1 — Real punch-in record (agar employee aa gaya, chahe leave bhi ho)
         if (attendance) {
             result.push(attendance);
             continue;
         }
 
+        //  Priority 2 — Approved Leave (naya block)
+        if (leaveTypeName) {
+            result.push({
+                id: `leave-${key}`,
+                userId, companyId, branchId: null,
+                date: new Date(currentDate),
+                punchInTime: null, punchOutTime: null,
+                punchInLat: null, punchInLng: null,
+                punchOutLat: null, punchOutLng: null,
+                workingHours: 0, isWithinGeoFence: false,
+                status: `On Leave (${leaveTypeName})`,
+                createdAt: new Date(), updatedAt: new Date(),
+            });
+            continue;
+        }
+
+        // Priority 3 — Week Off
         if (isWeekOff) {
             result.push({
                 id: `weekoff-${key}`,
@@ -236,6 +273,7 @@ export const getMyAttendance = async (
             continue;
         }
 
+        // Priority 4 — Absent
         result.push({
             id: `absent-${key}`,
             userId, companyId, branchId: null,
@@ -260,8 +298,7 @@ export const getAllAttendance = async (
     const targetDate = date ? new Date(date) : new Date();
     targetDate.setHours(0, 0, 0, 0);
 
-    //  Settings lo (agar companyId hai)
-    let weekOffDays = [0]; // default Sunday
+    let weekOffDays = [0];
     if (companyId) {
         const settings = await getCompanySettings(companyId);
         weekOffDays = settings.weekOffDays;
@@ -274,10 +311,7 @@ export const getAllAttendance = async (
             role: { name: { notIn: ["company_admin", "super_admin"] } },
         },
         select: {
-            id: true,
-            name: true,
-            employeeCode: true,
-            designation: true,
+            id: true, name: true, employeeCode: true, designation: true,
             branch: { select: { id: true, name: true } },
         }
     });
@@ -293,37 +327,68 @@ export const getAllAttendance = async (
         },
     });
 
-    const recordMap = new Map(records.map((record) => [record.userId, record]));
+    //  Naya — Us date ki approved leaves nikaalo
+    const nextDay = new Date(targetDate);
+    nextDay.setDate(nextDay.getDate() + 1);
 
-    //  Dynamic week off check (Settings se)
+    const approvedLeaves = await prisma.leaveRequest.findMany({
+        where: {
+            ...(companyId && { companyId }),
+            status: "Approved",
+            startDate: { lte: targetDate },
+            endDate: { gte: targetDate },
+        },
+        include: { leaveType: { select: { name: true } } }
+    });
+
+    const leaveMap = new Map(
+        approvedLeaves.map((leave) => [leave.userId, leave.leaveType.name])
+    );
+
+    const recordMap = new Map(records.map((record) => [record.userId, record]));
     const isWeekOff = weekOffDays.includes(targetDate.getDay());
 
     const result = employees.map((employee) => {
         const existing = recordMap.get(employee.id);
-        if (existing) return existing;
+        if (existing) return existing; //  Priority 1 — Punch in record
 
+        const leaveTypeName = leaveMap.get(employee.id);
+        if (leaveTypeName) {
+            //  Priority 2 — On Leave
+            return {
+                id: `leave-${employee.id}-${targetDate.toISOString().split("T")[0]}`,
+                userId: employee.id, companyId,
+                branchId: employee.branch?.id ?? null,
+                date: targetDate,
+                punchInTime: null, punchOutTime: null,
+                punchInLat: null, punchInLng: null,
+                punchOutLat: null, punchOutLng: null,
+                workingHours: 0, isWithinGeoFence: false,
+                status: `On Leave (${leaveTypeName})`,
+                createdAt: new Date(), updatedAt: new Date(),
+                user: {
+                    id: employee.id, name: employee.name,
+                    employeeCode: employee.employeeCode, designation: employee.designation,
+                },
+                branch: employee.branch
+            };
+        }
+
+        // Priority 3/4 — Week Off / Absent
         return {
             id: `${isWeekOff ? "weekoff" : "absent"}-${employee.id}-${targetDate.toISOString().split("T")[0]}`,
-            userId: employee.id,
-            companyId,
+            userId: employee.id, companyId,
             branchId: employee.branch?.id ?? null,
             date: targetDate,
-            punchInTime: null,
-            punchOutTime: null,
-            punchInLat: null,
-            punchInLng: null,
-            punchOutLat: null,
-            punchOutLng: null,
-            workingHours: 0,
-            isWithinGeoFence: false,
+            punchInTime: null, punchOutTime: null,
+            punchInLat: null, punchInLng: null,
+            punchOutLat: null, punchOutLng: null,
+            workingHours: 0, isWithinGeoFence: false,
             status: isWeekOff ? "Week Off" : "Absent",
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: new Date(), updatedAt: new Date(),
             user: {
-                id: employee.id,
-                name: employee.name,
-                employeeCode: employee.employeeCode,
-                designation: employee.designation,
+                id: employee.id, name: employee.name,
+                employeeCode: employee.employeeCode, designation: employee.designation,
             },
             branch: employee.branch
         };

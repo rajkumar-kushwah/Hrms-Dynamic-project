@@ -165,8 +165,9 @@ const LeaveRequestPage = () => {
                                 </TableCell>
                                 <TableCell>
                                     {leave.status === "Pending" && (
-                                        <Button variant="ghost" size="icon" onClick={() => handleCancel(leave.id)}>
+                                        <Button className=" cursor-pointer" variant="destructive" size="sm" onClick={() => handleCancel(leave.id)}>
                                             <X className="h-4 w-4 text-red-500" />
+                                            Reject
                                         </Button>
                                     )}
                                 </TableCell>

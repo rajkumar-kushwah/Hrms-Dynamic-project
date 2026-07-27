@@ -6,16 +6,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, X } from "lucide-react";
+import { Check, MoreVertical, X } from "lucide-react";
 import { toast } from "sonner";
 import type { LeaveRequest } from "@/types/leave.types";
 import { getAllLeaveRequests, approveRejectLeave } from "@/services/leaveRequest.service";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 // import { useAuthStore } from "@/store/auth.store";
 
 const LeaveApproval = () => {
-    
-        // const { user } = useAuthStore();
-        // const isAdmin = ["super_admin", "company_admin"].includes(user?.role?.name ?? "");
+
+    // const { user } = useAuthStore();
+    // const isAdmin = ["super_admin", "company_admin"].includes(user?.role?.name ?? "");
 
     const [leaves, setLeaves] = React.useState<LeaveRequest[]>([]);
     const [statusFilter, setStatusFilter] = React.useState("Pending");
@@ -120,16 +121,53 @@ const LeaveApproval = () => {
                                 <TableCell>{leave.totalDays}</TableCell>
                                 <TableCell>{leave.reason ?? "—"}</TableCell>
                                 <TableCell><Badge className={getStatusColor(leave.status)}>{leave.status}</Badge></TableCell>
-                                <TableCell>
+                                {/* <TableCell>
                                     {leave.status === "Pending" && (
-                                        <div className="flex gap-1">
+                                        <div className="flex gap-5">
                                             <Button size="icon" variant="ghost" onClick={() => handleApprove(leave.id)}>
                                                 <Check className="h-4 w-4 text-green-600" />
+                                                Approve
                                             </Button>
-                                            <Button size="icon" variant="ghost" onClick={() => { setSelectedLeave(leave); setRejectOpen(true); }}>
+                                            <Button className=" cursor-pointer" size="icon" variant="ghost" onClick={() => { setSelectedLeave(leave); setRejectOpen(true); }}>
                                                 <X className="h-4 w-4 text-red-600" />
+                                                Reject
                                             </Button>
                                         </div>
+                                    )}
+                                </TableCell> */}
+                                
+                                <TableCell>
+                                    {leave.status === "Pending" && (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuGroup>
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleApprove(leave.id)}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        <Check className="mr-2 h-4 w-4 text-green-600" />
+                                                        Approve
+                                                    </DropdownMenuItem>
+
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            setSelectedLeave(leave);
+                                                            setRejectOpen(true);
+                                                        }}
+                                                        className="cursor-pointer text-red-600"
+                                                    >
+                                                        <X className="mr-2 h-4 w-4" />
+                                                        Reject
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuGroup>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     )}
                                 </TableCell>
                             </TableRow>
