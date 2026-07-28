@@ -61,3 +61,14 @@ export const cancelLeaveRequest = async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, message: error.message });
     }
 };
+
+export const revokeLeave = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string;
+        const revokedBy = req.user?.id!;
+        const result = await LeaveRequestService.revokeLeave(id, revokedBy);
+        return res.status(200).json({ success: true, message: result.message });
+    } catch (error: any) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+};

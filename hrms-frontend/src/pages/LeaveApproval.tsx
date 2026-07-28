@@ -2,27 +2,26 @@ import React from "react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, MoreVertical, X } from "lucide-react";
+import { Check, MoreVertical, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { LeaveRequest } from "@/types/leave.types";
-import { getAllLeaveRequests, approveRejectLeave } from "@/services/leaveRequest.service";
+import { getAllLeaveRequests, approveRejectLeave, revokeLeave } from "@/services/leaveRequest.service";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-// import { useAuthStore } from "@/store/auth.store";
 
 const LeaveApproval = () => {
-
-    // const { user } = useAuthStore();
-    // const isAdmin = ["super_admin", "company_admin"].includes(user?.role?.name ?? "");
-
     const [leaves, setLeaves] = React.useState<LeaveRequest[]>([]);
-    const [statusFilter, setStatusFilter] = React.useState("Pending");
+    const [statusFilter, setStatusFilter] = React.useState("all");
     const [rejectOpen, setRejectOpen] = React.useState(false);
     const [selectedLeave, setSelectedLeave] = React.useState<LeaveRequest | null>(null);
     const [rejectReason, setRejectReason] = React.useState("");
+
+    //  Revoke confirmation dialog ke liye states
+    const [revokeOpen, setRevokeOpen] = React.useState(false);
+    const [leaveToRevoke, setLeaveToRevoke] = React.useState<LeaveRequest | null>(null);
 
     React.useEffect(() => { loadLeaves(); }, [statusFilter]);
 
@@ -58,6 +57,30 @@ const LeaveApproval = () => {
         }
     };
 
+    //  Confirm dialog khole
+    const openRevokeDialog = (leave: LeaveRequest) => {
+        setLeaveToRevoke(leave);
+        setRevokeOpen(true);
+    };
+
+    //  Actual revoke — dialog se confirm hone ke baad
+    const handleRevoke = async () => {
+        if (!leaveToRevoke) return;
+        try {
+            await revokeLeave(leaveToRevoke.id);
+            toast.success("Leave revoked successfully");
+            setRevokeOpen(false);
+            setLeaveToRevoke(null);
+            loadLeaves();
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to revoke leave");
+            }
+        }
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case "Approved": return "bg-green-100 text-green-700";
@@ -81,6 +104,7 @@ const LeaveApproval = () => {
                 </Select>
             </div>
 
+            {/* Reject Dialog */}
             <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
                 <DialogContent>
                     <DialogHeader><DialogTitle>Reject Leave — {selectedLeave?.user?.name}</DialogTitle></DialogHeader>
@@ -88,6 +112,28 @@ const LeaveApproval = () => {
                         <Label>Reason for Rejection</Label>
                         <Input value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Optional" />
                         <Button variant="destructive" onClick={handleReject}>Reject Leave</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/*  Revoke Confirmation Dialog */}
+            <Dialog open={revokeOpen} onOpenChange={setRevokeOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="text-red-700 flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4" /> Revoke Approved Leave
+                        </DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to revoke <strong>{leaveToRevoke?.user?.name}</strong>'s approved{" "}
+                            <strong>{leaveToRevoke?.leaveType?.name}</strong> from{" "}
+                            {leaveToRevoke && new Date(leaveToRevoke.startDate).toLocaleDateString("en-IN")} to{" "}
+                            {leaveToRevoke && new Date(leaveToRevoke.endDate).toLocaleDateString("en-IN")}?
+                            This will permanently delete the leave record and cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex gap-2 justify-end">
+                        <Button variant="outline" onClick={() => setRevokeOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleRevoke}>Yes, Revoke Leave</Button>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -121,21 +167,8 @@ const LeaveApproval = () => {
                                 <TableCell>{leave.totalDays}</TableCell>
                                 <TableCell>{leave.reason ?? "—"}</TableCell>
                                 <TableCell><Badge className={getStatusColor(leave.status)}>{leave.status}</Badge></TableCell>
-                                {/* <TableCell>
-                                    {leave.status === "Pending" && (
-                                        <div className="flex gap-5">
-                                            <Button size="icon" variant="ghost" onClick={() => handleApprove(leave.id)}>
-                                                <Check className="h-4 w-4 text-green-600" />
-                                                Approve
-                                            </Button>
-                                            <Button className=" cursor-pointer" size="icon" variant="ghost" onClick={() => { setSelectedLeave(leave); setRejectOpen(true); }}>
-                                                <X className="h-4 w-4 text-red-600" />
-                                                Reject
-                                            </Button>
-                                        </div>
-                                    )}
-                                </TableCell> */}
-                                
+
+                                {/*  Ek hi TableCell — clean */}
                                 <TableCell>
                                     {leave.status === "Pending" && (
                                         <DropdownMenu>
@@ -144,7 +177,6 @@ const LeaveApproval = () => {
                                                     <MoreVertical className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuGroup>
                                                     <DropdownMenuItem
@@ -154,7 +186,6 @@ const LeaveApproval = () => {
                                                         <Check className="mr-2 h-4 w-4 text-green-600" />
                                                         Approve
                                                     </DropdownMenuItem>
-
                                                     <DropdownMenuItem
                                                         onClick={() => {
                                                             setSelectedLeave(leave);
@@ -168,6 +199,17 @@ const LeaveApproval = () => {
                                                 </DropdownMenuGroup>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
+                                    )}
+
+                                    {leave.status === "Approved" && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-red-600"
+                                            onClick={() => openRevokeDialog(leave)}
+                                        >
+                                            Revoke
+                                        </Button>
                                     )}
                                 </TableCell>
                             </TableRow>

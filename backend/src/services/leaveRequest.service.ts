@@ -122,3 +122,17 @@ export const cancelLeaveRequest = async (id: string, userId: string) => {
     await prisma.leaveRequest.delete({ where: { id } });
     return { message: "Leave request cancelled successfully" };
 };
+
+export const revokeLeave = async (id: string, revokedBy: string) => {
+    const leave = await prisma.leaveRequest.findUnique({ where: { id } });
+    if (!leave) throw new Error("Leave request not found");
+
+    if (leave.status !== "Approved") {
+        throw new Error("Only approved leaves can be revoked");
+    }
+
+    //  Delete karo — attendance list se automatically hat jayegi
+    await prisma.leaveRequest.delete({ where: { id } });
+
+    return { message: "Leave revoked successfully" };
+};

@@ -28,13 +28,13 @@ const months = [
 //     Absent: "bg-red-500",
 // };
 
-const statusBadge: Record<string, string> = {
-    Present: "bg-green-100 text-green-700",
-    Late: "bg-yellow-100 text-yellow-700",
-    "Half-day": "bg-orange-100 text-orange-700",
-    Absent: "bg-red-100 text-red-700",
-    Weekoff: "bg-gray-100 text-gray-700",
-};
+// const statusBadge: Record<string, string> = {
+//     Present: "bg-green-100 text-green-700",
+//     Late: "bg-yellow-100 text-yellow-700",
+//     "Half-day": "bg-orange-100 text-orange-700",
+//     Absent: "bg-red-100 text-red-700",
+//     Weekoff: "bg-gray-100 text-gray-700",
+// };
 
 
 const MyAttendance = () => {
@@ -58,6 +58,17 @@ const MyAttendance = () => {
     const [branchFilter, setBranchFilter] = React.useState("all");
 
 
+    const getStatusColor = (status: string) => {
+        if (status.startsWith("On Leave")) return "bg-blue-100 text-blue-700";
+        switch (status) {
+            case "Present": return "bg-green-100 text-green-700";
+            case "Late": return "bg-yellow-100 text-yellow-700";
+            case "Half-day": return "bg-orange-100 text-orange-700";
+            case "Absent": return "bg-red-100 text-red-700";
+            case "Week Off": return "bg-gray-100 text-gray-700";
+            default: return "bg-gray-100 text-gray-700";
+        }
+    };
 
     React.useEffect(() => {
         loadAttendance();
@@ -216,6 +227,7 @@ const MyAttendance = () => {
                         <SelectItem value="Late">Late</SelectItem>
                         <SelectItem value="Half-day">Half-day</SelectItem>
                         <SelectItem value="Absent">Absent</SelectItem>
+                        <SelectItem value="Week Off">Week Off</SelectItem>
                     </SelectContent>
                 </Select>
 
@@ -355,7 +367,7 @@ const MyAttendance = () => {
                                                 <TableCell>{formatTime(att.punchOutTime)}</TableCell>
                                                 <TableCell>{formatWorkingHours(att.workingHours)}</TableCell>
                                                 <TableCell>
-                                                    <Badge className={statusBadge[att.status] ?? "bg-gray-100 text-gray-700"}>
+                                                    <Badge className={getStatusColor(att.status)}>
                                                         {att.status}
                                                     </Badge>
                                                 </TableCell>

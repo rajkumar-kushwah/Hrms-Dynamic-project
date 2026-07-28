@@ -17,3 +17,6 @@ export const approveRejectLeave = (id: string, status: string, rejectReason?: st
 
 // cancelLeaveRequest
 export const cancelLeaveRequest = (id: string) => api.delete(`/leave-request/${id}`);
+
+// revokeLeave
+export const revokeLeave = (id: string) => api.delete(`/leave-request/${id}/revoke`);
