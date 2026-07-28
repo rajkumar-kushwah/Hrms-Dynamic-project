@@ -96,10 +96,10 @@ const LeaveApproval = () => {
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
                     <SelectContent position="popper">
+                        <SelectItem value="all">All</SelectItem>
                         <SelectItem value="Pending">Pending</SelectItem>
                         <SelectItem value="Approved">Approved</SelectItem>
                         <SelectItem value="Rejected">Rejected</SelectItem>
-                        <SelectItem value="all">All</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
