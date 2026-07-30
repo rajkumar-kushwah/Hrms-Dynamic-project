@@ -148,93 +148,95 @@ const LeaveApproval = () => {
                 </DialogContent>
             </Dialog>
 
-            <div className="bg-card rounded border w-full overflow-x-auto">
-                <Table>
-                    <TableHeader className="bg-muted">
-                        <TableRow>
-                            <TableHead>#</TableHead>
-                            <TableHead>Employee</TableHead>
-                            <TableHead>Leave Type</TableHead>
-                            <TableHead>Start Date</TableHead>
-                            <TableHead>End Date</TableHead>
-                            <TableHead>Days</TableHead>
-                            <TableHead>Reason</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {leaves.map((leave, index) => (
-                            <TableRow key={leave.id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell>
-                                    <p className="font-medium">{leave.user?.name}</p>
-                                    <p className="text-xs text-muted-foreground">{leave.user?.employeeCode}</p>
-                                </TableCell>
-                                <TableCell>{leave.leaveType?.name}</TableCell>
-                                <TableCell>{new Date(leave.startDate).toLocaleDateString("en-IN")}</TableCell>
-                                <TableCell>{new Date(leave.endDate).toLocaleDateString("en-IN")}</TableCell>
-                                <TableCell>{leave.totalDays}</TableCell>
-                                <TableCell>{leave.reason ?? "—"}</TableCell>
-                                <TableCell><Badge className={getStatusColor(leave.status)}>{leave.status}</Badge></TableCell>
-
-                                {/*  Ek hi TableCell — clean */}
-                                {!isEmployee && (
-                                    <TableCell>
-                                        {leave.status === "Pending" && (
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon">
-                                                        <MoreVertical className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuGroup>
-                                                        <DropdownMenuItem
-                                                            onClick={() => handleApprove(leave.id)}
-                                                            className="cursor-pointer"
-                                                        >
-                                                            <Check className="mr-2 h-4 w-4 text-green-600" />
-                                                            Approve
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            onClick={() => {
-                                                                setSelectedLeave(leave);
-                                                                setRejectOpen(true);
-                                                            }}
-                                                            className="cursor-pointer text-red-600"
-                                                        >
-                                                            <X className="mr-2 h-4 w-4" />
-                                                            Reject
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuGroup>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        )}
-
-                                        {leave.status === "Approved" && (
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="text-red-600"
-                                                onClick={() => openRevokeDialog(leave)}
-                                            >
-                                                Revoke
-                                            </Button>
-                                        )}
-                                    </TableCell>
-                                )}
-                            </TableRow>
-                        ))}
-                        {leaves.length === 0 && (
+            <div className="bg-card grid grid-cols-1 rounded border w-full overflow-hidden">
+                <div className="h-full overflow-auto">
+                    <Table>
+                        <TableHeader className="bg-muted sticky top-0 z-10">
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
-                                    No leave requests found
-                                </TableCell>
+                                <TableHead>#</TableHead>
+                                <TableHead>Employee</TableHead>
+                                <TableHead>Leave Type</TableHead>
+                                <TableHead>Start Date</TableHead>
+                                <TableHead>End Date</TableHead>
+                                <TableHead>Days</TableHead>
+                                <TableHead>Reason</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Actions</TableHead>
                             </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {leaves.map((leave, index) => (
+                                <TableRow key={leave.id}>
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>
+                                        <p className="font-medium">{leave.user?.name}</p>
+                                        <p className="text-xs text-muted-foreground">{leave.user?.employeeCode}</p>
+                                    </TableCell>
+                                    <TableCell>{leave.leaveType?.name}</TableCell>
+                                    <TableCell>{new Date(leave.startDate).toLocaleDateString("en-IN")}</TableCell>
+                                    <TableCell>{new Date(leave.endDate).toLocaleDateString("en-IN")}</TableCell>
+                                    <TableCell>{leave.totalDays}</TableCell>
+                                    <TableCell>{leave.reason ?? "—"}</TableCell>
+                                    <TableCell><Badge className={getStatusColor(leave.status)}>{leave.status}</Badge></TableCell>
+
+                                    {/*  Ek hi TableCell — clean */}
+                                    {!isEmployee && (
+                                        <TableCell>
+                                            {leave.status === "Pending" && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon">
+                                                            <MoreVertical className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuGroup>
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleApprove(leave.id)}
+                                                                className="cursor-pointer"
+                                                            >
+                                                                <Check className="mr-2 h-4 w-4 text-green-600" />
+                                                                Approve
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => {
+                                                                    setSelectedLeave(leave);
+                                                                    setRejectOpen(true);
+                                                                }}
+                                                                className="cursor-pointer text-red-600"
+                                                            >
+                                                                <X className="mr-2 h-4 w-4" />
+                                                                Reject
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuGroup>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
+
+                                            {leave.status === "Approved" && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="text-red-600"
+                                                    onClick={() => openRevokeDialog(leave)}
+                                                >
+                                                    Revoke
+                                                </Button>
+                                            )}
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            ))}
+                            {leaves.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                                        No leave requests found
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         </div>
     );
