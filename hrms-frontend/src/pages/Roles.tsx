@@ -161,23 +161,87 @@ const Roles = () => {
     //         )
     //     );
     // };
+    // const togglePermission = (
+    //     moduleId: number,
+    //     field: "canView" | "canCreate" | "canEdit" | "canDelete"
+    // ) => {
+    //     setPermissions((prev) => {
+    //         const updated = prev.map((p) =>
+    //             p.moduleId === moduleId ? { ...p, [field]: !p[field] } : p
+    //         );
+
+    //         // canView toggle hone pe children sync karo
+    //         if (field === "canView") {
+    //             const parent = updated.find(p => p.moduleId === moduleId);
+    //             const isNowOn = parent?.canView ?? false;
+
+    //             return updated.map((p) => {
+    //                 const isChild = modules.find(m => m.id === p.moduleId)?.parentId === moduleId;
+    //                 if (isChild) {
+    //                     return {
+    //                         ...p,
+    //                         canView: isNowOn,
+    //                         canCreate: isNowOn ? p.canCreate : false,
+    //                         canEdit: isNowOn ? p.canEdit : false,
+    //                         canDelete: isNowOn ? p.canDelete : false,
+    //                     };
+    //                 }
+    //                 return p;
+    //             });
+    //         }
+
+    //         return updated;
+    //     });
+    // };
+
     const togglePermission = (
         moduleId: number,
         field: "canView" | "canCreate" | "canEdit" | "canDelete"
     ) => {
         setPermissions((prev) => {
-            const updated = prev.map((p) =>
-                p.moduleId === moduleId ? { ...p, [field]: !p[field] } : p
-            );
+            const currentModule = modules.find((m) => m.id === moduleId);
+            const isParent = currentModule?.parentId == null;
 
-            // canView toggle hone pe children sync karo
-            if (field === "canView") {
-                const parent = updated.find(p => p.moduleId === moduleId);
+            let updated = prev.map((p) => {
+                if (p.moduleId !== moduleId) return p;
+
+                const value = !p[field];
+
+                // View OFF => sab OFF
+                if (field === "canView" && !value) {
+                    return {
+                        ...p,
+                        canView: false,
+                        canCreate: false,
+                        canEdit: false,
+                        canDelete: false,
+                    };
+                }
+
+                // Create/Edit/Delete ON => View bhi ON
+                if (field !== "canView" && value) {
+                    return {
+                        ...p,
+                        [field]: true,
+                        canView: true,
+                    };
+                }
+
+                return {
+                    ...p,
+                    [field]: value,
+                };
+            });
+
+            // Parent ka View change hua
+            if (field === "canView" && isParent) {
+                const parent = updated.find((p) => p.moduleId === moduleId);
                 const isNowOn = parent?.canView ?? false;
 
-                return updated.map((p) => {
-                    const isChild = modules.find(m => m.id === p.moduleId)?.parentId === moduleId;
-                    if (isChild) {
+                updated = updated.map((p) => {
+                    const module = modules.find((m) => m.id === p.moduleId);
+
+                    if (module?.parentId === moduleId) {
                         return {
                             ...p,
                             canView: isNowOn,
@@ -186,6 +250,7 @@ const Roles = () => {
                             canDelete: isNowOn ? p.canDelete : false,
                         };
                     }
+
                     return p;
                 });
             }
@@ -193,7 +258,6 @@ const Roles = () => {
             return updated;
         });
     };
-
     //  Create Role
     const handleSubmit = async () => {
         if (!form.name) { toast.error("Role name is required"); return; }
@@ -220,7 +284,7 @@ const Roles = () => {
         } catch (err) {
             if (err instanceof Error) {
                 toast.error(err.message);
-            } else { 
+            } else {
                 toast.error("Failed to create role");
             }
         }

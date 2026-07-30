@@ -11,10 +11,16 @@ import { toast } from "sonner";
 import type { LeaveRequest } from "@/types/leave.types";
 import { getAllLeaveRequests, approveRejectLeave, revokeLeave } from "@/services/leaveRequest.service";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useAuthStore } from "@/store/auth.store";
 
 const LeaveApproval = () => {
+    const { user } = useAuthStore();
+    const RoleName = user?.role?.name.toLowerCase() ?? "";
+    const isEmployee = RoleName === "employee";
+
+
     const [leaves, setLeaves] = React.useState<LeaveRequest[]>([]);
-    const [statusFilter, setStatusFilter] = React.useState("all");
+    const [statusFilter, setStatusFilter] = React.useState("Pending");
     const [rejectOpen, setRejectOpen] = React.useState(false);
     const [selectedLeave, setSelectedLeave] = React.useState<LeaveRequest | null>(null);
     const [rejectReason, setRejectReason] = React.useState("");
@@ -29,8 +35,12 @@ const LeaveApproval = () => {
         try {
             const res = await getAllLeaveRequests(statusFilter);
             setLeaves(res.data.data);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to load leave requests");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load leave requests");
+            }
         }
     };
 
@@ -169,49 +179,51 @@ const LeaveApproval = () => {
                                 <TableCell><Badge className={getStatusColor(leave.status)}>{leave.status}</Badge></TableCell>
 
                                 {/*  Ek hi TableCell — clean */}
-                                <TableCell>
-                                    {leave.status === "Pending" && (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuGroup>
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleApprove(leave.id)}
-                                                        className="cursor-pointer"
-                                                    >
-                                                        <Check className="mr-2 h-4 w-4 text-green-600" />
-                                                        Approve
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => {
-                                                            setSelectedLeave(leave);
-                                                            setRejectOpen(true);
-                                                        }}
-                                                        className="cursor-pointer text-red-600"
-                                                    >
-                                                        <X className="mr-2 h-4 w-4" />
-                                                        Reject
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuGroup>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    )}
+                                {!isEmployee && (
+                                    <TableCell>
+                                        {leave.status === "Pending" && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuGroup>
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleApprove(leave.id)}
+                                                            className="cursor-pointer"
+                                                        >
+                                                            <Check className="mr-2 h-4 w-4 text-green-600" />
+                                                            Approve
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onClick={() => {
+                                                                setSelectedLeave(leave);
+                                                                setRejectOpen(true);
+                                                            }}
+                                                            className="cursor-pointer text-red-600"
+                                                        >
+                                                            <X className="mr-2 h-4 w-4" />
+                                                            Reject
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuGroup>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
 
-                                    {leave.status === "Approved" && (
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="text-red-600"
-                                            onClick={() => openRevokeDialog(leave)}
-                                        >
-                                            Revoke
-                                        </Button>
-                                    )}
-                                </TableCell>
+                                        {leave.status === "Approved" && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="text-red-600"
+                                                onClick={() => openRevokeDialog(leave)}
+                                            >
+                                                Revoke
+                                            </Button>
+                                        )}
+                                    </TableCell>
+                                )}
                             </TableRow>
                         ))}
                         {leaves.length === 0 && (

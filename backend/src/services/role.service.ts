@@ -119,36 +119,36 @@ export const updateRolePermissions = async (
 
     const targetCompanyId = role.companyId;
     // Ensure every module has a permission record
-    const allModules = await prisma.module.findMany();
-    // Parent View ON hai to uske sabhi children ka View bhi ON kar do
+    // const allModules = await prisma.module.findMany();
+    // // Parent View ON hai to uske sabhi children ka View bhi ON kar do
 
-    const permissionMap = new Map(
-        permissions.map((p) => [p.moduleId, { ...p }])
-    );
+    // const permissionMap = new Map(
+    //     permissions.map((p) => [p.moduleId, { ...p }])
+    // );
 
-    for (const parent of permissions.filter((p) => p.canView)) {
-        const children = allModules.filter((m) => m.parentId === parent.moduleId);
+    // for (const parent of permissions.filter((p) => p.canView)) {
+    //     const children = allModules.filter((m) => m.parentId === parent.moduleId);
 
-        for (const child of children) {
-            const existing = permissionMap.get(child.id);
+    //     for (const child of children) {
+    //         const existing = permissionMap.get(child.id);
 
-            if (existing) {
-                existing.canView = true;
-            } else {
-                permissionMap.set(child.id, {
-                    moduleId: child.id,
-                    canView: true,
-                    canCreate: false,
-                    canEdit: false,
-                    canDelete: false,
-                });
-            }
-        }
-    }
+    //         if (existing) {
+    //             existing.canView = true;
+    //         } else {
+    //             permissionMap.set(child.id, {
+    //                 moduleId: child.id,
+    //                 canView: true,
+    //                 canCreate: false,
+    //                 canEdit: false,
+    //                 canDelete: false,
+    //             });
+    //         }
+    //     }
+    // }
 
-    const finalPermissions = [...permissionMap.values()];
+    // const finalPermissions = [...permissionMap.values()];
 
-    for (const mod of finalPermissions) {
+    for (const mod of permissions) {
         await prisma.permission.upsert({
             where: {
                 roleId_moduleId_companyId: {

@@ -2,7 +2,7 @@ import React from "react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,8 +11,14 @@ import { toast } from "sonner";
 import type { LeaveRequest, LeaveType } from "@/types/leave.types";
 import { getMyLeaveRequests, createLeaveRequest, cancelLeaveRequest } from "@/services/leaveRequest.service";
 import { getLeaveTypes } from "@/services/leaveType.service";
+import { useAuthStore } from "@/store/auth.store";
 
 const LeaveRequestPage = () => {
+    const { user } = useAuthStore();
+    const RoleName = user?.role?.name ?? "";
+    const canChangeStatus = ["super_admin", "company_admin"].includes(RoleName);
+
+
     const [leaves, setLeaves] = React.useState<LeaveRequest[]>([]);
     const [leaveTypes, setLeaveTypes] = React.useState<LeaveType[]>([]);
     const [open, setOpen] = React.useState(false);
@@ -94,15 +100,17 @@ const LeaveRequestPage = () => {
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-end">
-                <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Apply Leave
-                </Button>
+                {!canChangeStatus &&
+                    <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Apply Leave
+                    </Button>}
             </div>
 
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogContent>
                     <DialogHeader><DialogTitle>Apply for Leave</DialogTitle></DialogHeader>
+                    <DialogDescription>Fill out the form below to apply for leave.</DialogDescription>
                     <div className="flex flex-col gap-3">
                         <div>
                             <Label>Leave Type *</Label>
@@ -133,6 +141,7 @@ const LeaveRequestPage = () => {
                     </div>
                 </DialogContent>
             </Dialog>
+
 
             <div className="bg-card rounded border w-full overflow-x-auto">
                 <Table>
@@ -183,6 +192,7 @@ const LeaveRequestPage = () => {
                     </TableBody>
                 </Table>
             </div>
+
         </div>
     );
 };

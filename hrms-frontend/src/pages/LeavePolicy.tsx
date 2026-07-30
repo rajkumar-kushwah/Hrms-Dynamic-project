@@ -10,9 +10,12 @@ import { MoreVertical, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { LeaveType } from "@/types/leave.types";
 import { getLeaveTypes, createLeaveType, updateLeaveType, deleteLeaveType } from "@/services/leaveType.service";
+import { useAuthStore } from "@/store/auth.store";
 
 const LeavePolicy = () => {
-
+    const { user } = useAuthStore();
+    const RoleName = user?.role?.name ?? "";
+    const canChangeStatus = ["Employee"].includes(RoleName);
 
     const [leaveTypes, setLeaveTypes] = React.useState<LeaveType[]>([]);
     const [open, setOpen] = React.useState(false);
@@ -25,8 +28,12 @@ const LeavePolicy = () => {
         try {
             const res = await getLeaveTypes();
             setLeaveTypes(res.data.data);
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to load leave types");
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.error(err.message);
+            } else {
+                toast.error("Failed to load leave types");
+            }
         }
     };
 
@@ -66,10 +73,13 @@ const LeavePolicy = () => {
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-end">
-                <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Add Leave Type
-                </Button>
+                {!canChangeStatus && (
+                    <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Add Leave Type
+                    </Button>
+                )}
+
             </div>
 
             <Dialog open={open} onOpenChange={handleClose}>
@@ -119,23 +129,25 @@ const LeavePolicy = () => {
                                         {lt.isActive ? "Active" : "Inactive"}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="sticky right-0 bg-card">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => {
-                                                setEditType(lt);
-                                                setForm({ name: lt.name, description: lt.description ?? "", daysPerYear: lt.daysPerYear });
-                                                setOpen(true);
-                                            }}>Edit</DropdownMenuItem>
-                                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(lt.id)}>
-                                                Deactivate
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
+                                {!canChangeStatus && (
+                                    <TableCell className="sticky right-0 bg-card">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => {
+                                                    setEditType(lt);
+                                                    setForm({ name: lt.name, description: lt.description ?? "", daysPerYear: lt.daysPerYear });
+                                                    setOpen(true);
+                                                }}>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(lt.id)}>
+                                                    Deactivate
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                )}
                             </TableRow>
                         ))}
                         {leaveTypes.length === 0 && (
