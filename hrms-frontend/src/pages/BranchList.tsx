@@ -12,6 +12,7 @@ import { useAuthStore } from "@/store/auth.store";
 import type { Branch, CreateBranchPayload } from "@/types/branch.types";
 import { getBranches, createBranch, updateBranch, permanentDeleteBranch } from "@/services/branch.service";
 import LocationPicker from "@/pages/LocationPicker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type EditForm = {
     name?: string;
@@ -47,6 +48,9 @@ const BranchList = () => {
     const [createMapOpen, setCreateMapOpen] = React.useState(false);
     const [editMapOpen, setEditMapOpen] = React.useState(false);
 
+    const [searchQuery, setSearchQuery] = React.useState("");
+    const [statusFilter, setStatusFilter] = React.useState("all");
+
     const [form, setForm] = React.useState<CreateBranchPayload>({
         name: "",
         address: "",
@@ -80,6 +84,21 @@ const BranchList = () => {
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditForm({ ...editForm, [e.target.name]: e.target.value });
     };
+
+    //  Filtered branches
+    const filteredBranches = branches.filter((branch) => {
+        const matchSearch = searchQuery
+            ? branch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            branch.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (branch.city ?? "").toLowerCase().includes(searchQuery.toLowerCase())
+            : true;
+
+        const matchStatus = statusFilter !== "all"
+            ? (statusFilter === "active" ? branch.isActive : !branch.isActive)
+            : true;
+
+        return matchSearch && matchStatus;
+    });
 
     //  Create
     const handleSubmit = async () => {
@@ -180,7 +199,26 @@ const BranchList = () => {
         <div className="flex flex-col gap-4">
 
             {/* Header */}
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between">
+
+                <div className="flex items-center gap-3 flex-wrap">
+                    <Input
+                        placeholder="Search branch name, code or city..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-64"
+                    />
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-36">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
                 <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add Branch
@@ -450,7 +488,7 @@ const BranchList = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {branches.map((branch, index) => (
+                            {filteredBranches.map((branch, index) => (
                                 <TableRow key={branch.id}>
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{branch.name}</TableCell>

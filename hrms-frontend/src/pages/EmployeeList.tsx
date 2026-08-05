@@ -14,6 +14,7 @@ import AddEmployeeDialog from "@/pages/AddEmployeeDialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const EmployeeList = () => {
   const { user } = useAuthStore();
@@ -38,6 +39,11 @@ const EmployeeList = () => {
   const [resetOpen, setResetOpen] = React.useState(false);
   const [selectedForReset, setSelectedForReset] = React.useState<Employee | null>(null);
   const [newPassword, setNewPassword] = React.useState("");
+
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("all");
+  const [branchFilter, setBranchFilter] = React.useState("all");
+  const [roleFilter, setRoleFilter] = React.useState("all");
 
   React.useEffect(() => {
     loadEmployees();
@@ -111,6 +117,29 @@ const EmployeeList = () => {
       }
     }
   }
+
+  //  Filtered employees
+  const filteredEmployees = employees.filter((emp) => {
+    const matchSearch = searchQuery
+      ? emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (emp.employeeCode ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.email.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+
+    const matchStatus = statusFilter !== "all"
+      ? (statusFilter === "active" ? emp.isActive : !emp.isActive)
+      : true;
+
+    const matchBranch = branchFilter !== "all"
+      ? emp.branch?.id === branchFilter
+      : true;
+
+    const matchRole = roleFilter !== "all"
+      ? emp.role?.id === Number(roleFilter)
+      : true;
+
+    return matchSearch && matchStatus && matchBranch && matchRole;
+  });
 
   const handleEmployeeCreated = (newEmployee: Employee) => {
     setEmployees((prev) => [newEmployee, ...prev]);
@@ -240,7 +269,57 @@ const EmployeeList = () => {
   return (
     <div className="flex flex-col gap-4">
 
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Input
+            placeholder="Search name, code or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-64"
+          />
+
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={branchFilter} onValueChange={setBranchFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="All Branches" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectItem value="all">All Branches</SelectItem>
+              {[...new Map(employees
+                .filter(e => e.branch)
+                .map(e => [e.branch!.id, e.branch])
+              ).values()].map((branch) => (
+                <SelectItem key={branch!.id} value={branch!.id}>{branch!.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="All Roles" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectItem value="all">All Roles</SelectItem>
+              {[...new Map(employees
+                .filter(e => e.role)
+                .map(e => [e.role!.id, e.role])
+              ).values()].map((role) => (
+                <SelectItem key={role!.id} value={String(role!.id)}>{role!.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div> 
+
         <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Employee
@@ -327,7 +406,7 @@ const EmployeeList = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employees.map((emp, index) => (
+              {filteredEmployees.map((emp, index) => (
                 <TableRow key={emp.id}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{emp.employeeCode ?? "—"}</TableCell>

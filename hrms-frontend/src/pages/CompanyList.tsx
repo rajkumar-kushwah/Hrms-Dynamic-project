@@ -11,6 +11,7 @@ import { getCompanies, createCompany, getMyCompany, assignCompanyAdmin, updateCo
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuthStore } from '@/store/auth.store';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function CompanyList() {
   const { user } = useAuthStore();
@@ -18,7 +19,8 @@ function CompanyList() {
   const isCompanyAdmin = user?.role?.name === "company_admin";
 
 
-
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("all");
   const [companies, setCompanies] = React.useState<Company[]>([])
   const [open, setOpen] = React.useState(false);
   const [assignOpen, setAssignOpen] = React.useState(false);
@@ -124,6 +126,14 @@ function CompanyList() {
   //   }
   // };
 
+  const filteredCompanies = companies.filter((company) => {
+    const matchSearch = searchQuery
+      ? company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      company.code.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    const matchStatus = statusFilter !== "all" ? (statusFilter === "active" ? company.isActive : !company.isActive) : true;
+    return matchSearch && matchStatus;
+  })
 
 
   const handlePermanentDelete = async () => {
@@ -235,7 +245,25 @@ function CompanyList() {
     <div className='flex flex-col gap-4'>
 
       {/* Header */}
-      <div className='flex items-center justify-end'>
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-3 flex-wrap'>
+          <Input
+            placeholder="Search company name or code..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className='w-64'
+          />
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className='w-36'>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <div>
           {!isCompanyAdmin && (
             <Dialog open={open} onOpenChange={setOpen}>
@@ -457,7 +485,7 @@ function CompanyList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {companies.map((company) => (
+            {filteredCompanies.map((company) => (
               <TableRow key={company.id}>
                 <TableCell>
                   {company.logo

@@ -30,6 +30,10 @@ const CategoryList = () => {
     const [dangerOpen, setDangerOpen] = React.useState(false);
     const [confirmText, setConfirmText] = React.useState("");
 
+    const [searchQuery, setSearchQuery] = React.useState("");
+    const [statusFilter, setStatusFilter] = React.useState("all");
+    const [branchFilter, setBranchFilter] = React.useState("all");
+
     const [form, setForm] = React.useState<CreateCategoryPayload>({
         name: "",
         description: "",
@@ -77,6 +81,23 @@ const CategoryList = () => {
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditForm({ ...editForm, [e.target.name]: e.target.value });
     };
+
+    //  Filtered categories
+    const filteredCategories = categories.filter((category) => {
+        const matchSearch = searchQuery
+            ? category.name.toLowerCase().includes(searchQuery.toLowerCase())
+            : true;
+
+        const matchStatus = statusFilter !== "all"
+            ? (statusFilter === "active" ? category.isActive : !category.isActive)
+            : true;
+
+        const matchBranch = branchFilter !== "all"
+            ? category.branch?.id === branchFilter
+            : true;
+
+        return matchSearch && matchStatus && matchBranch;
+    });
 
     //  Create
     const handleSubmit = async () => {
@@ -162,7 +183,39 @@ const CategoryList = () => {
         <div className="flex flex-col gap-4">
 
             {/* Header */}
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <Input
+                        placeholder="Search category name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-64"
+                    />
+
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-36">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select value={branchFilter} onValueChange={setBranchFilter}>
+                        <SelectTrigger className="w-40">
+                            <SelectValue placeholder="All Branches" />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                            <SelectItem value="all">All Branches</SelectItem>
+                            {branches.map((b) => (
+                                <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add Category
@@ -323,7 +376,7 @@ const CategoryList = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {categories.map((category, index) => (
+                            {filteredCategories.map((category, index) => (
                                 <TableRow key={category.id}>
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{category.name}</TableCell>
