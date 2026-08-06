@@ -143,9 +143,9 @@ const LeaveRequestPage = () => {
             </Dialog>
 
 
-            <div className="bg-card rounded border w-full overflow-x-auto">
-                <Table>
-                    <TableHeader className="bg-muted">
+            <div className="bg-card  grid grid-cols-1 rounded border w-full overflow-x-auto">
+                <Table className="table-auto">
+                    <TableHeader className="bg-muted rounded-lg">
                         <TableRow>
                             <TableHead>#</TableHead>
                             <TableHead>Leave Type</TableHead>
