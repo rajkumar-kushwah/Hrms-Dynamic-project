@@ -11,6 +11,7 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { getEmployeeAttendance } from "@/services/attendance.service";
 import type { Attendance, EmployeeBasicInfo } from "@/types/attendance.types";
+// import { useAuthStore } from "@/store/auth.store";
 
 const months = [
     { value: "1", label: "January" }, { value: "2", label: "February" },
@@ -40,13 +41,19 @@ const statusBadge: Record<string, string> = {
 const EmployeeAttendanceDetail = () => {
     const { userId } = useParams();
     const navigate = useNavigate();
+    // const { user } = useAuthStore();
+    // const isAdmin = ["super_admin", "company_admin"].includes(user?.role?.name ?? "");
 
     const [attendances, setAttendances] = React.useState<Attendance[]>([]);
     const [employee, setEmployee] = React.useState<EmployeeBasicInfo | null>(null);
     const [selectedMonth, setSelectedMonth] = React.useState(String(new Date().getMonth() + 1));
     const [selectedYear, setSelectedYear] = React.useState(String(new Date().getFullYear()));
 
-    React.useEffect(() => { 
+    //  Frontend side filtering — API se sab lo, phir filter karo
+    // const [searchQuery, setSearchQuery] = React.useState("");
+    const [statusFilter, setStatusFilter] = React.useState("all");
+
+    React.useEffect(() => {
         loadData();
     }, [selectedMonth, selectedYear]);
 
@@ -64,6 +71,14 @@ const EmployeeAttendanceDetail = () => {
             }
         }
     };
+
+    // filter attendance
+  const filterAttendances = attendances.filter((att) => {
+    const matchStatus =
+        statusFilter !== "all" ? att.status === statusFilter : true;
+
+    return matchStatus;
+});
 
     const formatTime = (dateString?: string) => {
         if (!dateString) return "—";
@@ -131,6 +146,29 @@ const EmployeeAttendanceDetail = () => {
                 />
             </div>
 
+            <div className="flex items-center gap-3 flex-wrap">
+
+                <h2>Filter By Date</h2>
+                {/* Search — Admin only */}
+               
+                {/* Status Filter */}
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="Present">Present</SelectItem>
+                        <SelectItem value="Late">Late</SelectItem>
+                        <SelectItem value="Half-day">Half-day</SelectItem>
+                        <SelectItem value="Absent">Absent</SelectItem>
+                        <SelectItem value="Week Off">Week Off</SelectItem>
+                    </SelectContent>
+                </Select>
+                {/* Branch Filter — Admin only */}
+             
+            </div>
+
             {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Card className="p-3">
@@ -177,7 +215,7 @@ const EmployeeAttendanceDetail = () => {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        attendances.map((att, index) => (
+                                        filterAttendances.map((att, index) => (
                                             <TableRow key={att.id}>
                                                 <TableCell>{index + 1}</TableCell>
                                                 <TableCell>
@@ -211,7 +249,7 @@ const EmployeeAttendanceDetail = () => {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 };
 
