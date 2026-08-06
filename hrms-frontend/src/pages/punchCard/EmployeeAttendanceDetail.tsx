@@ -73,12 +73,12 @@ const EmployeeAttendanceDetail = () => {
     };
 
     // filter attendance
-  const filterAttendances = attendances.filter((att) => {
-    const matchStatus =
-        statusFilter !== "all" ? att.status === statusFilter : true;
+    const filterAttendances = attendances.filter((att) => {
+        const matchStatus =
+            statusFilter !== "all" ? att.status === statusFilter : true;
 
-    return matchStatus;
-});
+        return matchStatus;
+    });
 
     const formatTime = (dateString?: string) => {
         if (!dateString) return "—";
@@ -132,7 +132,7 @@ const EmployeeAttendanceDetail = () => {
                     <SelectTrigger className="w-36">
                         <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper">
                         {months.map((m) => (
                             <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                         ))}
@@ -144,30 +144,31 @@ const EmployeeAttendanceDetail = () => {
                     onChange={(e) => setSelectedYear(e.target.value)}
                     className="w-24"
                 />
+                <div className="flex items-center gap-3 flex-wrap">
+
+                    {/* <h2>Filter By Status</h2> */}
+                    {/* Search — Admin only */}
+
+                    {/* Status Filter */}
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-32">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent position="popper">
+                            <SelectItem value="all">All Status</SelectItem>
+                            <SelectItem value="Present">Present</SelectItem>
+                            <SelectItem value="Late">Late</SelectItem>
+                            <SelectItem value="Half-day">Half-day</SelectItem>
+                            <SelectItem value="Absent">Absent</SelectItem>
+                            <SelectItem value="Week Off">Week Off</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    {/* Branch Filter — Admin only */}
+
+                </div>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
 
-                <h2>Filter By Date</h2>
-                {/* Search — Admin only */}
-               
-                {/* Status Filter */}
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="Present">Present</SelectItem>
-                        <SelectItem value="Late">Late</SelectItem>
-                        <SelectItem value="Half-day">Half-day</SelectItem>
-                        <SelectItem value="Absent">Absent</SelectItem>
-                        <SelectItem value="Week Off">Week Off</SelectItem>
-                    </SelectContent>
-                </Select>
-                {/* Branch Filter — Admin only */}
-             
-            </div>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
