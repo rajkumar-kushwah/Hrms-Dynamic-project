@@ -9,14 +9,18 @@ import { toast } from 'sonner'
 import { signinUser } from '@/services/auth.service'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from "@/store/auth.store"
+import { Eye, EyeOff } from "lucide-react";
 
 
 function Signin() {
+    const navigate = useNavigate();
+    const { setUser, setLoading } = useAuthStore();
+
     const [spinner, setSpinner] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const navigate = useNavigate();
-    const { setUser, setLoading } = useAuthStore();
+    const [showPassword, setShowPassword] = useState(false);
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,15 +34,19 @@ function Signin() {
             navigate("/dashboard");
 
         } catch (error: any) {
-            
-                const message = error?.message || "Error";
-                toast.error(message);
-          
+
+            const message = error?.message || "Error";
+            toast.error(message);
+
         } finally {
             setLoading(false);
             setSpinner(false);
         }
     };
+
+
+
+
 
 
     return (
@@ -57,10 +65,21 @@ function Signin() {
                         <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder='Email..' required />
 
                     </div>
-                    <div>
+                        <div>
+
                         <Label>Password</Label>
-                        <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder='Password' />
+                    <div className='relative'>
+                        <Input type={showPassword ? 'text' : 'password'} className='pr-10' value={password} onChange={(e) => setPassword(e.target.value)} placeholder='Password' autoComplete="current-password" />
+                        <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            >
+                            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
                     </div>
+                            </div>
+                   
                     <Field>
                         <div className='flex items-center'>
                             <a href="" className="ml-auto text-sm underline-offset-4 hover:underline">
