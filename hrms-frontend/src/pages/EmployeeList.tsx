@@ -18,13 +18,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const EmployeeList = () => {
   const { user } = useAuthStore();
-  const isSuperAdmin = user?.role?.name === "super_admin";
 
   // active and inactive super_admin kr skta h or  company admin (Employee nhi)
   const roleName = user?.role?.name ?? "";
   const canChangeStatus = ["super_admin", "company_admin"].includes(roleName);
 
-  const [employees, setEmployees] = React.useState<Employee[]>([]);
+  const [employees, setEmployees] = React.useState<Employee[]>([]); 
   const [open, setOpen] = React.useState(false);
 
   // Employee View mode toggle — "list" ya "profile"
@@ -318,12 +317,14 @@ const EmployeeList = () => {
               ))}
             </SelectContent>
           </Select>
-        </div> 
+        </div>
 
-        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add Employee
-        </Button>
+        {canChangeStatus && (
+          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Employee
+          </Button>
+        )}
       </div>
 
       <AddEmployeeDialog
@@ -400,7 +401,7 @@ const EmployeeList = () => {
                 <TableHead className="min-w-30">Branch</TableHead>
                 <TableHead className="min-w-30">Category</TableHead>
                 <TableHead className="min-w-25">Role</TableHead>
-                {isSuperAdmin && <TableHead className="min-w-37.5">Company</TableHead>}
+                {canChangeStatus && <TableHead className="min-w-37.5">Company</TableHead>}
                 <TableHead className="min-w-20">Status</TableHead>
                 <TableHead className="sticky right-0 bg-muted">Actions</TableHead>
               </TableRow>
@@ -416,7 +417,7 @@ const EmployeeList = () => {
                   <TableCell>{emp.branch?.name ?? "—"}</TableCell>
                   <TableCell>{emp.category?.name ?? "—"}</TableCell>
                   <TableCell><Badge variant="outline">{emp.role?.name ?? "—"}</Badge></TableCell>
-                  {isSuperAdmin && <TableCell>{emp.company?.name ?? "—"}</TableCell>}
+                  {canChangeStatus && <TableCell>{emp.company?.name ?? "—"}</TableCell>}
                   <TableCell>
                     <Badge className={emp.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}>
                       {emp.isActive ? "Active" : "Inactive"}
@@ -440,14 +441,16 @@ const EmployeeList = () => {
                             {emp.isActive ? "Deactivate" : "Activate"}
                           </DropdownMenuItem>
                           {/* Dropdown mein add karo */}
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedForReset(emp);
-                              setResetOpen(true);
-                            }}
-                          >
-                            Reset Password
-                          </DropdownMenuItem>
+                          {canChangeStatus && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedForReset(emp);
+                                setResetOpen(true);
+                              }}
+                            >
+                              Reset Password
+                            </DropdownMenuItem> 
+                          )}
                         </DropdownMenuGroup>
                       </DropdownMenuContent>
                     </DropdownMenu>

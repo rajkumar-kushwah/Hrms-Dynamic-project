@@ -10,6 +10,7 @@ import { signinUser } from '@/services/auth.service'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from "@/store/auth.store"
 import { Eye, EyeOff } from "lucide-react";
+import { signinSchema } from "@/validation/auth.validation";
 
 
 function Signin() {
@@ -20,12 +21,35 @@ function Signin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState<{
+        email?: string;
+        password?: string;
+    }>({});
 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!email || !password) {
+            toast.error("Email and password are required");
+            return;
+        }
+
+        const result = signinSchema.safeParse({
+            email,
+            password,
+        });
+
+        if (!result.success) {
+            toast.error(result.error.issues[0]?.message);
+            setLoading(false);
+            setSpinner(false);
+            return;
+        }
         setLoading(true);
         setSpinner(true);
+
+
 
         try {
             const res = await signinUser({ email, password });
@@ -44,7 +68,25 @@ function Signin() {
         }
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
 
+        if (name === "email") {
+            setEmail(value);
+        } else if (name === "password") {
+            setPassword(value);
+        }
+
+        const schema = signinSchema.shape[name as "email" | "password"];
+        const result = schema.safeParse(value);
+
+        setError((prev) => ({
+            ...prev,
+            [name]: result.success
+                ? undefined
+                : result.error.issues[0]?.message,
+        }));
+    };
 
 
 
@@ -54,7 +96,7 @@ function Signin() {
             <div className='bg-card  w-full max-w-md p-6 space-y-4 shadow-lg border rounded-2xl'>
                 <h1 className="text-2xl text-center">Signin</h1>
 
-                <form className='space-y-4'>
+                <form className='space-y-4' onSubmit={handleSubmit}>
                     {/* <div>
                         <Label>Company code </Label>
                         <Input placeholder='Company code' required />
@@ -62,24 +104,34 @@ function Signin() {
 
                     <div>
                         <Label>Email</Label>
-                        <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder='Email..' required />
-
+                        <Input value={email} name="email" type="email" onChange={handleChange} placeholder='Email..' required />
+                        {error.email && (
+                            <p className="mt-1 text-sm text-red-500">
+                                {error.email}
+                            </p>
+                        )}
                     </div>
-                        <div>
+                    <div>
 
                         <Label>Password</Label>
-                    <div className='relative'>
-                        <Input type={showPassword ? 'text' : 'password'} className='pr-10' value={password} onChange={(e) => setPassword(e.target.value)} placeholder='Password' autoComplete="current-password" />
-                        <button
-                            type="button"
-                            className="absolute right-3 top-1/2 -translate-y-1/2"
-                            onClick={() => setShowPassword((prev) => !prev)}
+                        <div className='relative'>
+                            <Input type={showPassword ? 'text' : 'password'} name="password" className='pr-10' value={password} onChange={handleChange} placeholder='Password' autoComplete="current-password" />
+                            <button
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                                onClick={() => setShowPassword((prev) => !prev)}
                             >
-                            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                        </button>
+                                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+
+                            </button>
+                        </div>
+                        {error.password && (
+                            <p className="mt-1 text-sm text-red-500">
+                                {error.password}
+                            </p>
+                        )}
                     </div>
-                            </div>
-                   
+
                     <Field>
                         <div className='flex items-center'>
                             <a href="" className="ml-auto text-sm underline-offset-4 hover:underline">
@@ -88,7 +140,7 @@ function Signin() {
                         </div>
                     </Field>
 
-                    <Button type="submit" className='btn btn-primary w-full cursor-pointer' onClick={handleSubmit}>
+                    <Button type="submit" className='btn btn-primary w-full cursor-pointer'>
                         {spinner && <Spinner />}
                         Signin
                     </Button>
