@@ -10,7 +10,7 @@ import { signinUser } from '@/services/auth.service'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from "@/store/auth.store"
 import { Eye, EyeOff } from "lucide-react";
-import { signinSchema } from "@/validation/auth.validation";
+// import { signinSchema } from "@/validation/auth.validation";
 
 
 function Signin() {
@@ -21,10 +21,10 @@ function Signin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState<{
-        email?: string;
-        password?: string;
-    }>({});
+    // const [error, setError] = useState<{
+    //     email?: string;
+    //     password?: string;
+    // }>({});
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -35,17 +35,17 @@ function Signin() {
             return;
         }
 
-        const result = signinSchema.safeParse({
-            email,
-            password,
-        });
+        // const result = signinSchema.safeParse({
+        //     email,
+        //     password,
+        // });
 
-        if (!result.success) {
-            toast.error(result.error.issues[0]?.message);
-            setLoading(false);
-            setSpinner(false);
-            return;
-        }
+        // if (!result.success) {
+        //     toast.error(result.error.issues[0]?.message);
+        //     setLoading(false);
+        //     setSpinner(false);
+        //     return;
+        // }
         setLoading(true);
         setSpinner(true);
 
@@ -77,15 +77,15 @@ function Signin() {
             setPassword(value);
         }
 
-        const schema = signinSchema.shape[name as "email" | "password"];
-        const result = schema.safeParse(value);
+        // const schema = signinSchema.shape[name as "email" | "password"];
+        // const result = schema.safeParse(value);
 
-        setError((prev) => ({
-            ...prev,
-            [name]: result.success
-                ? undefined
-                : result.error.issues[0]?.message,
-        }));
+        // setError((prev) => ({
+        //     ...prev,
+        //     [name]: result.success
+        //         ? undefined
+        //         : result.error.issues[0]?.message,
+        // }));
     };
 
 
@@ -105,11 +105,11 @@ function Signin() {
                     <div>
                         <Label>Email</Label>
                         <Input value={email} name="email" type="email" onChange={handleChange} placeholder='Email..' required />
-                        {error.email && (
+                        {/* {error.email && (
                             <p className="mt-1 text-sm text-red-500">
                                 {error.email}
                             </p>
-                        )}
+                        )} */}
                     </div>
                     <div>
 
@@ -125,11 +125,11 @@ function Signin() {
 
                             </button>
                         </div>
-                        {error.password && (
+                        {/* {error.password && (
                             <p className="mt-1 text-sm text-red-500">
                                 {error.password}
                             </p>
-                        )}
+                        )} */}
                     </div>
 
                     <Field>
