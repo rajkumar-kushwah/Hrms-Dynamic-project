@@ -41,15 +41,13 @@ const GeoFencing = () => {
         try {
             const res = await getGeoFencingOverview();
             setBranches(res.data.data);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load geo fencing data")
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load geo fencing data";
+            toast.error(message);
         } finally {
             setLoading(false);
-        } 
+        }
     };
 
     if (loading) {

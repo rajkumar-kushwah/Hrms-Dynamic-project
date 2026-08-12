@@ -185,13 +185,12 @@ const BranchList = () => {
             setDangerOpen(false);
             setEditOpen(false);
             setConfirmText("");
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to delete branch");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to delete branch";
+            toast.error(message);
         }
+
     }
 
 

@@ -92,13 +92,10 @@ const MyAttendance = () => {
                 );
                 setAttendances(res.data.data);
             }
-        } catch (err) {
-            console.log(err);
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load attendance");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load attendance";
+            toast.error(message);
         } finally {
             setLoading(false);
             setLoading1(false);

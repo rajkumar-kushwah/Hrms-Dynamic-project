@@ -70,15 +70,14 @@ const LocationPicker = ({
       );
       const data = await res.json();
       setLocationName(data.display_name ?? "");
-    } catch (err) {
-      console.error(err);
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to get location name");
-      }
-      setLocationName("");
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to get location name";
+      toast.error(message);
     }
+
+    setLocationName("");
+
   }
 
   //  Search location (Nominatim — free OpenStreetMap search API)
@@ -102,14 +101,12 @@ const LocationPicker = ({
       } else {
         toast.error("Location not found — try a nearby landmark or area name");
       }
-    } catch (err) {
-      console.error(err);
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to search location");
-      }
-    } finally {
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to search location";
+      toast.error(message);
+    }
+    finally {
       setSearching(false);
     }
   };

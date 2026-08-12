@@ -42,13 +42,12 @@ const Profile = () => {
             toast.success("Profile updated successfully!");
             setUser({ ...user!, name: res.data.data.name });
             setEditOpen(false);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to update profile");
-            }
-        } finally {
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to update profile";
+            toast.error(message);
+        }
+        finally {
             setUpdating(false);
         }
     };
@@ -69,13 +68,12 @@ const Profile = () => {
             setPwOpen(false);
             setOldPassword("");
             setNewPassword("");
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to change password");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to change password";
+            toast.error(message);
         }
+
     };
 
     return (

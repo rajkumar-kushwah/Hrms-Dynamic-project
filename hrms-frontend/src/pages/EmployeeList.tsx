@@ -23,7 +23,7 @@ const EmployeeList = () => {
   const roleName = user?.role?.name ?? "";
   const canChangeStatus = ["super_admin", "company_admin"].includes(roleName);
 
-  const [employees, setEmployees] = React.useState<Employee[]>([]); 
+  const [employees, setEmployees] = React.useState<Employee[]>([]);
   const [open, setOpen] = React.useState(false);
 
   // Employee View mode toggle — "list" ya "profile"
@@ -52,13 +52,12 @@ const EmployeeList = () => {
     try {
       const res = await getEmployees();
       setEmployees(res.data.data);
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to load employees");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to load employees";
+      toast.error(message);
     }
+
   };
 
   const handleResetPassword = async () => {
@@ -75,13 +74,12 @@ const EmployeeList = () => {
       setResetOpen(false);
       setNewPassword("");
       setSelectedForReset(null);
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to reset password");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to reset password";
+      toast.error(message);
     }
+
   }
 
   const handleToggleStatus = async () => {
@@ -94,13 +92,12 @@ const EmployeeList = () => {
         prev.map((e) => e.id === selectedEmployee.id ? { ...e, isActive: !e.isActive } : e)
       );
       setStatusDialogOpen(false);
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to update employee");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to update employee";
+      toast.error(message);
     }
+
   };
 
   const handleEditClick = async (id: string) => {
@@ -108,13 +105,12 @@ const EmployeeList = () => {
       const res = await getEmployeeById(id);
       setEditEmployee(res.data.data);
       setEditOpen(true);
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to load employee details");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to load employee details";
+      toast.error(message);
     }
+
   }
 
   //  Filtered employees
@@ -151,13 +147,12 @@ const EmployeeList = () => {
       const res = await getEmployeeById(id);
       setSelectedEmployee(res.data.data);
       setView("profile");
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to load employee details");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to load employee details";
+      toast.error(message);
     }
+
   };
 
   const getInitials = (name: string) =>
@@ -449,7 +444,7 @@ const EmployeeList = () => {
                               }}
                             >
                               Reset Password
-                            </DropdownMenuItem> 
+                            </DropdownMenuItem>
                           )}
                         </DropdownMenuGroup>
                       </DropdownMenuContent>

@@ -41,12 +41,10 @@ const Settings = () => {
         try {
             const res = await getSettings();
             setSettings(res.data.data);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load settings");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load settings";
+            toast.error(message);
         } finally {
             setLoading(false);
         }
@@ -65,12 +63,10 @@ const Settings = () => {
             });
             setSettings(res.data.data);
             toast.success("Settings updated successfully!");
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to update settings");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to update settings";
+            toast.error(message);
         } finally {
             setSaving(false);
         }

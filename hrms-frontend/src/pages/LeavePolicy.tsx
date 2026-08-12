@@ -28,13 +28,12 @@ const LeavePolicy = () => {
         try {
             const res = await getLeaveTypes();
             setLeaveTypes(res.data.data);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load leave types");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load leave types";
+            toast.error(message);
         }
+
     };
 
     const handleSubmit = async () => {

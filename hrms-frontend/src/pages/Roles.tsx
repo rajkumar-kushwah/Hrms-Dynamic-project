@@ -107,23 +107,14 @@ const Roles = () => {
         try {
             const res = await getRoles();
             setRoles(res.data.data);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load roles");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load roles";
+            toast.error(message);
         }
     };
 
-    // const loadModules = async () => {
-    //     try {
-    //         const res = await getModules();
-    //         setModules(res.data.data);
-    //     } catch (err) {
-    //         toast.error("Failed to load modules");
-    //     }
-    // };
+    
 
     const loadModules = async () => {
         try {
@@ -141,58 +132,16 @@ const Roles = () => {
             }
 
             setModules(sorted);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load modules");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load modules";
+            toast.error(message);
         }
+
     };
 
-    //  Permission toggle
-    // const togglePermission = (
-    //     moduleId: number,
-    //     field: "canView" | "canCreate" | "canEdit" | "canDelete"
-    // ) => {
-    //     setPermissions((prev) =>
-    //         prev.map((p) =>
-    //             p.moduleId === moduleId ? { ...p, [field]: !p[field] } : p
-    //         )
-    //     );
-    // };
-    // const togglePermission = (
-    //     moduleId: number,
-    //     field: "canView" | "canCreate" | "canEdit" | "canDelete"
-    // ) => {
-    //     setPermissions((prev) => {
-    //         const updated = prev.map((p) =>
-    //             p.moduleId === moduleId ? { ...p, [field]: !p[field] } : p
-    //         );
-
-    //         // canView toggle hone pe children sync karo
-    //         if (field === "canView") {
-    //             const parent = updated.find(p => p.moduleId === moduleId);
-    //             const isNowOn = parent?.canView ?? false;
-
-    //             return updated.map((p) => {
-    //                 const isChild = modules.find(m => m.id === p.moduleId)?.parentId === moduleId;
-    //                 if (isChild) {
-    //                     return {
-    //                         ...p,
-    //                         canView: isNowOn,
-    //                         canCreate: isNowOn ? p.canCreate : false,
-    //                         canEdit: isNowOn ? p.canEdit : false,
-    //                         canDelete: isNowOn ? p.canDelete : false,
-    //                     };
-    //                 }
-    //                 return p;
-    //             });
-    //         }
-
-    //         return updated;
-    //     });
-    // };
+  
+   
 
     const togglePermission = (
         moduleId: number,
@@ -281,13 +230,12 @@ const Roles = () => {
             }
             loadRoles();
             handleClose();
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to create role");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to create role";
+            toast.error(message);
         }
+
     };
 
     //  Edit Role
@@ -305,12 +253,10 @@ const Roles = () => {
             await deleteRole(id);
             toast.success("Role deleted successfully!");
             loadRoles();
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else[
-                toast.error("Failed to delete role")
-            ]
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to delete role";
+            toast.error(message);
         }
     };
 

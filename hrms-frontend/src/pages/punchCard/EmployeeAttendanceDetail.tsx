@@ -63,12 +63,10 @@ const EmployeeAttendanceDetail = () => {
             const res = await getEmployeeAttendance(userId, Number(selectedMonth), Number(selectedYear));
             setAttendances(res.data.data.attendance);
             setEmployee(res.data.data.employee);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load attendance");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load attendance";
+            toast.error(message);
         }
     };
 

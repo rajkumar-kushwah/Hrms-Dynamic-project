@@ -49,8 +49,6 @@ function Signin() {
         setLoading(true);
         setSpinner(true);
 
-
-
         try {
             const res = await signinUser({ email, password });
             setUser(res.data);

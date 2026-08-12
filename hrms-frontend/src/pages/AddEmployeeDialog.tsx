@@ -105,6 +105,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
             loadDropdownData();
             if (isEditeMode && editEmployee) {
                 setForm({
+                    ...initialForm,
                     ...editEmployee,
                     password: "",
                     roleId: editEmployee?.role?.id ?? 0,
@@ -112,6 +113,33 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                     categoryId: editEmployee?.category?.id ?? "",
                     dateOfBirth: editEmployee.dateOfBirth?.split("T")[0] ?? "",
                     joiningDate: editEmployee.joiningDate?.split("T")[0] ?? "",
+                    designation: editEmployee.designation ?? "",
+                    employmentType: editEmployee.employmentType ?? "",
+                    workShift: editEmployee.workShift ?? "",
+
+                    reportingManagerId:
+                        editEmployee.reportingManager?.id ?? "",
+
+                    phone: editEmployee.phone ?? "",
+                    gender: editEmployee.gender ?? "",
+                    bloodGroup: editEmployee.bloodGroup ?? "",
+                    maritalStatus: editEmployee.maritalStatus ?? "",
+                    currentAddress: editEmployee.currentAddress ?? "",
+                    permanentAddress: editEmployee.permanentAddress ?? "",
+
+                    panNumber: editEmployee.panNumber ?? "",
+                    aadharNumber: editEmployee.aadharNumber ?? "",
+                    bankAccountNumber: editEmployee.bankAccountNumber ?? "",
+                    bankIFSC: editEmployee.bankIFSC ?? "",
+                    bankName: editEmployee.bankName ?? "",
+                    pfNumber: editEmployee.pfNumber ?? "",
+                    esiNumber: editEmployee.esiNumber ?? "",
+
+                    emergencyContactName:
+                        editEmployee.emergencyContactName ?? "",
+
+                    emergencyContactPhone:
+                        editEmployee.emergencyContactPhone ?? "",
                 });
             } else {
                 setForm(initialForm);
@@ -203,6 +231,11 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
 
     const handleSubmit = async () => {
         const result = employeeSchema.safeParse(form);
+
+        if (!result.success) {
+
+            console.log("VALIDATION ERRORS:", result.error.issues);
+        }
 
         if (!result.success) {
             const newErrors: Partial<
@@ -365,7 +398,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                             <div className="flex gap-2">
                                 <div className="flex-1">
                                     <Label>Branch</Label>
-                                    <Select value={form.branchId ? String(form.branchId) : ""} onValueChange={(value) => handleSelectChange("branchId", Number(value))}>
+                                    <Select value={form.branchId ? String(form.branchId) : ""} onValueChange={(value) => handleSelectChange("branchId", String(value))}>
                                         {errors.branchId && (
                                             <p className="mt-1 text-sm text-red-500">
                                                 {errors.branchId}
@@ -381,7 +414,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                                 </div>
                                 <div className="flex-1">
                                     <Label>Category</Label>
-                                    <Select value={form.categoryId ? String(form.categoryId) : ""} onValueChange={(value) => handleSelectChange("categoryId", Number(value))}>
+                                    <Select value={form.categoryId ? String(form.categoryId) : ""} onValueChange={(value) => handleSelectChange("categoryId", String(value))}>
                                         {errors.categoryId && (
                                             <p className="mt-1 text-sm text-red-500">
                                                 {errors.categoryId}

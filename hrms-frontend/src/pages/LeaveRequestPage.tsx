@@ -33,12 +33,10 @@ const LeaveRequestPage = () => {
         try {
             const res = await getMyLeaveRequests();
             setLeaves(res.data.data);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load leaves");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load leaves";
+            toast.error(message);
         }
     };
 
@@ -46,13 +44,12 @@ const LeaveRequestPage = () => {
         try {
             const res = await getLeaveTypes();
             setLeaveTypes(res.data.data.filter((lt: LeaveType) => lt.isActive));
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load leave types");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load leave types";
+            toast.error(message);
         }
+
     };
 
     const handleSubmit = async () => {
@@ -66,13 +63,12 @@ const LeaveRequestPage = () => {
             loadLeaves();
             setOpen(false);
             setForm({ leaveTypeId: "", startDate: "", endDate: "", reason: "" });
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to submit leave request");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to submit leave request";
+            toast.error(message);
         }
+
     };
 
     const handleCancel = async (id: string) => {
@@ -80,13 +76,12 @@ const LeaveRequestPage = () => {
             await cancelLeaveRequest(id);
             toast.success("Leave request cancelled");
             loadLeaves();
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to cancel leave request");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to cancel leave request";
+            toast.error(message);
         }
+
     };
 
     const getStatusColor = (status: string) => {

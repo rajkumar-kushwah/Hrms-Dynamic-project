@@ -72,14 +72,12 @@ function CompanyList() {
         const res = await getCompanies();
         setCompanies(res.data.data);
       }
-    } catch (err) {
-      console.log(err);
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to load companies");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to load companies";
+      toast.error(message);
     }
+
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,12 +100,10 @@ function CompanyList() {
       setCompanies((prev) => prev.map((c) => c.id === selectedCompany.id ? { ...c, ...editForm } : c));
       setEditOpen(false);
       setSelectedCompany(null);
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to update company");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to update company";
+      toast.error(message);
     }
   }
 
@@ -148,12 +144,10 @@ function CompanyList() {
       setDangerOpen(false);
       setEditOpen(false);
       setConfirmText("");
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to delete company");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to delete company";
+      toast.error(message);
     }
   };
 
@@ -190,12 +184,10 @@ function CompanyList() {
         maxEmployees: 10,
       });
       setOpen(false);
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to create company");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to create company";
+      toast.error(message);
     }
   };
 
@@ -210,13 +202,12 @@ function CompanyList() {
       toast.success("Company Admin assigned successfully!");
       setAssignOpen(false);
       setAdminForm({ name: "", email: "", password: "" });
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to assign admin");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to assign admin";
+      toast.error(message);
     }
+
   };
   const handleToggleStatus = async () => {
     if (!selectedCompany) return;
@@ -232,13 +223,12 @@ function CompanyList() {
       );
       setDeleteConfirmOpen(false);
       setSelectedCompany(null);
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error("Failed to update company");
-      }
+    } catch (err: any) {
+      const message =
+        err?.message || "Failed to update company";
+      toast.error(message);
     }
+
   };
 
   return (

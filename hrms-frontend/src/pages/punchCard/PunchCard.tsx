@@ -32,13 +32,10 @@ function PunchCard() {
         try {
             const res = await getTodayAttendance();
             setAttendance(res.data.data);
-        } catch (err) {
-            console.log(err as Error);
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load today's attendance");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load today's attendance";
+            toast.error(message);
         } finally {
             setFetching(false);
         }

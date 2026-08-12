@@ -35,13 +35,12 @@ const LeaveApproval = () => {
         try {
             const res = await getAllLeaveRequests(statusFilter);
             setLeaves(res.data.data);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load leave requests");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load leave requests";
+            toast.error(message);
         }
+
     };
 
     const handleApprove = async (id: string) => {
@@ -82,13 +81,12 @@ const LeaveApproval = () => {
             setRevokeOpen(false);
             setLeaveToRevoke(null);
             loadLeaves();
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to revoke leave");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to revoke leave";
+            toast.error(message);
         }
+
     };
 
     const getStatusColor = (status: string) => {

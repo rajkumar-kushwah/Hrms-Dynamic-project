@@ -103,8 +103,7 @@ export const employeeSchema = z.object({
         .string()
         .min(1, "Work shift is required"),
 
-    reportingManagerId: z
-        .string(),
+    reportingManagerId: z.string().optional(),
 
     // TAB 4 - Bank & ID
     panNumber: z

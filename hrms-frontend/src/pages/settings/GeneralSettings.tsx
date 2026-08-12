@@ -22,12 +22,10 @@ const GeneralSettings = () => {
         try {
             const res = await getMyCompany();
             setCompany(res.data.data);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load company details");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load company details";
+            toast.error(message);
         } finally {
             setLoading(false);
         }
@@ -45,12 +43,10 @@ const GeneralSettings = () => {
                 address: company.address,
             });
             toast.success("Company details updated successfully!");
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to update company details");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to update company details";
+            toast.error(message);
         } finally {
             setSaving(false);
         }

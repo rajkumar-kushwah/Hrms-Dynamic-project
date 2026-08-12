@@ -51,13 +51,12 @@ const CategoryList = () => {
         try {
             const res = await getCategories();
             setCategories(res.data.data);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load categories");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load categories";
+            toast.error(message);
         }
+
     };
 
     const loadBranches = async () => {
@@ -65,12 +64,10 @@ const CategoryList = () => {
             const res = await getBranches();
             //  Sirf active branches
             setBranches(res.data.data.filter((b: Branch) => b.isActive));
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to load branches");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to load branches";
+            toast.error(message);
         }
     };
 
@@ -109,13 +106,12 @@ const CategoryList = () => {
             setCategories((prev) => [res.data.data, ...prev]);
             setForm({ name: "", description: "", branchId: "" });
             setOpen(false);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to create category");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to create category";
+            toast.error(message);
         }
+
     };
 
     //  Update
@@ -129,13 +125,12 @@ const CategoryList = () => {
             );
             setEditOpen(false);
             setSelectedCategory(null);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to update category");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to update category";
+            toast.error(message);
         }
+
     };
 
     //  Toggle Status
@@ -148,13 +143,12 @@ const CategoryList = () => {
                 prev.map((c) => c.id === selectedCategory.id ? { ...c, isActive: !c.isActive } : c)
             );
             setStatusDialogOpen(false);
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to update category");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to update category";
+            toast.error(message);
         }
+
     };
 
     // permanent danger delete fn
@@ -170,13 +164,12 @@ const CategoryList = () => {
             setDangerOpen(false);
             setEditOpen(false);
             setConfirmText("");
-        } catch (err) {
-            if (err instanceof Error) {
-                toast.error(err.message);
-            } else {
-                toast.error("Failed to delete category");
-            }
+        } catch (err: any) {
+            const message =
+                err?.message || "Failed to delete category";
+            toast.error(message);
         }
+
     }
 
     return (
