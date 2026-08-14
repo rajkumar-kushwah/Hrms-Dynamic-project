@@ -22,16 +22,10 @@ export default function layout() {
                 return "Check-in/Out";
             case "/employee":
                 return "Employee";
-            case "/department":
-                return "Department";
             case "/roles":
                 return "Role";
             case "/profile":
                 return "Profile";
-            case "/attendance-history":
-                return "Attendance History";
-            case "/att-regularization":
-                return "Regularization";
             case "/users":
                 return "Users";
             case "/attendance/list":
@@ -46,6 +40,8 @@ export default function layout() {
                 return "Leave Request";
             case "/leave/approval":
                 return "Leave Approval";
+            case "/payroll":
+                return "Payroll";
             default:
                 return "Dashboard";
         }

@@ -21,6 +21,7 @@ import GeoFencing from "@/pages/punchCard/GeoFencing";
 import LeavePolicy from "@/pages/LeavePolicy";
 import LeaveRequestPage from "@/pages/LeaveRequestPage";
 import LeaveApproval from "@/pages/LeaveApproval";
+import PayrollPage from "@/pages/Payroll";
 
 const AppRoutes = () => {
     return (
@@ -50,6 +51,7 @@ const AppRoutes = () => {
                         <Route path="/leave/request" element={<LeaveRequestPage />} />
                         <Route path="/leave/approval" element={<LeaveApproval />} />
                         <Route path="/leave/policy" element={<LeavePolicy />} />
+                        <Route path="/payroll" element={<PayrollPage />} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}
