@@ -9,10 +9,9 @@ const pgPool = new Pool({
 });
 
 export const sessionMiddleware = session({
-    store: new PgStore({ 
+    store: new PgStore({
         pool: pgPool,
         tableName: "sessions",
-        createTableIfMissing: true
     }),
     name: "sid",
     secret: process.env.SESSION_SECRET as string,
