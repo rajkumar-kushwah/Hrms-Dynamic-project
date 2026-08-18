@@ -34,6 +34,7 @@ export const createEmployee = async (
         esiNumber?: string;
         emergencyContactName?: string;
         emergencyContactPhone?: string;
+        grossSalary?: number;
     }
 ) => {
     // Email duplicate check
@@ -83,7 +84,7 @@ export const createEmployee = async (
         if (!category.isActive) throw new Error("Category is inactive");
     }
 
-    
+
     // Role validation
     const role = await prisma.role.findUnique({
         where: { id: data.roleId },
@@ -136,6 +137,7 @@ export const createEmployee = async (
             ...(data.esiNumber && { esiNumber: data.esiNumber }),
             ...(data.emergencyContactName && { emergencyContactName: data.emergencyContactName }),
             ...(data.emergencyContactPhone && { emergencyContactPhone: data.emergencyContactPhone }),
+            ...(data.grossSalary !== undefined && { grossSalary: data.grossSalary }),
         },
         include: {
             role: { select: { id: true, name: true } },
@@ -172,6 +174,7 @@ export const getEmployees = async (
             phone: true,
             employeeCode: true,
             designation: true,
+            grossSalary: true,
             joiningDate: true,
             isActive: true,
             createdAt: true,
@@ -219,6 +222,7 @@ export const getEmployeeById = async (
             currentAddress: true,
             permanentAddress: true,
             designation: true,
+            grossSalary: true,
             joiningDate: true,
             employmentType: true,
             workShift: true,
@@ -281,6 +285,7 @@ export const updateEmployee = async (id: string,
         emergencyContactName?: string;
         emergencyContactPhone?: string;
         isActive?: boolean;
+        grossSalary?: number;
     }) => {
     const existing = await prisma.user.findUnique({ where: { id } });
     if (!existing) throw new Error("Employee not found");
@@ -326,7 +331,7 @@ export const updateEmployee = async (id: string,
             designation, joiningDate, employmentType,
             reportingManagerId, panNumber, aadharNumber,
             bankAccountNumber, bankIFSC, bankName,
-            pfNumber, esiNumber,
+            pfNumber, esiNumber, grossSalary,
             ...allowedSelfEdit
         } = safeData;
 

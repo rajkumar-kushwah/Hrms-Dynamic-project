@@ -20,7 +20,7 @@ const LeavePolicy = () => {
     const [leaveTypes, setLeaveTypes] = React.useState<LeaveType[]>([]);
     const [open, setOpen] = React.useState(false);
     const [editType, setEditType] = React.useState<LeaveType | null>(null);
-    const [form, setForm] = React.useState({ name: "", description: "", daysPerYear: 12 });
+    const [form, setForm] = React.useState({ name: "", description: "", daysPerYear: 0, isPaid: false, });
 
     React.useEffect(() => { loadLeaveTypes(); }, []);
 
@@ -66,7 +66,7 @@ const LeavePolicy = () => {
     const handleClose = () => {
         setOpen(false);
         setEditType(null);
-        setForm({ name: "", description: "", daysPerYear: 12 });
+        setForm({ name: "", description: "", daysPerYear: 0, isPaid: false });
     };
 
     return (
@@ -99,6 +99,13 @@ const LeavePolicy = () => {
                             <Label>Days Per Year</Label>
                             <Input type="number" value={form.daysPerYear} onChange={(e) => setForm({ ...form, daysPerYear: Number(e.target.value) })} />
                         </div>
+                        <div className="flex items-center gap-2">
+                            <input id="isPaid" type="checkbox" checked={form.isPaid} onChange={(e) => setForm({ ...form, isPaid: e.target.checked, })}
+                                className="h-4 w-4"
+                            />
+                            <Label htmlFor="isPaid">Paid Leave</Label>
+                        </div>
+
                         <Button onClick={handleSubmit}>{editType ? "Update" : "Create"}</Button>
                     </div>
                 </DialogContent>
@@ -138,7 +145,7 @@ const LeavePolicy = () => {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem onClick={() => {
                                                         setEditType(lt);
-                                                        setForm({ name: lt.name, description: lt.description ?? "", daysPerYear: lt.daysPerYear });
+                                                        setForm({ name: lt.name, description: lt.description ?? "", daysPerYear: lt.daysPerYear, isPaid: lt.isPaid, });
                                                         setOpen(true);
                                                     }}>Edit</DropdownMenuItem>
                                                     <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(lt.id)}>

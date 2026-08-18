@@ -54,6 +54,7 @@ const fieldTabMap: Record<string, string> = {
     bankIFSC: "bank",
     pfNumber: "bank",
     esiNumber: "bank",
+    grossSalary: "bank",
 };
 
 
@@ -71,11 +72,11 @@ const initialForm: CreateEmployeePayload = {
     branchId: "", categoryId: "", phone: "",
     dateOfBirth: "", gender: "", bloodGroup: "", maritalStatus: "",
     currentAddress: "", permanentAddress: "",
-    designation: "", joiningDate: "", employmentType: "", workShift: "",
-    reportingManagerId: "",
+    designation: "", grossSalary: undefined, joiningDate: "", employmentType: "", workShift: "",
+    pfNumber: "", esiNumber: "",
+    reportingManagerId: undefined,
     panNumber: "", aadharNumber: "",
     bankAccountNumber: "", bankIFSC: "", bankName: "",
-    pfNumber: "", esiNumber: "",
     emergencyContactName: "", emergencyContactPhone: "",
 };
 
@@ -114,6 +115,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                     dateOfBirth: editEmployee.dateOfBirth?.split("T")[0] ?? "",
                     joiningDate: editEmployee.joiningDate?.split("T")[0] ?? "",
                     designation: editEmployee.designation ?? "",
+                    grossSalary: editEmployee.grossSalary ?? undefined,
                     employmentType: editEmployee.employmentType ?? "",
                     workShift: editEmployee.workShift ?? "",
 
@@ -180,7 +182,9 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
         // setForm({ ...form, [e.target.name]: e.target.value });
         setForm((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: name == "grossSalary"
+                ? value === "" ? undefined : Number(value)
+                : value,
         }));
 
         const schema =
@@ -189,7 +193,12 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
             ];
 
         if (schema) {
-            const result = schema.safeParse(value);
+            const parsedValue =
+                name === "grossSalary"
+                    ? value === "" ? undefined : Number(value)
+                    : value;
+
+            const result = schema.safeParse(parsedValue);
 
             setErrors((prev) => ({
                 ...prev,
@@ -290,10 +299,11 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                     currentAddress: form.currentAddress,
                     permanentAddress: form.permanentAddress,
                     designation: form.designation,
+                    grossSalary: form.grossSalary,
                     joiningDate: form.joiningDate,
                     employmentType: form.employmentType,
                     workShift: form.workShift,
-                    reportingManagerId: form.reportingManagerId,
+                    reportingManagerId: form.reportingManagerId || undefined,
                     panNumber: form.panNumber,
                     aadharNumber: form.aadharNumber,
                     bankAccountNumber: form.bankAccountNumber,
@@ -534,6 +544,15 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                                     {errors.designation && (
                                         <p className="mt-1 text-sm text-red-500">
                                             {errors.designation}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <Label>Gross Monthly Salary</Label>
+                                    <Input name="grossSalary" type="number" value={form.grossSalary ?? ""} onChange={handleChange} placeholder="e.g. 25000" />
+                                    {errors.grossSalary && (
+                                        <p className="mt-1 text-sm text-red-500">
+                                            {errors.grossSalary}
                                         </p>
                                     )}
                                 </div>

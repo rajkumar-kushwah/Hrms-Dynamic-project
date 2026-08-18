@@ -33,6 +33,7 @@ export interface EmployeeDetail extends Employee {
     emergencyContactName?: string;
     emergencyContactPhone?: string;
     reportingManager?: { id: string; name: string };
+    grossSalary?: number;
 }
 
 export interface CreateEmployeePayload {
@@ -63,6 +64,7 @@ export interface CreateEmployeePayload {
     esiNumber?: string;
     emergencyContactName?: string;
     emergencyContactPhone?: string;
+    grossSalary?: number;
 }
 
 export interface UpdateEmployeePayload
