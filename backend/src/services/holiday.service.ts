@@ -1,173 +1,212 @@
 import { prisma } from "../config/db.js";
 
 // ─────────────────────────────────────────────
-// Create Leave Type
+// Create Holiday
 // ─────────────────────────────────────────────
 
-export const createLeaveType = async (
+export const createHoliday = async (
     companyId: string,
     data: {
         name: string;
-        description?: string;
-        daysPerYear?: number;
-        isPaid?: boolean;
+        date: string;
     }
 ) => {
-    const existing = await prisma.leaveType.findFirst({
+    const holidayDate = new Date(data.date);
+
+    if (isNaN(holidayDate.getTime())) {
+        throw new Error("Invalid holiday date");
+    }
+
+    // Same company mein same date ka holiday already hai ya nahi
+    const existing = await prisma.holiday.findFirst({
         where: {
-            name: data.name,
             companyId,
+            date: holidayDate,
         },
     });
 
     if (existing) {
-        throw new Error("Leave type already exists");
+        throw new Error("Holiday already exists for this date");
     }
 
-    const leaveType = await prisma.leaveType.create({
+    const holiday = await prisma.holiday.create({
         data: {
-            ...data,
+            name: data.name.trim(),
+            date: holidayDate,
             companyId,
         },
     });
 
-    return leaveType;
+    return holiday;
 };
 
 
 // ─────────────────────────────────────────────
-// Get ALL Leave Types
-// Used by Leave Policy page
+// Get Holidays
 // Active + Inactive
 // ─────────────────────────────────────────────
 
-export const getLeaveTypes = async (
+export const getHolidays = async (
     companyId: string | null
 ) => {
-    return await prisma.leaveType.findMany({
+    return await prisma.holiday.findMany({
         where: {
             ...(companyId ? { companyId } : {}),
         },
-
         orderBy: {
-            createdAt: "asc",
+            date: "asc",
         },
     });
 };
 
 
 // ─────────────────────────────────────────────
-// Get ACTIVE Leave Types
-// Used by Apply Leave page
+// Get Active Holidays
+// Payroll / Leave validation ke liye
 // ─────────────────────────────────────────────
 
-export const getActiveLeaveTypes = async (
-    companyId: string | null
+export const getActiveHolidays = async (
+    companyId: string
 ) => {
-    return await prisma.leaveType.findMany({
+    return await prisma.holiday.findMany({
         where: {
-            ...(companyId ? { companyId } : {}),
+            companyId,
             isActive: true,
         },
-
         orderBy: {
-            createdAt: "asc",
+            date: "asc",
         },
     });
 };
 
 
 // ─────────────────────────────────────────────
-// Update Leave Type
+// Update Holiday
 // ─────────────────────────────────────────────
 
-export const updateLeaveType = async (
+export const updateHoliday = async (
     id: string,
     data: {
         name?: string;
-        description?: string;
-        daysPerYear?: number;
-        isPaid?: boolean;
-        isActive?: boolean;
+        date?: string;
     }
 ) => {
-    const existing = await prisma.leaveType.findUnique({
+    const existing = await prisma.holiday.findUnique({
         where: {
             id,
         },
     });
 
     if (!existing) {
-        throw new Error("Leave type not found");
+        throw new Error("Holiday not found");
     }
 
-    return await prisma.leaveType.update({
+    const updateData: {
+        name?: string;
+        date?: Date;
+    } = {};
+
+    if (data.name !== undefined) {
+        updateData.name = data.name.trim();
+    }
+
+    if (data.date !== undefined) {
+        const holidayDate = new Date(data.date);
+
+        if (isNaN(holidayDate.getTime())) {
+            throw new Error("Invalid holiday date");
+        }
+
+        updateData.date = holidayDate;
+    }
+
+    // Agar date change ho rahi hai to duplicate check
+    if (updateData.date) {
+        const duplicate = await prisma.holiday.findFirst({
+            where: {
+                companyId: existing.companyId,
+                date: updateData.date,
+                NOT: {
+                    id,
+                },
+            },
+        });
+
+        if (duplicate) {
+            throw new Error(
+                "Another holiday already exists for this date"
+            );
+        }
+    }
+
+    return await prisma.holiday.update({
         where: {
             id,
         },
-
-        data,
+        data: updateData,
     });
 };
 
 
 // ─────────────────────────────────────────────
-// Deactivate Leave Type
+// Deactivate Holiday
 // ─────────────────────────────────────────────
 
-export const deleteLeaveType = async (id: string) => {
-    const existing = await prisma.leaveType.findUnique({
+export const deactivateHoliday = async (
+    id: string
+) => {
+    const existing = await prisma.holiday.findUnique({
         where: {
             id,
         },
     });
 
     if (!existing) {
-        throw new Error("Leave type not found");
+        throw new Error("Holiday not found");
     }
 
-    await prisma.leaveType.update({
+    await prisma.holiday.update({
         where: {
             id,
         },
-
         data: {
             isActive: false,
         },
     });
 
     return {
-        message: "Leave type deactivated successfully",
+        message: "Holiday deactivated successfully",
     };
 };
 
 
 // ─────────────────────────────────────────────
-// Activate Leave Type
+// Activate Holiday
 // ─────────────────────────────────────────────
 
-export const activateLeaveType = async (id: string) => {
-    const existing = await prisma.leaveType.findUnique({
+export const activateHoliday = async (
+    id: string
+) => {
+    const existing = await prisma.holiday.findUnique({
         where: {
             id,
         },
     });
 
     if (!existing) {
-        throw new Error("Leave type not found");
+        throw new Error("Holiday not found");
     }
 
-    await prisma.leaveType.update({
+    await prisma.holiday.update({
         where: {
             id,
         },
-
         data: {
             isActive: true,
         },
     });
 
     return {
-        message: "Leave type activated successfully",
+        message: "Holiday activated successfully",
     };
 };

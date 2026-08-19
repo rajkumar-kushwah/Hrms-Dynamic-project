@@ -42,6 +42,7 @@ export const seedModules = async () => {
     { name: "leave_request", displayName: "Leave Request", icon: "Send", url: "/leave/request", order: 1, parentId: leave!.id },
     { name: "leave_approval", displayName: "Leave Approval", icon: "CheckCircle", url: "/leave/approval", order: 2, parentId: leave!.id },
     { name: "leave_policy", displayName: "Leave Policy", icon: "FileText", url: "/leave/policy", order: 3, parentId: leave!.id },
+    { name: "holiday", displayName: "Holidays", icon: "CalendarOff", url: "/holiday", order: 4, parentId: leave!.id },
 
     // Reports
     { name: "attendance_report", displayName: "Attendance Report", icon: "FileBarChart", url: "/reports/attendance", order: 1, parentId: reports!.id },

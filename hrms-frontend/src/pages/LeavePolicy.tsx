@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import type { LeaveType } from "@/types/leave.types";
 import { getLeaveTypes, createLeaveType, updateLeaveType, deleteLeaveType } from "@/services/leaveType.service";
 import { useAuthStore } from "@/store/auth.store";
+// import HolidayPage from "@/pages/Holiday";
 
 const LeavePolicy = () => {
     const { user } = useAuthStore();
@@ -60,6 +61,22 @@ const LeavePolicy = () => {
             loadLeaveTypes();
         } catch (err: any) {
             toast.error(err?.message || "Failed to delete leave type");
+        }
+    };
+
+    const handleActivate = async (id: string) => {
+        try {
+            await updateLeaveType(id, {
+                isActive: true,
+            });
+
+            toast.success("Leave type activated!");
+
+            await loadLeaveTypes();
+        } catch (err: any) {
+            toast.error(
+                err?.message || "Failed to activate leave type"
+            );
         }
     };
 
@@ -143,14 +160,38 @@ const LeavePolicy = () => {
                                                     <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => {
-                                                        setEditType(lt);
-                                                        setForm({ name: lt.name, description: lt.description ?? "", daysPerYear: lt.daysPerYear, isPaid: lt.isPaid, });
-                                                        setOpen(true);
-                                                    }}>Edit</DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(lt.id)}>
-                                                        Deactivate
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            setEditType(lt);
+
+                                                            setForm({
+                                                                name: lt.name,
+                                                                description: lt.description ?? "",
+                                                                daysPerYear: lt.daysPerYear,
+                                                                isPaid: lt.isPaid,
+                                                            });
+
+                                                            setOpen(true);
+                                                        }}
+                                                    >
+                                                        Edit
                                                     </DropdownMenuItem>
+
+                                                    {lt.isActive ? (
+                                                        <DropdownMenuItem
+                                                            className="text-red-600"
+                                                            onClick={() => handleDelete(lt.id)}
+                                                        >
+                                                            Deactivate
+                                                        </DropdownMenuItem>
+                                                    ) : (
+                                                        <DropdownMenuItem
+                                                            className="text-green-600"
+                                                            onClick={() => handleActivate(lt.id)}
+                                                        >
+                                                            Activate
+                                                        </DropdownMenuItem>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
@@ -168,6 +209,7 @@ const LeavePolicy = () => {
                     </Table>
                 </div>
             </div>
+            {/* <HolidayPage /> */}
         </div>
     );
 };

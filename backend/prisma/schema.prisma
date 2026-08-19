@@ -335,6 +335,7 @@ model Payroll {
   year            Int
   grossSalary     Float
   workingDays     Int
+  holidayDays     Int      @default(0)
   presentDays     Int
   paidLeaveDays   Int
   unpaidLeaveDays Int
@@ -362,4 +363,14 @@ model Holiday {
   company   Company @relation(fields: [companyId], references: [id])
 
   @@unique([companyId, date])
+}
+
+
+model Session {
+  sid    String   @id
+  sess   Json
+  expire DateTime
+
+  @@map("sessions")
+  @@index([expire])
 }

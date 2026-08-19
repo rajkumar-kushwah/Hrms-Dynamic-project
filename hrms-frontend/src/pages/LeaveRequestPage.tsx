@@ -111,7 +111,7 @@ const LeaveRequestPage = () => {
                             <Label>Leave Type *</Label>
                             <Select value={form.leaveTypeId} onValueChange={(val) => setForm({ ...form, leaveTypeId: val })}>
                                 <SelectTrigger><SelectValue placeholder="Select Leave Type" /></SelectTrigger>
-                                <SelectContent>
+                                <SelectContent position="popper">
                                     {leaveTypes.map((lt) => (
                                         <SelectItem key={lt.id} value={lt.id}>{lt.name}</SelectItem>
                                     ))}

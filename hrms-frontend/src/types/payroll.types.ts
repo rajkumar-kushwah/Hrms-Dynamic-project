@@ -8,6 +8,7 @@ export interface PayrollSummary {
     designation?: string;
   };
   totalWorkingDays: number;
+  holidayDays: number;
   presentDays: number;
   halfDays: number;
   paidLeaveDays: number;

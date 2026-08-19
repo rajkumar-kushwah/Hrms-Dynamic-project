@@ -20,6 +20,7 @@ import settingsRoutes from "./routes/settings.routes.js";
 import leaveTypeRoutes from "./routes/leaveType.routes.js";
 import leaveRequestRoutes from "./routes/leaveRequest.routes.js";
 import payrollRoutes from "./routes/payroll.routes.js";
+import holidayRoutes from "./routes/holiday.routes.js";
 
 dotenv.config();
 const app = express();
@@ -54,6 +55,7 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/leave-type", leaveTypeRoutes);
 app.use("/api/leave-request", leaveRequestRoutes);
 app.use("/api/payroll", payrollRoutes);
+app.use("/api/holidays", holidayRoutes);
 
 app.use('/permission', permissionRouter)
 app.use('/checkin', checkInRouter)

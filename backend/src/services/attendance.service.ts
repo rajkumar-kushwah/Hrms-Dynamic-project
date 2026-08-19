@@ -158,6 +158,140 @@ export const getTodayAttendance = async (userId: string) => {
 };
 
 // ─── Get My Attendance History ───────────
+// export const getMyAttendance = async (
+//     userId: string,
+//     companyId: string,
+//     month?: number,
+//     year?: number
+// ) => {
+//     const settings = await getCompanySettings(companyId);
+//     const weekOffDays = settings.weekOffDays;
+
+//     const targetMonth = month ?? new Date().getMonth() + 1;
+//     const targetYear = year ?? new Date().getFullYear();
+
+//     const startDate = new Date(targetYear, targetMonth - 1, 1);
+//     startDate.setHours(0, 0, 0, 0);
+
+//     const endDate = new Date(targetYear, targetMonth, 0);
+//     endDate.setHours(0, 0, 0, 0);
+
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+
+//     const records = await prisma.attendance.findMany({
+//         where: {
+//             userId,
+//             date: { gte: startDate, lte: endDate },
+//         },
+//         orderBy: { date: "asc" },
+//     });
+
+//     //  Naya — Approved leaves is month ke liye fetch karo
+//     const approvedLeaves = await prisma.leaveRequest.findMany({
+//         where: {
+//             userId,
+//             status: "Approved",
+//             startDate: { lte: endDate },
+//             endDate: { gte: startDate },
+//         },
+//         include: { leaveType: { select: { name: true } } }
+//     });
+
+//     const getDateKey = (d: Date) => {
+//         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+//     };
+
+//     const attendanceMap = new Map(
+//         records.map((record) => [getDateKey(new Date(record.date)), record])
+//     );
+
+//     //  Naya — Leave dates ka map banao
+//     const leaveMap = new Map<string, string>();
+//     for (const leave of approvedLeaves) {
+//         const lStart = new Date(Math.max(leave.startDate.getTime(), startDate.getTime()));
+//         const lEnd = new Date(Math.min(leave.endDate.getTime(), endDate.getTime()));
+//         for (let d = new Date(lStart); d <= lEnd; d.setDate(d.getDate() + 1)) {
+//             leaveMap.set(getDateKey(new Date(d)), leave.leaveType.name);
+//         }
+//     }
+
+//     const result: any[] = [];
+//     const todayKey = getDateKey(today);
+
+//     for (
+//         let d = new Date(startDate);
+//         d <= endDate;
+//         d.setDate(d.getDate() + 1)
+//     ) {
+//         const currentDate = new Date(d);
+//         const key = getDateKey(currentDate);
+
+//         if (key > todayKey) {
+//             continue;
+//         }
+
+//         const isWeekOff = weekOffDays.includes(currentDate.getDay());
+//         const attendance = attendanceMap.get(key);
+//         const leaveTypeName = leaveMap.get(key); //  Naya
+
+//         //  Priority 1 — Real punch-in record (agar employee aa gaya, chahe leave bhi ho)
+//         if (attendance) {
+//             result.push(attendance);
+//             continue;
+//         }
+
+//         //  Priority 2 — Approved Leave (naya block)
+//         if (leaveTypeName) {
+//             result.push({
+//                 id: `leave-${key}`,
+//                 userId, companyId, branchId: null,
+//                 date: new Date(currentDate),
+//                 punchInTime: null, punchOutTime: null,
+//                 punchInLat: null, punchInLng: null,
+//                 punchOutLat: null, punchOutLng: null,
+//                 workingHours: 0, isWithinGeoFence: false,
+//                 status: `On Leave (${leaveTypeName})`,
+//                 createdAt: new Date(), updatedAt: new Date(),
+//             });
+//             continue;
+//         }
+
+//         // Priority 3 — Week Off
+//         if (isWeekOff) {
+//             result.push({
+//                 id: `weekoff-${key}`,
+//                 userId, companyId, branchId: null,
+//                 date: new Date(currentDate),
+//                 punchInTime: null, punchOutTime: null,
+//                 punchInLat: null, punchInLng: null,
+//                 punchOutLat: null, punchOutLng: null,
+//                 workingHours: 0, isWithinGeoFence: false,
+//                 status: "Week Off",
+//                 createdAt: new Date(), updatedAt: new Date(),
+//             });
+//             continue;
+//         }
+
+//         // Priority 4 — Absent
+//         result.push({
+//             id: `absent-${key}`,
+//             userId, companyId, branchId: null,
+//             date: new Date(currentDate),
+//             punchInTime: null, punchOutTime: null,
+//             punchInLat: null, punchInLng: null,
+//             punchOutLat: null, punchOutLng: null,
+//             workingHours: 0, isWithinGeoFence: false,
+//             status: "Absent",
+//             createdAt: new Date(), updatedAt: new Date(),
+//         });
+//     }
+
+//     return result.reverse();
+// };
+
+
+
 export const getMyAttendance = async (
     userId: string,
     companyId: string,
@@ -179,116 +313,286 @@ export const getMyAttendance = async (
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Date ko YYYY-MM-DD format mein convert karne ke liye
+    const getDateKey = (d: Date) => {
+        return `${d.getFullYear()}-${String(
+            d.getMonth() + 1
+        ).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+
+    // Attendance records
     const records = await prisma.attendance.findMany({
         where: {
             userId,
-            date: { gte: startDate, lte: endDate },
+            date: {
+                gte: startDate,
+                lte: endDate,
+            },
         },
-        orderBy: { date: "asc" },
+        orderBy: {
+            date: "asc",
+        },
     });
 
-    //  Naya — Approved leaves is month ke liye fetch karo
+    // Holidays fetch
+    const holidays = await prisma.holiday.findMany({
+        where: {
+            companyId,
+            isActive: true,
+            date: {
+                gte: startDate,
+                lte: endDate,
+            },
+        },
+        select: {
+            name: true,
+            date: true,
+        },
+    });
+
+    // Holiday map
+    const holidaySet = new Map<string, string>();
+
+    for (const holiday of holidays) {
+        holidaySet.set(
+            getDateKey(new Date(holiday.date)),
+            holiday.name
+        );
+    }
+
+    // Attendance map
+    const attendanceMap = new Map(
+        records.map((record) => [
+            getDateKey(new Date(record.date)),
+            record,
+        ])
+    );
+
+    // Approved leaves fetch
     const approvedLeaves = await prisma.leaveRequest.findMany({
         where: {
             userId,
             status: "Approved",
-            startDate: { lte: endDate },
-            endDate: { gte: startDate },
+            startDate: {
+                lte: endDate,
+            },
+            endDate: {
+                gte: startDate,
+            },
         },
-        include: { leaveType: { select: { name: true } } }
+        include: {
+            leaveType: {
+                select: {
+                    name: true,
+                },
+            },
+        },
     });
 
-    const getDateKey = (d: Date) => {
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    };
-
-    const attendanceMap = new Map(
-        records.map((record) => [getDateKey(new Date(record.date)), record])
-    );
-
-    //  Naya — Leave dates ka map banao
+    // Leave dates map
     const leaveMap = new Map<string, string>();
+
     for (const leave of approvedLeaves) {
-        const lStart = new Date(Math.max(leave.startDate.getTime(), startDate.getTime()));
-        const lEnd = new Date(Math.min(leave.endDate.getTime(), endDate.getTime()));
-        for (let d = new Date(lStart); d <= lEnd; d.setDate(d.getDate() + 1)) {
-            leaveMap.set(getDateKey(new Date(d)), leave.leaveType.name);
+        const lStart = new Date(
+            Math.max(
+                leave.startDate.getTime(),
+                startDate.getTime()
+            )
+        );
+
+        const lEnd = new Date(
+            Math.min(
+                leave.endDate.getTime(),
+                endDate.getTime()
+            )
+        );
+
+        for (
+            let d = new Date(lStart);
+            d <= lEnd;
+            d.setDate(d.getDate() + 1)
+        ) {
+            leaveMap.set(
+                getDateKey(new Date(d)),
+                leave.leaveType.name
+            );
         }
     }
 
     const result: any[] = [];
+
     const todayKey = getDateKey(today);
 
+    // Month ke har din ko check karo
     for (
         let d = new Date(startDate);
         d <= endDate;
         d.setDate(d.getDate() + 1)
     ) {
         const currentDate = new Date(d);
+
         const key = getDateKey(currentDate);
 
+        // Future dates nahi dikhani
         if (key > todayKey) {
             continue;
         }
 
-        const isWeekOff = weekOffDays.includes(currentDate.getDay());
+        // Existing attendance record
         const attendance = attendanceMap.get(key);
-        const leaveTypeName = leaveMap.get(key); //  Naya
 
-        //  Priority 1 — Real punch-in record (agar employee aa gaya, chahe leave bhi ho)
+        // Approved leave
+        const leaveTypeName = leaveMap.get(key);
+
+        // Holiday
+        const holidayName = holidaySet.get(key);
+
+        // Week off
+        const isWeekOff = weekOffDays.includes(
+            currentDate.getDay()
+        );
+
+        // ------------------------------------------------
+        // Priority 1 - Real attendance
+        // ------------------------------------------------
         if (attendance) {
             result.push(attendance);
             continue;
         }
 
-        //  Priority 2 — Approved Leave (naya block)
+        // ------------------------------------------------
+        // Priority 2 - Holiday
+        // ------------------------------------------------
+        if (holidayName) {
+            result.push({
+                id: `holiday-${key}`,
+                userId,
+                companyId,
+                branchId: null,
+
+                date: new Date(currentDate),
+
+                punchInTime: null,
+                punchOutTime: null,
+
+                punchInLat: null,
+                punchInLng: null,
+
+                punchOutLat: null,
+                punchOutLng: null,
+
+                workingHours: 0,
+                isWithinGeoFence: false,
+
+                status: "Holiday",
+                holidayName,
+
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
+            continue;
+        }
+
+        // ------------------------------------------------
+        // Priority 3 - Approved Leave
+        // ------------------------------------------------
         if (leaveTypeName) {
             result.push({
                 id: `leave-${key}`,
-                userId, companyId, branchId: null,
+                userId,
+                companyId,
+                branchId: null,
+
                 date: new Date(currentDate),
-                punchInTime: null, punchOutTime: null,
-                punchInLat: null, punchInLng: null,
-                punchOutLat: null, punchOutLng: null,
-                workingHours: 0, isWithinGeoFence: false,
+
+                punchInTime: null,
+                punchOutTime: null,
+
+                punchInLat: null,
+                punchInLng: null,
+
+                punchOutLat: null,
+                punchOutLng: null,
+
+                workingHours: 0,
+                isWithinGeoFence: false,
+
                 status: `On Leave (${leaveTypeName})`,
-                createdAt: new Date(), updatedAt: new Date(),
+
+                createdAt: new Date(),
+                updatedAt: new Date(),
             });
+
             continue;
         }
 
-        // Priority 3 — Week Off
+        // ------------------------------------------------
+        // Priority 4 - Week Off
+        // ------------------------------------------------
         if (isWeekOff) {
             result.push({
                 id: `weekoff-${key}`,
-                userId, companyId, branchId: null,
+                userId,
+                companyId,
+                branchId: null,
+
                 date: new Date(currentDate),
-                punchInTime: null, punchOutTime: null,
-                punchInLat: null, punchInLng: null,
-                punchOutLat: null, punchOutLng: null,
-                workingHours: 0, isWithinGeoFence: false,
+
+                punchInTime: null,
+                punchOutTime: null,
+
+                punchInLat: null,
+                punchInLng: null,
+
+                punchOutLat: null,
+                punchOutLng: null,
+
+                workingHours: 0,
+                isWithinGeoFence: false,
+
                 status: "Week Off",
-                createdAt: new Date(), updatedAt: new Date(),
+
+                createdAt: new Date(),
+                updatedAt: new Date(),
             });
+
             continue;
         }
 
-        // Priority 4 — Absent
+        // ------------------------------------------------
+        // Priority 5 - Absent
+        // ------------------------------------------------
         result.push({
             id: `absent-${key}`,
-            userId, companyId, branchId: null,
+            userId,
+            companyId,
+            branchId: null,
+
             date: new Date(currentDate),
-            punchInTime: null, punchOutTime: null,
-            punchInLat: null, punchInLng: null,
-            punchOutLat: null, punchOutLng: null,
-            workingHours: 0, isWithinGeoFence: false,
+
+            punchInTime: null,
+            punchOutTime: null,
+
+            punchInLat: null,
+            punchInLng: null,
+
+            punchOutLat: null,
+            punchOutLng: null,
+
+            workingHours: 0,
+            isWithinGeoFence: false,
+
             status: "Absent",
-            createdAt: new Date(), updatedAt: new Date(),
+
+            createdAt: new Date(),
+            updatedAt: new Date(),
         });
     }
 
     return result.reverse();
 };
+
 
 // ─── Get All Employees Attendance (Admin) ──
 export const getAllAttendance = async (

@@ -36,6 +36,8 @@ export default function layout() {
                 return "Geo Fencing";
             case "/leave/policy":
                 return "Leave Policy";
+            case "/holiday":
+                return "Holiday";
             case "/leave/request":
                 return "Leave Request";
             case "/leave/approval":

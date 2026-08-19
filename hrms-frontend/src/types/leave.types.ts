@@ -46,10 +46,11 @@ export interface CreateLeaveTypePayload {
 }
 
 export interface UpdateLeaveTypePayload {
-    name: string;
+    name?: string;
     description?: string;
-    daysPerYear: number;
-    isPaid: boolean;
+    daysPerYear?: number;
+    isPaid?: boolean;
+    isActive?: boolean;
 }
 
 export interface CreateLeaveRequestPayload {

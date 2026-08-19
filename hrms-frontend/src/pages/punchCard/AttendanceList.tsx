@@ -66,6 +66,7 @@ const MyAttendance = () => {
             case "Half-day": return "bg-orange-100 text-orange-700";
             case "Absent": return "bg-red-100 text-red-700";
             case "Week Off": return "bg-gray-100 text-gray-700";
+            case "Holiday": return "bg-purple-100 text-purple-700";
             default: return "bg-gray-100 text-gray-700";
         }
     };

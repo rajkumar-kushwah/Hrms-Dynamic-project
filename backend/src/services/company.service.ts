@@ -6,20 +6,27 @@ import { prisma } from "../config/db.js";
 const generateCompanyCode = async (): Promise<string> => {
     const lastCompany = await prisma.company.findFirst({
         orderBy: {
-            createdAt: 'desc'
+            createdAt: "desc",
         },
         select: {
-            code: true
-        }
-    })
-    const number = lastCompany?.code?.split("_")[1]
-    const newNumber = String(Number(number) + 1).padStart(3, "0");
-    return `COMP_${newNumber}`
+            code: true,
+        },
+    });
 
-    // const count = await prisma.company.count();
-    // const number = String(count + 1).padStart(3, "0");
-    // return `COMP_${number}`;
-}
+    let number = 1;
+
+    if (lastCompany?.code) {
+        const match = lastCompany.code.match(/^COMP_(\d+)$/);
+
+        if (match) {
+            number = Number(match[1]) + 1;
+        }
+    }
+
+    const newNumber = String(number).padStart(3, "0");
+
+    return `COMP_${newNumber}`;
+};
 
 const validateGST = (gst: string): boolean => {
     const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
