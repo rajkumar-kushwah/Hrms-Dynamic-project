@@ -239,7 +239,14 @@ const EmployeeList = () => {
               <InfoItem label="Employment Type" value={selectedEmployee.employmentType} />
               <InfoItem label="Work Shift" value={selectedEmployee.workShift} />
               <InfoItem label="Reporting Manager" value={selectedEmployee.reportingManager?.name} />
-              <InfoItem label="Gross Monthly Salary" value={selectedEmployee.grossSalary !== null ?`₹${selectedEmployee.grossSalary.toLocaleString("en-IN")}`:"-"} />
+              <InfoItem
+                label="Gross Monthly Salary"
+                value={
+                  selectedEmployee.grossSalary != null
+                    ? `₹${selectedEmployee.grossSalary.toLocaleString("en-IN")}`
+                    : "-"
+                }
+              />
             </div>
           </TabsContent>
 
