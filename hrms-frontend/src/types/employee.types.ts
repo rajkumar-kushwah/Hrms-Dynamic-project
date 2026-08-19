@@ -12,6 +12,7 @@ export interface Employee {
     branch?: { id: string; name: string };
     category?: { id: string; name: string };
     company?: { id: string; name: string };
+    grossSalary: number | null;
 }
 
 export interface EmployeeDetail extends Employee {
@@ -33,7 +34,7 @@ export interface EmployeeDetail extends Employee {
     emergencyContactName?: string;
     emergencyContactPhone?: string;
     reportingManager?: { id: string; name: string };
-    grossSalary?: number;
+    grossSalary: number;
 }
 
 export interface CreateEmployeePayload {
@@ -64,7 +65,7 @@ export interface CreateEmployeePayload {
     esiNumber?: string;
     emergencyContactName?: string;
     emergencyContactPhone?: string;
-    grossSalary?: number | null;
+    grossSalary: number | null;
 }
 
 export interface UpdateEmployeePayload
