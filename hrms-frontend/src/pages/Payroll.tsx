@@ -237,8 +237,8 @@ const Payroll = () => {
 
                         <RefreshCw
                             className={`h-4 w-4 mr-2 ${loading
-                                    ? "animate-spin"
-                                    : ""
+                                ? "animate-spin"
+                                : ""
                                 }`}
                         />
 
@@ -631,7 +631,7 @@ const Payroll = () => {
                                                             variant="secondary"
                                                         >
                                                             {
-                                                                emp.holidayDays
+                                                                emp.holidayDays || 0
                                                             }
                                                         </Badge>
 

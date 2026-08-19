@@ -858,7 +858,7 @@ const calculateEmployeePayroll = async (
 
         weekOffCount,
 
-        holidayDays,
+        holidayDays: Number(holidayDays || 0),
 
 
         // ─────────────────────────────
