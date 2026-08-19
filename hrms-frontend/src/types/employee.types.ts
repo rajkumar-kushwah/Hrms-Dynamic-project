@@ -64,7 +64,7 @@ export interface CreateEmployeePayload {
     esiNumber?: string;
     emergencyContactName?: string;
     emergencyContactPhone?: string;
-    grossSalary?: number;
+    grossSalary?: number | null;
 }
 
 export interface UpdateEmployeePayload
