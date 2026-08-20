@@ -500,8 +500,8 @@ function CompanyList() {
                 <TableCell className="sticky right-0 bg-card">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="p-2 shrink-0">
-                        <MoreVertical className="h-4 w-4" />
+                      <Button variant="ghost" className="p-2 shrink-0 hover:bg-[var(--themePrimary)]/5 hover:text-white">
+                        <MoreVertical className="h-4 w-4 text-[var(--themePrimary)]" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

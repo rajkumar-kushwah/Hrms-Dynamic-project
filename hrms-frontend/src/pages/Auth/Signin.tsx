@@ -7,10 +7,11 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 // import axios from "axios";
 import { signinUser } from '@/services/auth.service'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from "@/store/auth.store"
 import { Eye, EyeOff } from "lucide-react";
 import { signinSchema } from "@/validation/auth.validation";
+import Light_BG from "@/assets/Light_BG.png"
 
 
 function Signin() {
@@ -92,31 +93,45 @@ function Signin() {
     return (
         <div className='bg-card flex justify-center items-center min-h-screen'>
             <div className='bg-card  w-full max-w-md p-6 space-y-4 shadow-lg border rounded-2xl'>
-                <h1 className="text-2xl text-center">Signin</h1>
+                <div className="flex flex-col items-center gap-3">
+                    <img
+                        src={Light_BG}
+                        alt="HRMS Logo"
+                        className="h-12 w-auto object-contain rounded-md"
+                    />
 
+                    <h1 className="text-2xl font-semibold text-center">
+                        Welcome to <span className="text-primary">HRMS</span>
+                    </h1>
+
+                    <h2 className="text-md  text-gray-400 text-center">
+                        Sign in to your account to continue
+                    </h2>
+                </div>
                 <form className='space-y-4' onSubmit={handleSubmit}>
                     {/* <div>
                         <Label>Company code </Label>
                         <Input placeholder='Company code' required />
                     </div> */}
 
-                    <div>
-                        <Label>Email</Label>
-                        <Input value={email} name="email" type="email" onChange={handleChange} placeholder='Email..' required />
+                    <div className='space-y-2'>
+                        <Label>Username</Label>
+                        <Input value={email} name="email" type="email" onChange={handleChange} placeholder='Enter your Username here' required className=" bg-[var(--themePrimary)]/5 rounded-full focus-visible:border-[var(--themePrimary)] focus-visible:border-[var(--themePrimary)] focus-visible:ring-0"
+                        />
                         {error.email && (
                             <p className="mt-1 text-sm text-red-500">
                                 {error.email}
                             </p>
                         )}
                     </div>
-                    <div>
 
+                    <div className='space-y-2'>
                         <Label>Password</Label>
                         <div className='relative'>
-                            <Input type={showPassword ? 'text' : 'password'} name="password" className='pr-10' value={password} onChange={handleChange} placeholder='Password' autoComplete="current-password" />
+                            <Input type={showPassword ? 'text' : 'password'} name="password" className='bg-[var(--themePrimary)]/5 rounded-full focus-visible:border-[var(--themePrimary)] focus-visible:border-[var(--themePrimary)] focus-visible:ring-0' value={password} onChange={handleChange} placeholder='Enter your Password here' autoComplete="current-password" />
                             <button
                                 type="button"
-                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                                className="absolute right-3 border-logo-green hover:border-logo-green/80 top-1/2 -translate-y-1/2"
                                 onClick={() => setShowPassword((prev) => !prev)}
                             >
                                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -132,13 +147,13 @@ function Signin() {
 
                     <Field>
                         <div className='flex items-center'>
-                            <a href="" className="ml-auto text-sm underline-offset-4 hover:underline">
-                                Forgot your password?
-                            </a>
+                            <Link to="/forgot-password" className="ml-auto text-sm text-blue-500 hover:text-black ">
+                                Forgot password ?
+                            </Link>
                         </div>
                     </Field>
 
-                    <Button type="submit" className='btn btn-primary w-full cursor-pointer'>
+                    <Button type="submit" className='text-md w-full cursor-pointer rounded-full w-full bg-[var(--themePrimary)] text-white hover:bg-[var(--themePrimary)]/80'>
                         {spinner && <Spinner />}
                         Signin
                     </Button>

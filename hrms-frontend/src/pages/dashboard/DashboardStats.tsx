@@ -12,6 +12,16 @@ import { getCategories } from '@/services/category.service';
 import { getEmployees } from '@/services/employee.service';
 import { getTodayAttendance } from '@/services/attendance.service';
 import type { Attendance } from '@/types/attendance.types';
+import {
+    Building2,
+    Users,
+    UserCheck,
+    UserX,
+    GitBranch,
+    Tags,
+    UsersRound,
+    CalendarCheck,
+} from "lucide-react";
 
 const DashboardStats = () => {
     const { user } = useAuthStore();
@@ -124,17 +134,49 @@ const DashboardStats = () => {
             {/* Sirf Super Admin ko Total Companies dikhao */}
             {isSuperAdmin && (
                 <>
-                    <Card className="p-4 border rounded-xl">
-                        <CardTitle className="text-sm md:text-sm">Total Companies</CardTitle>
-                        <CardDescription className="text-xl font-bold">
-                            {totalCompanies}
-                        </CardDescription>
+
+                    {/* total company statistics */}
+                    <Card className="group p-4 border rounded-xl hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] ">
+
+                        <div className="flex items-center gap-3">
+
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
+                                <Building2 className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            </div>
+
+                            <div>
+                                <CardTitle className="text-sm font-medium">
+                                    Total Companies
+                                </CardTitle>
+
+                                <CardDescription className="text-xl font-bold">
+                                    {totalCompanies}
+                                </CardDescription>
+                            </div>
+
+                        </div>
+
                     </Card>
-                    <Card className="p-4 border rounded-xl">
-                        <CardTitle className="text-sm md:text-sm">Total CompaniesUsers</CardTitle>
-                        <CardDescription className="text-xl font-bold">
-                            {totalCompaniesUsers}
-                        </CardDescription>
+
+                    {/* total company user statistics */}
+                    <Card className=" group p-4 border rounded-xl hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] ">
+                        <div className="flex items-center gap-3">
+
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
+                                <Users className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            </div>
+
+                            <div>
+                                <CardTitle className="text-sm font-medium">
+                                    Total CompaniesUsers
+                                </CardTitle>
+
+                                <CardDescription className="text-xl font-bold">
+                                    {totalCompaniesUsers}
+                                </CardDescription>
+                            </div>
+
+                        </div>
                     </Card>
                 </>
             )}
@@ -148,36 +190,83 @@ const DashboardStats = () => {
                         </CardDescription>
                     </Card> */}
 
-                    <Card className="p-4 border rounded-xl">
-                        <CardTitle className="text-sm md:text-sm">Active Users</CardTitle>
-                        <CardDescription className="text-xl font-bold text-green-600">
-                            {activeUsers}
-                        </CardDescription>
+                    <Card className=" group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] ">
+
+                        <div className="flex items-center gap-3">
+
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
+                                <UserCheck className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            </div>
+
+                            <div>
+                                <CardTitle className="text-sm md:text-sm">Active Users</CardTitle>
+                                <CardDescription className="text-xl font-bold text-green-600">
+                                    {activeUsers}
+                                </CardDescription>
+                            </div>
+                        </div>
                     </Card>
 
-                    <Card className="p-4 border rounded-xl">
-                        <CardTitle className="text-sm md:text-sm">Inactive Users</CardTitle>
-                        <CardDescription className="text-xl font-bold text-red-500">
-                            {inactiveUsers}
-                        </CardDescription>
+                    <Card className="group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]">
+                        <div className="flex items-center gap-3">
+
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
+                                <UserX className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            </div>
+
+                            <div>
+                                <CardTitle className="text-sm md:text-sm">Inactive Users</CardTitle>
+                                <CardDescription className="text-xl font-bold text-red-500">
+                                    {inactiveUsers}
+                                </CardDescription>
+                            </div>
+                        </div>
                     </Card>
 
-                    <Card className="p-4 border rounded-xl">
-                        <CardTitle className="text-sm md:text-sm">Total Branches</CardTitle>
-                        <CardDescription className="text-xl font-bold">
-                            {totalBranches}
-                        </CardDescription>
+                    <Card className="group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]">
+                        <div className="flex items-center gap-3">
+
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
+                                <GitBranch className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            </div>
+
+                            <div>
+                                <CardTitle className="text-sm md:text-sm">Total Branches</CardTitle>
+                                <CardDescription className="text-xl font-bold">
+                                    {totalBranches}
+                                </CardDescription>
+                            </div>
+                        </div>
                     </Card>
 
-                    <Card className="p-4 border rounded-xl">
-                        <CardTitle className="text-sm md:text-sm">Total Categories</CardTitle>
-                        <CardDescription className="text-xl font-bold">
-                            {totalCategories}
-                        </CardDescription>
+                    <Card className="group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] ">
+                        <div className="flex items-center gap-3">
+
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
+                                <Tags className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            </div>
+
+                            <div>
+                                <CardTitle className="text-sm md:text-sm">Total Categories</CardTitle>
+                                <CardDescription className="text-xl font-bold">
+                                    {totalCategories}
+                                </CardDescription>
+                            </div>
+                        </div>
                     </Card>
-                    <Card className="p-4 border rounded-xl">
-                        <CardTitle className="text-sm md:text-sm">Total Employees</CardTitle>
-                        <CardDescription className="text-xl font-bold">{totalEmployees}</CardDescription>
+
+                    <Card className="group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] ">
+                        <div className="flex items-center gap-3">
+
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
+                                <UsersRound className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            </div>
+
+                            <div>
+                                <CardTitle className="text-sm md:text-sm">Total Employees</CardTitle>
+                                <CardDescription className="text-xl font-bold">{totalEmployees}</CardDescription>
+                            </div>
+                        </div>
                     </Card>
 
 
@@ -203,15 +292,21 @@ const DashboardStats = () => {
                     </Card> */}
                 </>
             )}
-            {(isEmployee || isCompanyAdmin ) && (
-                <Card className="p-4 border rounded-xl">
-                    <CardTitle className="text-sm md:text-sm">
-                        Attendance Today
-                    </CardTitle>
-
-                    <CardDescription className="text-xs font-bold">
-                        {attendance?.status ?? "Not Marked"}
-                    </CardDescription>
+            {(isEmployee || isCompanyAdmin) && (
+                <Card className="group p-4 border rounded-xl hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] active:scale-[0.98] ">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
+                            <CalendarCheck className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-sm md:text-sm">
+                                Attendance Today
+                            </CardTitle>
+                            <CardDescription className="text-xs font-bold">
+                                {attendance?.status ?? "Not Marked"}
+                            </CardDescription>
+                        </div>
+                    </div>
                 </Card>
             )}
 
