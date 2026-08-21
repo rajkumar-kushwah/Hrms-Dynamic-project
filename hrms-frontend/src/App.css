@@ -52,9 +52,38 @@ html {
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
+  /* Existing colors */
   --color-logo-green: hsl(var(--logo-green));
   --color-theme-primary: hsl(var(--themePrimary));
   --color-input-green: hsl(var(--input-green));
+
+  /* Dashboard Card Colors */
+  --color-card-green: var(--card-green);
+  --color-card-green-light: var(--card-green-light);
+  --color-card-green-hover: var(--card-green-hover);
+
+  --color-card-blue: var(--card-blue);
+  --color-card-blue-light: var(--card-blue-light);
+  --color-card-blue-hover: var(--card-blue-hover);
+
+  --color-card-red: var(--card-red);
+  --color-card-red-light: var(--card-red-light);
+  --color-card-red-hover: var(--card-red-hover);
+
+  --color-card-purple: var(--card-purple);
+  --color-card-purple-light: var(--card-purple-light);
+  --color-card-purple-hover: var(--card-purple-hover);
+
+  --color-card-orange: var(--card-orange);
+  --color-card-orange-light: var(--card-orange-light);
+  --color-card-orange-hover: var(--card-orange-hover);
+
+  --color-card-cyan: var(--card-cyan);
+  --color-card-cyan-light: var(--card-cyan-light);
+  --color-card-cyan-hover: var(--card-cyan-hover);
+
+  --color-add-button: var(--add-button);
+  --color-add-button-hover: var(--add-button-hover);
 }
 
 :root {
@@ -91,9 +120,40 @@ html {
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
+
+  /* Existing */
   --logo-green: #c9f740;
   --themePrimary: #22cc3c;
   --input-green: #22cc3c;
+
+  /* Dashboard Card Colors */
+  --card-green: #22c55e;
+  --card-green-light: #ecfdf3;
+  --card-green-hover: #16a34a;
+
+  --card-blue: #3b82f6;
+  --card-blue-light: #eff6ff;
+  --card-blue-hover: #2563eb;
+
+  --card-red: #ef4444;
+  --card-red-light: #fef2f2;
+  --card-red-hover: #dc2626;
+
+  --card-purple: #8b5cf6;
+  --card-purple-light: #f5f3ff;
+  --card-purple-hover: #7c3aed;
+
+  --card-orange: #f97316;
+  --card-orange-light: #fff7ed;
+  --card-orange-hover: #ea580c;
+
+  --card-cyan: #06b6d4;
+  --card-cyan-light: #ecfeff;
+  --card-cyan-hover: #0891b2;
+
+  --themePrimary: #22cc3c;
+  --add-button: #22cc3c;
+  --add-button-hover: #16a34a;
 }
 
 

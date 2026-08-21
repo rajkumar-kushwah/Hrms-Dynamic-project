@@ -258,7 +258,7 @@ function CompanyList() {
           {!isCompanyAdmin && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button className='flex items-center gap-2 cursor-pointer' size="sm" variant="outline">
+                <Button className='flex items-center gap-2 cursor-pointer' size="sm" variant="add">
                   <PlusIcon className='h-4 w-4' />
                   Add Company
                 </Button>
@@ -305,7 +305,7 @@ function CompanyList() {
                   <Label>Address</Label>
                   <Input type="text" placeholder="Company Address" name='address' value={form.address} onChange={handleChange} />
                 </div>
-                <Button variant="outline" className='cursor-pointer' onClick={handleSubmit}>
+                <Button variant="add" className='cursor-pointer' onClick={handleSubmit}>
                   Submit
                 </Button>
               </DialogContent>
@@ -333,7 +333,7 @@ function CompanyList() {
             <Label>Password</Label>
             <Input type="password" placeholder="Password" name="password" value={adminForm.password} onChange={handleAdminChange} />
           </div>
-          <Button onClick={handleAssignAdmin}>
+          <Button variant='add' onClick={handleAssignAdmin}>
             Assign Admin
           </Button>
         </DialogContent>
@@ -373,7 +373,7 @@ function CompanyList() {
               <Label>Address</Label>
               <Input name="address" value={editForm.address} onChange={handleEditChange} placeholder='Company Address' />
             </div>
-            <Button onClick={handleEdit}>Update Company</Button>
+            <Button variant='add' onClick={handleEdit}>Update Company</Button>
           </div>
           {/* Edit Dialog ke andar, form ke neeche */}
           {isSuperAdmin && (
@@ -529,7 +529,7 @@ function CompanyList() {
 
                           </>
                         )}
-                        <DropdownMenuItem onClick={() => {
+                        <DropdownMenuItem variant="destructive" onClick={() => {
                           setSelectedCompany(company);
                           setDeleteConfirmOpen(true);
 

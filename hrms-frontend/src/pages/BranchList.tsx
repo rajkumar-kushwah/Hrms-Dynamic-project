@@ -218,7 +218,7 @@ const BranchList = () => {
                         </SelectContent>
                     </Select>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+                <Button size="sm" variant="add" onClick={() => setOpen(true)}>
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add Branch
                 </Button>
@@ -271,7 +271,7 @@ const BranchList = () => {
                         <div>
                             <Label>Branch Location</Label>
                             <div className="flex items-center gap-3">
-                                <Button variant="outline" onClick={() => setCreateMapOpen(true)} type="button">
+                                <Button variant="outline" className="cursor-pointer" onClick={() => setCreateMapOpen(true)} type="button">
                                     <MapPin className="h-4 w-4 mr-2" />
                                     {form.latitude ? "Update Location" : "Set Location"}
                                 </Button>
@@ -282,7 +282,7 @@ const BranchList = () => {
                                 )}
                             </div>
                         </div>
-                        <Button onClick={handleSubmit}>Create Branch</Button>
+                        <Button variant="add" onClick={handleSubmit}>Create Branch</Button>
                     </div>
 
                 </DialogContent>
@@ -355,7 +355,7 @@ const BranchList = () => {
 
                                 <div className="flex items-center gap-3">
                                     <Button
-                                        variant="outline"
+                                        variant="add"
                                         type="button"
                                         onClick={() => setEditMapOpen(true)}
                                     >
@@ -372,7 +372,7 @@ const BranchList = () => {
                                         )}
                                 </div>
                             </div>
-                            <Button onClick={handleUpdate}>Update Branch</Button>
+                            <Button variant="add" onClick={handleUpdate}>Update Branch</Button>
                         </div>
                         <div >
                             <LocationPicker
@@ -536,7 +536,7 @@ const BranchList = () => {
                                                     }}>
                                                         Edit
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem
+                                                    <DropdownMenuItem variant="destructive"
                                                         className="text-red-600" onClick={() => {
                                                             setSelectedBranch(branch);
                                                             setStatusDialogOpen(true);

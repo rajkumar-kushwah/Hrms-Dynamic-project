@@ -74,9 +74,9 @@ const LocationPicker = ({
       const message =
         err?.message || "Failed to get location name";
       toast.error(message);
+      setLocationName("");
     }
 
-    setLocationName("");
 
   }
 
@@ -136,7 +136,7 @@ const LocationPicker = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
-            <Button onClick={handleSearch} disabled={searching} size="icon" variant="outline">
+            <Button variant="outline" className="cursor-pointer hover:border-[var(--logo-green)]" onClick={handleSearch} disabled={searching} size="icon">
               <Search className="h-4 w-4" />
             </Button>
           </div>
@@ -193,7 +193,7 @@ const LocationPicker = ({
             <span>Lng: {position[1].toFixed(6)}</span>
           </div>
 
-          <Button onClick={handleConfirm}>Confirm Location</Button>
+          <Button variant="add" className="cursor-pointer" onClick={handleConfirm}>Confirm Location</Button>
         </div>
       </DialogContent>
     </Dialog>

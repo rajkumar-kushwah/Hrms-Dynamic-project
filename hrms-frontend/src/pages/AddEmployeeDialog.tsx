@@ -676,7 +676,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                         <Input name="password" type="password" value={form.password} onChange={handleChange} />
                     </div>
                 )} */}
-                    <Button onClick={handleSubmit} className="mt-4">{isEditeMode ? "Update Employee" : "Add Employee"}</Button>
+                    <Button variant="add" onClick={handleSubmit} className="mt-4">{isEditeMode ? "Update Employee" : "Add Employee"}</Button>
                 </DialogContent>
             </Dialog>
         </div>

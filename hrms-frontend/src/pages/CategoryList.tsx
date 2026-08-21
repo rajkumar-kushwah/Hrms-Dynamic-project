@@ -209,7 +209,7 @@ const CategoryList = () => {
                     </Select>
                 </div>
 
-                <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+                <Button size="sm" variant="add" className='cursor-pointer' onClick={() => setOpen(true)}>
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add Category
                 </Button>
@@ -264,7 +264,7 @@ const CategoryList = () => {
                             />
                         </div>
 
-                        <Button onClick={handleSubmit}>Create Category</Button>
+                        <Button variant="add" onClick={handleSubmit}>Create Category</Button>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -293,7 +293,7 @@ const CategoryList = () => {
                                 onChange={handleEditChange}
                             />
                         </div>
-                        <Button onClick={handleUpdate}>Update Category</Button>
+                        <Button variant="add" onClick={handleUpdate}>Update Category</Button>
                     </div>
                     {isSuperAdmin && (
                         <div className="border border-red-200 rounded-lg p-4 mt-4 bg-red-50">
@@ -402,7 +402,7 @@ const CategoryList = () => {
                                                     }}>
                                                         Edit
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => {
+                                                    <DropdownMenuItem variant="destructive" onClick={() => {
                                                         setSelectedCategory(category);
                                                         setStatusDialogOpen(true);
                                                     }}>

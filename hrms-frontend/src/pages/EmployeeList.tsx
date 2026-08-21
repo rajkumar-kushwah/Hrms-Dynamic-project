@@ -435,7 +435,7 @@ const EmployeeList = () => {
                         <DropdownMenuGroup>
                           <DropdownMenuItem onClick={() => handleViewDetails(emp.id)}>View Details</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditClick(emp.id)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem
+                          <DropdownMenuItem variant="destructive"
                             onClick={() => {
                               setSelectedEmployee(emp)
                               setStatusDialogOpen(true)

@@ -140,16 +140,16 @@ const DashboardStats = () => {
 
                         <div className="flex items-center gap-3">
 
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
-                                <Building2 className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            <div className="flex bg-card-green-light text-card-green transition-colors h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300 group-hover:bg-card-green/80 group-active:bg-card-green/80">
+                                <Building2 className="h-5 w-5  transition-colors duration-300 group-hover:text-white group-active:text-white" />
                             </div>
 
                             <div>
-                                <CardTitle className="text-sm font-medium">
+                                <CardTitle className="text-sm font-medium group-hover:text-card-green transition-colors duration-300">
                                     Total Companies
                                 </CardTitle>
 
-                                <CardDescription className="text-xl font-bold">
+                                <CardDescription className="text-xl font-bold group-hover:text-card-green transition-colors duration-300">
                                     {totalCompanies}
                                 </CardDescription>
                             </div>
@@ -162,16 +162,16 @@ const DashboardStats = () => {
                     <Card className=" group p-4 border rounded-xl hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] ">
                         <div className="flex items-center gap-3">
 
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
-                                <Users className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            <div className="flex bg-card-blue-light text-card-blue transition-colors h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300 group-hover:bg-card-blue/80 group-active:bg-card-blue/80">
+                                <Users className="h-5 w-5 transition-colors duration-300 group-hover:text-white group-active:text-white" />
                             </div>
 
                             <div>
-                                <CardTitle className="text-sm font-medium">
+                                <CardTitle className="text-sm font-medium group-hover:text-card-blue transition-colors duration-300">
                                     Total CompaniesUsers
                                 </CardTitle>
 
-                                <CardDescription className="text-xl font-bold">
+                                <CardDescription className="text-xl font-bold group-hover:text-card-blue transition-colors duration-300">
                                     {totalCompaniesUsers}
                                 </CardDescription>
                             </div>
@@ -210,13 +210,13 @@ const DashboardStats = () => {
                     <Card className="group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]">
                         <div className="flex items-center gap-3">
 
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
-                                <UserX className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            <div className="flex bg-card-red-light text hover:text-white transition-colors h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300 group-hover:bg-card-red/80 group-active:bg-card-red/80">
+                                <UserX className="h-5 w-5 transition-colors duration-300 group-hover:text-white group-active:text-white" />
                             </div>
 
                             <div>
-                                <CardTitle className="text-sm md:text-sm">Inactive Users</CardTitle>
-                                <CardDescription className="text-xl font-bold text-red-500">
+                                <CardTitle className="text-sm md:text-sm group-hover:text-card-red transition-colors duration-300">Inactive Users</CardTitle>
+                                <CardDescription className="text-xl font-bold group-hover:text-card-red transition-colors duration-300">
                                     {inactiveUsers}
                                 </CardDescription>
                             </div>
@@ -226,13 +226,13 @@ const DashboardStats = () => {
                     <Card className="group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]">
                         <div className="flex items-center gap-3">
 
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
-                                <GitBranch className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            <div className="flex bg-card-purple-light text-card-purple hover:bg-card-purple hover:text-white transition-colors h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300 group-hover:bg-card-purple/80 group-active:bg-card-purple/80">
+                                <GitBranch className="h-5 w-5 transition-colors duration-300 group-hover:text-white group-active:text-white" />
                             </div>
 
                             <div>
-                                <CardTitle className="text-sm md:text-sm">Total Branches</CardTitle>
-                                <CardDescription className="text-xl font-bold">
+                                <CardTitle className="text-sm md:text-sm group-hover:text-card-purple transition-colors duration-300">Total Branches</CardTitle>
+                                <CardDescription className="text-xl font-bold group-hover:text-card-purple transition-colors duration-300">
                                     {totalBranches}
                                 </CardDescription>
                             </div>
@@ -242,13 +242,13 @@ const DashboardStats = () => {
                     <Card className="group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] ">
                         <div className="flex items-center gap-3">
 
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
-                                <Tags className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            <div className="flex bg-card-orange-light text-card-orange hover:bg-card-orange hover:text-white transition-colors h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300 group-hover:bg-card-orange/80 group-active:bg-card-orange/80">
+                                <Tags className="h-5 w-5 transition-colors duration-300 group-hover:text-white group-active:text-white" />
                             </div>
 
                             <div>
-                                <CardTitle className="text-sm md:text-sm">Total Categories</CardTitle>
-                                <CardDescription className="text-xl font-bold">
+                                <CardTitle className="text-sm md:text-sm group-hover:text-card-orange transition-colors duration-300">Total Categories</CardTitle>
+                                <CardDescription className="text-xl font-bold group-hover:text-card-orange transition-colors duration-300">
                                     {totalCategories}
                                 </CardDescription>
                             </div>
@@ -258,13 +258,13 @@ const DashboardStats = () => {
                     <Card className="group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] ">
                         <div className="flex items-center gap-3">
 
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--input-green)]/10 transition-all duration-300 group-hover:bg-[var(--input-green)]/80 group-active:bg-[var(--input-green)]/80">
-                                <UsersRound className="h-5 w-5 text-[var(--input-green)] transition-colors duration-300 group-hover:text-white group-active:text-white" />
+                            <div className="flex bg-card-cyan-light text-card-cyan hover:bg-card-cyan hover:text-white transition-colors h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300 group-hover:bg-card-cyan/80 group-active:bg-card-cyan/80">
+                                <UsersRound className="h-5 w-5 transition-colors duration-300 group-hover:text-white group-active:text-white" />
                             </div>
 
                             <div>
-                                <CardTitle className="text-sm md:text-sm">Total Employees</CardTitle>
-                                <CardDescription className="text-xl font-bold">{totalEmployees}</CardDescription>
+                                <CardTitle className="text-sm md:text-sm group-hover:text-card-cyan transition-colors duration-300">Total Employees</CardTitle>
+                                <CardDescription className="text-xl font-bold group-hover:text-card-cyan transition-colors duration-300">{totalEmployees}</CardDescription>
                             </div>
                         </div>
                     </Card>
