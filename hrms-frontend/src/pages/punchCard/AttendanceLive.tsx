@@ -94,7 +94,7 @@ const AttendanceLive = () => {
                 </div>
                 <Button
                     size="sm"
-                    variant="outline"
+                    variant="add"
                     onClick={loadLiveAttendance}
                     disabled={loading}
                 >
@@ -141,7 +141,7 @@ const AttendanceLive = () => {
                             <TableCell colSpan={isAdmin ? 7 : 6}>
                                 <div className="flex items-center justify-center">
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    <span>Loading...</span>
+                                    <span className="text-[var(--logo-green)]">Loading...</span>
                                 </div>
                             </TableCell>
                         </TableRow>

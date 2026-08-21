@@ -153,7 +153,7 @@ const Profile = () => {
                         </div>
 
                         {/*  Change Password Button */}
-                        <Button variant="outline" onClick={() => setPwOpen(true)}>
+                        <Button variant="add" onClick={() => setPwOpen(true)}>
                             <KeyRound className="h-4 w-4 mr-2" />
                             Change Password
                         </Button>
@@ -194,7 +194,7 @@ const Profile = () => {
                                 onChange={(e) => setName(e.target.value)}
                             />
                         </div>
-                        <Button onClick={handleUpdateProfile} disabled={updating}>
+                        <Button variant="add" onClick={handleUpdateProfile} disabled={updating}>
                             {updating ? "Updating..." : "Save Changes"}
                         </Button>
                     </div>
@@ -225,7 +225,7 @@ const Profile = () => {
                                 onChange={(e) => setNewPassword(e.target.value)}
                             />
                         </div>
-                        <Button onClick={handleChangePassword}>Change Password</Button>
+                        <Button variant="add" onClick={handleChangePassword}>Change Password</Button>
                     </div>
                 </DialogContent>
             </Dialog>

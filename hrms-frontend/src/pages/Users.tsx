@@ -151,7 +151,7 @@ const Users = () => {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             {/* Toggle Status */}
-                                            <DropdownMenuItem
+                                            <DropdownMenuItem variant="destructive"
                                                 onClick={() => handleToggleStatus(user)}
                                                 disabled={user.id === currentUser?.id}
 

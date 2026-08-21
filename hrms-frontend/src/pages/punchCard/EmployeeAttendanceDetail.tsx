@@ -104,7 +104,7 @@ const EmployeeAttendanceDetail = () => {
         <div className="flex flex-col gap-4">
 
             {/* Back Button */}
-            <Button variant="ghost" size="sm" className="w-fit cursor-pointer" onClick={() => navigate(-1)}>
+            <Button variant="add" size="sm" className="w-fit cursor-pointer" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Attendance List
             </Button>

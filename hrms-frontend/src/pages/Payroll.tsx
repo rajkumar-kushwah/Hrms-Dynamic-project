@@ -230,7 +230,7 @@ const Payroll = () => {
 
 
                     <Button
-                        variant="outline"
+                        variant="add"
                         onClick={loadPayroll}
                         disabled={loading}
                     >
@@ -454,7 +454,7 @@ const Payroll = () => {
 
                         </div>
 
-                        <Badge variant="outline">
+                        <Badge variant="add">
                             {month}
                         </Badge>
 

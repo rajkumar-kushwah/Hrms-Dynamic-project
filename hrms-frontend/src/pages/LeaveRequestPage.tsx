@@ -96,7 +96,7 @@ const LeaveRequestPage = () => {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-end">
                 {!canChangeStatus &&
-                    <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+                    <Button size="sm" variant="add" onClick={() => setOpen(true)}>
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Apply Leave
                     </Button>}
@@ -132,7 +132,7 @@ const LeaveRequestPage = () => {
                             <Label>Reason</Label>
                             <Input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Optional" />
                         </div>
-                        <Button onClick={handleSubmit}>Submit Request</Button>
+                        <Button variant="add" onClick={handleSubmit}>Submit Request</Button>
                     </div>
                 </DialogContent>
             </Dialog>

@@ -259,7 +259,7 @@ const HolidayPage = () => {
                 {!canChangeStatus && (
                     <Button
                         size="sm"
-                        variant="outline"
+                        variant="add"
                         onClick={() => {
                             setEditHoliday(null);
 
@@ -349,7 +349,7 @@ const HolidayPage = () => {
 
                         {/* Submit */}
 
-                        <Button
+                        <Button variant="add"
                             onClick={handleSubmit}
                         >
                             {editHoliday

@@ -90,7 +90,7 @@ const LeavePolicy = () => {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-end">
                 {!canChangeStatus && (
-                    <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+                    <Button size="sm" variant="add" onClick={() => setOpen(true)}>
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Add Leave Type
                     </Button>
@@ -123,7 +123,7 @@ const LeavePolicy = () => {
                             <Label htmlFor="isPaid">Paid Leave</Label>
                         </div>
 
-                        <Button onClick={handleSubmit}>{editType ? "Update" : "Create"}</Button>
+                        <Button variant="add" onClick={handleSubmit}>{editType ? "Update" : "Create"}</Button>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -178,15 +178,14 @@ const LeavePolicy = () => {
                                                     </DropdownMenuItem>
 
                                                     {lt.isActive ? (
-                                                        <DropdownMenuItem
-                                                            className="text-red-600"
+                                                        <DropdownMenuItem variant="destructive"
                                                             onClick={() => handleDelete(lt.id)}
                                                         >
                                                             Deactivate
                                                         </DropdownMenuItem>
                                                     ) : (
                                                         <DropdownMenuItem
-                                                            className="text-green-600"
+                                                            className="text-[var(--theme-primary)]"
                                                             onClick={() => handleActivate(lt.id)}
                                                         >
                                                             Activate

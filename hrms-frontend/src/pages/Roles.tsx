@@ -272,7 +272,7 @@ const Roles = () => {
 
             {/* Header */}
             <div className="flex items-center justify-end">
-                <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+                <Button variant="add" size="sm" onClick={() => setOpen(true)}>
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add Role
                 </Button>
@@ -362,7 +362,7 @@ const Roles = () => {
                             </Table>
                         </div>
 
-                        <Button onClick={handleSubmit}>
+                        <Button variant="add" onClick={handleSubmit}>
                             {editRole ? "Update Role" : "Create Role"}
                         </Button>
                     </div>
@@ -416,7 +416,7 @@ const Roles = () => {
                                                     </DropdownMenuItem>
                                                     {canDelete && (
 
-                                                        <DropdownMenuItem
+                                                        <DropdownMenuItem variant="destructive"
                                                             className="text-red-600"
                                                             onClick={() => handleDelete(role.id)}
                                                         >

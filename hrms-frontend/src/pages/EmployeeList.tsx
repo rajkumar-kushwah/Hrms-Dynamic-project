@@ -165,7 +165,7 @@ const EmployeeList = () => {
 
         {/* Back button */}
         <Button
-          variant="ghost"
+          variant="add"
           size="sm"
           className="w-fit cursor-pointer hover:bg-muted hover:text-muted-foreground"
           onClick={() => setView("list")}
@@ -323,7 +323,7 @@ const EmployeeList = () => {
         </div>
 
         {canChangeStatus && (
-          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+          <Button size="sm" variant="add" onClick={() => setOpen(true)}>
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Employee
           </Button>
@@ -386,7 +386,7 @@ const EmployeeList = () => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
-            <Button onClick={handleResetPassword}>Reset Password</Button>
+            <Button variant="add" onClick={handleResetPassword}>Reset Password</Button>
           </div>
         </DialogContent>
       </Dialog>
