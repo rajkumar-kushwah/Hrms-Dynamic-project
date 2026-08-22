@@ -13,8 +13,9 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon } from "lucide-react"
-
+import { AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon } from "lucide-react"
+import Light_BG from "@/assets/Light_BG.png"
+//GalleryVerticalEndIcon
 // This is sample data.
 const data = {
   user: {
@@ -26,11 +27,8 @@ const data = {
     {
       // name: "Acme Inc",
       name: "Nabu Technologies",
-      logo: (
-        <GalleryVerticalEndIcon
-        />
-      ),
-      plan: "Enterprise",
+      logo: <img src={Light_BG} alt="Nabu Technologies" className="rounded-lg object-contain" />,
+      plan: "Admin Panel",
     },
     {
       name: "Acme Corp.",
@@ -183,12 +181,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain  />
+        <NavMain />
         {/* <NavMain items={data.navMain} /> */}
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser  />
+        <NavUser />
         {/* <NavUser user={data.user} /> */}
       </SidebarFooter>
       <SidebarRail />

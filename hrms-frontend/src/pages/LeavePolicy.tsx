@@ -118,12 +118,12 @@ const LeavePolicy = () => {
                         </div>
                         <div className="flex items-center gap-2">
                             <input id="isPaid" type="checkbox" checked={form.isPaid} onChange={(e) => setForm({ ...form, isPaid: e.target.checked, })}
-                                className="h-4 w-4"
+                                className="h-4 w-4 cursor-pointer  "
                             />
                             <Label htmlFor="isPaid">Paid Leave</Label>
                         </div>
 
-                        <Button variant="add" onClick={handleSubmit}>{editType ? "Update" : "Create"}</Button>
+                        <Button variant="add" className="cursor-pointer" onClick={handleSubmit}>{editType ? "Update" : "Create"}</Button>
                     </div>
                 </DialogContent>
             </Dialog>

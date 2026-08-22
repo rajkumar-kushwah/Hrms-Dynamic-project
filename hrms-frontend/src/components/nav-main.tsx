@@ -109,7 +109,7 @@ export function NavMain() {
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={mod.displayName} isActive={isParenttActive} {...(children.length === 0 && { asChild: true })}>
+                  <SidebarMenuButton tooltip={mod.displayName} isActive={isParenttActive} {...(children.length === 0 && { asChild: true })} className="hover:bg-[var(--logo-green)] data-[active=true]:bg-[var(--logo-green)]">
                     {children.length === 0 ? (
                       //  Children nahi — directly Link
                       <Link to={mod.url ?? "#"} className="flex items-center gap-2 w-full">
