@@ -199,7 +199,7 @@ const DashboardStats = () => {
                             </div>
 
                             <div>
-                                <CardTitle className="text-sm md:text-sm">Active Users</CardTitle>
+                                <CardTitle className="text-sm md:text-sm group-hover:text-card-green transition-colors duration-300 ">Active Users</CardTitle>
                                 <CardDescription className="text-xl font-bold text-green-600">
                                     {activeUsers}
                                 </CardDescription>

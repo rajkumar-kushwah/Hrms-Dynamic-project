@@ -135,7 +135,7 @@ export function NavMain() {
 
                         return (
                           <SidebarMenuSubItem key={cp.module.name}>
-                            <SidebarMenuSubButton asChild isActive={isSubActive}>
+                            <SidebarMenuSubButton asChild isActive={isSubActive} className="hover:bg-[var(--logo-green)] data-[active=true]:bg-[var(--logo-green)]">
                               <Link to={cp.module.url ?? "#"}>
                                 <span>{cp.module.displayName}</span>
                               </Link>
