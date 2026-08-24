@@ -10,10 +10,7 @@ import {
 } from "@/components/ui/table";
 
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
+    Card
 } from "@/components/ui/card";
 
 import { Input } from "@/components/ui/input";
