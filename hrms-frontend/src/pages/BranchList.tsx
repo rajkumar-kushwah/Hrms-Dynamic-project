@@ -293,6 +293,7 @@ const BranchList = () => {
                 initialLat={form.latitude}
                 initialLng={form.longitude}
                 initialRadius={form.geoRadius}
+                initialLocationName={form.locationName}
                 onConfirm={(lat, lng, radius, locationName) => {
                     setForm((prev) => ({
                         ...prev,
@@ -381,6 +382,7 @@ const BranchList = () => {
                                 initialLat={editForm.latitude}
                                 initialLng={editForm.longitude}
                                 initialRadius={editForm.geoRadius}
+                                initialLocationName={editForm.locationName}
                                 onConfirm={(lat, lng, radius, locationName) => {
                                     setEditForm((prev) => ({
                                         ...prev,

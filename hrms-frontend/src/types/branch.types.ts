@@ -35,6 +35,7 @@ export interface CreateBranchPayload {
   latitude?: number;
   longitude?: number;
   geoRadius?: number;
+  locationName?: string;
 }
 
 export interface UpdateBranchPayload {
@@ -50,4 +51,5 @@ export interface UpdateBranchPayload {
   longitude?: number;
   geoRadius?: number;
   isActive?: boolean;
+  locationName?: string;
 }

@@ -22,6 +22,7 @@ interface LocationPickerProps {
   initialLat?: number;
   initialLng?: number;
   initialRadius?: number;
+  initialLocationName?: string;
   onConfirm: (lat: number, lng: number, radius: number, locationName: string) => void;
 }
 
@@ -41,6 +42,7 @@ const LocationPicker = ({
   initialLat,
   initialLng,
   initialRadius,
+  initialLocationName,
   onConfirm,
 }: LocationPickerProps) => {
   //  Default — Delhi (India ka center jaisa point)
@@ -57,9 +59,9 @@ const LocationPicker = ({
     if (open) {
       setPosition([initialLat ?? 28.6139, initialLng ?? 77.2090]);
       setRadius(initialRadius ?? 100);
-      setLocationName("");
+      setLocationName(initialLocationName ?? "");
     }
-  }, [open, initialLat, initialLng, initialRadius]);
+  }, [open, initialLat, initialLng, initialRadius, initialLocationName]);
 
   //  Naya — Map click pe reverse geocode karo
   const handleMapClick = async (lat: number, lng: number) => {
