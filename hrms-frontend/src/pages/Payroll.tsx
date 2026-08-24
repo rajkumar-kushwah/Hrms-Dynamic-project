@@ -237,8 +237,8 @@ const Payroll = () => {
 
                         <RefreshCw
                             className={`h-4 w-4 mr-2 ${loading
-                                    ? "animate-spin"
-                                    : ""
+                                ? "animate-spin"
+                                : ""
                                 }`}
                         />
 
@@ -403,351 +403,134 @@ const Payroll = () => {
                 SEARCH
             ───────────────────────────────────── */}
 
-            <Card>
+            <div className="w-full">
+                <div className="relative w-full max-w-sm">
+                    <Search
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
 
-                <CardContent className="p-4">
-
-                    <div className="relative w-full max-w-sm">
-
-                        <Search
-                            size={18}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                        />
-
-                        <Input
-                            placeholder="Search employee..."
-                            value={search}
-                            onChange={(e) =>
-                                setSearch(
-                                    e.target.value
-                                )
-                            }
-                            className="pl-9"
-                        />
-
-                    </div>
-
-                </CardContent>
-
-            </Card>
+                    <Input
+                        placeholder="Search employee..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
+            </div>
 
 
             {/* ─────────────────────────────────────
                 TABLE
             ───────────────────────────────────── */}
 
-            <Card className="overflow-hidden">
-
-                <CardHeader>
-
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-
-                        <div>
-
-                            <CardTitle>
-                                Employee Payroll
-                            </CardTitle>
-
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Salary details for selected month
-                            </p>
-
-                        </div>
-
-                        <Badge variant="add">
-                            {month}
-                        </Badge>
-
-                    </div>
-
-                </CardHeader>
-
-
-                <CardContent className="p-0">
-
-                    <div className="bg-card grid grid-cols-1 rounded border w-full overflow-hidden">
-
-                        <div className="h-full overflow-auto">
-
-                            <Table>
-
-                                <TableHeader className="bg-muted sticky top-0 z-10">
-
-                                    <TableRow>
-
-                                        <TableHead>
-                                            Employee
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Designation
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Gross Salary
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Working Days
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Holiday Days
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Present Days
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Paid Leave
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Unpaid Leave
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Absent Days
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Deduction
-                                        </TableHead>
-
-                                        <TableHead>
-                                            Net Salary
-                                        </TableHead>
-
-                                    </TableRow>
-
-                                </TableHeader>
-
-
-                                <TableBody>
-
-                                    {/* Loading */}
-
-                                    {loading ? (
-
-                                        <TableRow>
-
-                                            <TableCell
-                                                colSpan={11}
-                                                className="text-center py-8 text-muted-foreground"
-                                            >
-                                                Loading payroll...
-                                            </TableCell>
-
-                                        </TableRow>
-
-                                    ) : filteredEmployees.length === 0 ? (
-
-                                        <TableRow>
-
-                                            <TableCell
-                                                colSpan={11}
-                                                className="text-center py-8 text-muted-foreground"
-                                            >
-                                                No employees found
-                                            </TableCell>
-
-                                        </TableRow>
-
-                                    ) : (
-
-                                        filteredEmployees.map(
-                                            (emp) => (
-
-                                                <TableRow
-                                                    key={
-                                                        emp.userId
-                                                    }
-                                                >
-
-                                                    {/* Employee */}
-
-                                                    <TableCell>
-
-                                                        <p className="font-medium">
-                                                            {
-                                                                emp.user
-                                                                    .name
-                                                            }
-                                                        </p>
-
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {
-                                                                emp.user
-                                                                    .employeeCode
-                                                            }
-                                                        </p>
-
-                                                    </TableCell>
-
-
-                                                    {/* Designation */}
-
-                                                    <TableCell>
-
-                                                        {
-                                                            emp.user
-                                                                .designation ??
-                                                            "—"
-                                                        }
-
-                                                    </TableCell>
-
-
-                                                    {/* Gross */}
-
-                                                    <TableCell>
-
-                                                        {
-                                                            formatCurrency(
-                                                                emp.grossSalary
-                                                            )
-                                                        }
-
-                                                    </TableCell>
-
-
-                                                    {/* Working Days */}
-
-                                                    <TableCell>
-
-                                                        {
-                                                            emp.totalWorkingDays
-                                                        }
-
-                                                    </TableCell>
-
-
-                                                    {/* Holiday Days */}
-
-                                                    <TableCell>
-
-                                                        <Badge
-                                                            variant="secondary"
-                                                        >
-                                                            {
-                                                                emp.holidayDays || 0
-                                                            }
-                                                        </Badge>
-
-                                                    </TableCell>
-
-
-                                                    {/* Present */}
-
-                                                    <TableCell>
-
-                                                        {
-                                                            emp.presentDays
-                                                        }
-
-                                                        {" / "}
-
-                                                        {
-                                                            emp.totalWorkingDays
-                                                        }
-
-                                                    </TableCell>
-
-
-                                                    {/* Paid Leave */}
-
-                                                    <TableCell>
-
-                                                        {
-                                                            emp.paidLeaveDays
-                                                        }
-
-                                                    </TableCell>
-
-
-                                                    {/* Unpaid Leave*/}
-
-                                                    <TableCell>
-
-                                                        <Badge
-                                                            variant={
-                                                                emp.unpaidLeaveDays >
-                                                                    0
-                                                                    ? "destructive"
-                                                                    : "secondary"
-                                                            }
-                                                        >
-
-                                                            {
-                                                                emp.unpaidLeaveDays
-                                                            }
-
-                                                            {" days"}
-
-                                                        </Badge>
-
-                                                    </TableCell>
-
-
-                                                    {/* Absent */}
-
-                                                    <TableCell>
-
-                                                        {
-                                                            emp.absentDays
-                                                        }
-
-                                                    </TableCell>
-
-
-                                                    {/* Deduction */}
-
-                                                    <TableCell>
-
-                                                        {
-                                                            formatCurrency(
-                                                                emp.deductionAmount
-                                                            )
-                                                        }
-
-                                                    </TableCell>
-
-
-                                                    {/* Net Salary */}
-
-                                                    <TableCell>
-
-                                                        <span className="font-semibold">
-
-                                                            {
-                                                                formatCurrency(
-                                                                    emp.netSalary
-                                                                )
-                                                            }
-
-                                                        </span>
-
-                                                    </TableCell>
-
-                                                </TableRow>
-
-                                            )
-                                        )
-
-                                    )}
-
-                                </TableBody>
-
-                            </Table>
-
-                        </div>
-
-                    </div>
-
-                </CardContent>
-
-            </Card>
+            <div className="bg-card grid grid-cols-1 rounded border w-full overflow-x-auto">
+                <Table className="table-auto">
+                    <TableHeader className="bg-muted rounded-lg">
+                        <TableRow>
+                            <TableHead>Employee</TableHead>
+                            <TableHead>Designation</TableHead>
+                            <TableHead>Gross Salary</TableHead>
+                            <TableHead>Working Days</TableHead>
+                            <TableHead>Holiday Days</TableHead>
+                            <TableHead>Present Days</TableHead>
+                            <TableHead>Paid Leave</TableHead>
+                            <TableHead>Unpaid Leave</TableHead>
+                            <TableHead>Absent Days</TableHead>
+                            <TableHead>Deduction</TableHead>
+                            <TableHead>Net Salary</TableHead>
+                        </TableRow>
+                    </TableHeader>
+
+                    <TableBody>
+                        {loading ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={11}
+                                    className="text-center text-muted-foreground py-8"
+                                >
+                                    Loading payroll...
+                                </TableCell>
+                            </TableRow>
+                        ) : filteredEmployees.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={11}
+                                    className="text-center text-muted-foreground py-8"
+                                >
+                                    No employees found
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredEmployees.map((emp) => (
+                                <TableRow key={emp.userId}>
+                                    <TableCell>
+                                        <p className="font-medium">
+                                            {emp.user.name}
+                                        </p>
+
+                                        <p className="text-xs text-muted-foreground">
+                                            {emp.user.employeeCode}
+                                        </p>
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {emp.user.designation ?? "—"}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {formatCurrency(emp.grossSalary)}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {emp.totalWorkingDays}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <Badge variant="secondary">
+                                            {emp.holidayDays || 0}
+                                        </Badge>
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {emp.presentDays} / {emp.totalWorkingDays}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {emp.paidLeaveDays}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <Badge
+                                            variant={
+                                                emp.unpaidLeaveDays > 0
+                                                    ? "destructive"
+                                                    : "secondary"
+                                            }
+                                        >
+                                            {emp.unpaidLeaveDays} days
+                                        </Badge>
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {emp.absentDays}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {formatCurrency(emp.deductionAmount)}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <span className="font-semibold">
+                                            {formatCurrency(emp.netSalary)}
+                                        </span>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
 
         </div>
     );
