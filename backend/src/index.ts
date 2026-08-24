@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
 app.use('/api/auth', authRouter)
 app.use('/api/roles', roleRouter)
 app.use('/api/company', companyRouter)
-app.use("/api/users", userRoutes);
+app.use("/api/companyusers", userRoutes);
 app.use('/api/branch', branchRouter)
 app.use("/api/category", categoryRoutes);
 app.use('/api/employee', employeeRouter)

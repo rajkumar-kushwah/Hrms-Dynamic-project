@@ -87,8 +87,8 @@ export default function Layout() {
             case "/profile":
                 return "Profile";
 
-            case "/users":
-                return "Users";
+            case "/companyusers":
+                return "companyUsers";
 
             case "/settings":
                 return "Settings";

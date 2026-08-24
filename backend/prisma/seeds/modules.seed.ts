@@ -13,15 +13,23 @@ export const seedModules = async () => {
     { name: "reports", displayName: "Reports", icon: "BarChart2", url: "/reports", order: 9 },
     { name: "roles", displayName: "Roles & Permissions", icon: "ShieldCheck", url: "/roles", order: 10 },
     { name: "settings", displayName: "Settings", icon: "Settings", url: "/settings", order: 11 },
-    { name: "company-users", displayName: "Company Users", icon: "UserCog", url: "/users", order: 12 }
+    { name: "company-users", displayName: "Company Users", icon: "UserCog", url: "/companyusers", order: 12 }
   ];
 
   // Parent modules
   for (const mod of modules) {
     await prisma.module.upsert({
       where: { name: mod.name },
-      update: {},
-      create: { ...mod, parentId: null },
+      update: {
+        displayName: mod.displayName,
+        icon: mod.icon,
+        url: mod.url,
+        order: mod.order,
+      },
+      create: {
+        ...mod,
+        parentId: null,
+      },
     });
   }
 
@@ -54,7 +62,13 @@ export const seedModules = async () => {
   for (const sub of subModules) {
     await prisma.module.upsert({
       where: { name: sub.name },
-      update: {},
+      update: {
+        displayName: sub.displayName,
+        icon: sub.icon,
+        url: sub.url,
+        order: sub.order,
+        parentId: sub.parentId,
+      },
       create: sub,
     });
   }
