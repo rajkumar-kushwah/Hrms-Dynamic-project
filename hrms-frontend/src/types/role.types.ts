@@ -19,6 +19,7 @@ export interface Role {
   description?: string;
   isActive: boolean;
   isSystemRole: boolean;
+
   company?: {
     id: string;
     name: string;
@@ -36,7 +37,6 @@ export interface Role {
     user: number;
   };
 }
-
 export interface CreateRolePayload {
   name: string;
   description?: string;
@@ -49,7 +49,3 @@ export interface UpdateRolePayload {
   permissions: Permission[];
 }
 
-export interface Role {
-  id: number;
-  name: string;
-}

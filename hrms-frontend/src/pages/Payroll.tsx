@@ -295,12 +295,12 @@ const Payroll = () => {
                 </Card>
 
 
-                {/* Holiday Days */}
+                {/* Holiday */}
 
                 <Card className="p-3">
 
                     <p className="text-xs text-muted-foreground">
-                        Holiday Days
+                        Holiday
                     </p>
 
                     <p className="text-2xl font-bold text-blue-600">
@@ -504,7 +504,7 @@ const Payroll = () => {
                                         </TableHead>
 
                                         <TableHead>
-                                            Unpaid Days
+                                            Unpaid Leave
                                         </TableHead>
 
                                         <TableHead>
@@ -666,7 +666,7 @@ const Payroll = () => {
                                                     </TableCell>
 
 
-                                                    {/* Unpaid */}
+                                                    {/* Unpaid Leave*/}
 
                                                     <TableCell>
 

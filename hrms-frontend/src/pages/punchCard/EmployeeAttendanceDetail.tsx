@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -189,64 +189,113 @@ const EmployeeAttendanceDetail = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-card  grid grid-cols-1 rounded border w-full overflow-x-auto">
-                <Card>
-                    <CardContent className="p-0">
-                        <CardTitle> Mothly Attendance {selectedMonth}-{selectedYear}</CardTitle>
-                        <div className="overflow-auto">
-                            <Table>
-                                <TableHeader className="bg-muted">
-                                    <TableRow>
-                                        <TableHead>#</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Punch In</TableHead>
-                                        <TableHead>Punch Out</TableHead>
-                                        <TableHead>Working Hours</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Geo Fence</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {attendances.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                                                No records for this month
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        filterAttendances.map((att, index) => (
-                                            <TableRow key={att.id}>
-                                                <TableCell>{index + 1}</TableCell>
-                                                <TableCell>
-                                                    {new Date(att.date).toLocaleDateString("en-IN", {
-                                                        day: "numeric", month: "short", weekday: "short"
-                                                    })}
-                                                </TableCell>
-                                                <TableCell>{formatTime(att.punchInTime)}</TableCell>
-                                                <TableCell>{formatTime(att.punchOutTime)}</TableCell>
-                                                <TableCell>{formatWorkingHours(att.workingHours)}</TableCell>
-                                                <TableCell>
-                                                    <Badge className={statusBadge[att.status] ?? "bg-gray-100 text-gray-700"}>
-                                                        {att.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    {att.punchInTime ? (
-                                                        <Badge className={att.isWithinGeoFence
-                                                            ? "bg-green-100 text-green-700"
-                                                            : "bg-red-100 text-red-700"}>
-                                                            {att.isWithinGeoFence ? "Inside" : "Outside"}
-                                                        </Badge>
-                                                    ) : "—"}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="bg-card grid grid-cols-1 rounded border w-full overflow-x-auto">
+                <div className="p-4">
+                    <h3 className="text-lg font-semibold">
+                        Monthly Attendance {selectedMonth}-{selectedYear}
+                    </h3>
+                </div>
+
+                <Table className="table-auto">
+                    <TableHeader className="bg-muted">
+                        <TableRow>
+                            <TableHead>#</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Punch In</TableHead>
+                            <TableHead>Punch Out</TableHead>
+                            <TableHead>Working Hours</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Geo Fence</TableHead>
+                        </TableRow>
+                    </TableHeader>
+
+                    <TableBody>
+                        {filterAttendances.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={7}
+                                    className="text-center py-8 text-muted-foreground"
+                                >
+                                    No records for this month
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filterAttendances.map((att, index) => (
+                                <TableRow key={att.id}>
+                                    {/* # */}
+                                    <TableCell>
+                                        {index + 1}
+                                    </TableCell>
+
+                                    {/* Date */}
+                                    <TableCell>
+                                        {new Date(
+                                            att.date
+                                        ).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                            weekday: "short",
+                                        })}
+                                    </TableCell>
+
+                                    {/* Punch In */}
+                                    <TableCell>
+                                        {formatTime(
+                                            att.punchInTime
+                                        )}
+                                    </TableCell>
+
+                                    {/* Punch Out */}
+                                    <TableCell>
+                                        {formatTime(
+                                            att.punchOutTime
+                                        )}
+                                    </TableCell>
+
+                                    {/* Working Hours */}
+                                    <TableCell>
+                                        {formatWorkingHours(
+                                            att.workingHours
+                                        )}
+                                    </TableCell>
+
+                                    {/* Status */}
+                                    <TableCell>
+                                        <Badge
+                                            className={
+                                                statusBadge[
+                                                att.status
+                                                ] ??
+                                                "bg-gray-100 text-gray-700"
+                                            }
+                                        >
+                                            {att.status}
+                                        </Badge>
+                                    </TableCell>
+
+                                    {/* Geo Fence */}
+                                    <TableCell>
+                                        {att.punchInTime ? (
+                                            <Badge
+                                                className={
+                                                    att.isWithinGeoFence
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-red-100 text-red-700"
+                                                }
+                                            >
+                                                {att.isWithinGeoFence
+                                                    ? "Inside"
+                                                    : "Outside"}
+                                            </Badge>
+                                        ) : (
+                                            "—"
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
             </div>
         </div >
     );

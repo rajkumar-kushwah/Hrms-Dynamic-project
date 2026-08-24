@@ -97,56 +97,80 @@ export const getRolePermissions = async (
 export const updateRolePermissions = async (
     roleId: number,
     companyId: string | null,
+    roleName: string,
     permissions: {
         moduleId: number;
         canView: boolean;
         canCreate: boolean;
         canEdit: boolean;
         canDelete: boolean;
-    }[]
+    }[],
+    description?: string
 ) => {
-    // Role is company ka hai?
+    // ─────────────────────────────────────────
+    // Find Role
+    // ─────────────────────────────────────────
+
     const role = await prisma.role.findFirst({
-        where: { id: roleId },
+        where: {
+            id: roleId,
+        },
     });
 
-    if (!role) throw new Error("Role not found");
-
-    // Ager Company admin hai to apni hi company ka role edit kr sake 
-    if (companyId !== null && role.companyId !== companyId) {
-        throw new Error("Access denied - this role doesn't belong to your company")
+    if (!role) {
+        throw new Error("Role not found");
     }
 
-    const targetCompanyId = role.companyId;
-    // Ensure every module has a permission record
-    // const allModules = await prisma.module.findMany();
-    // // Parent View ON hai to uske sabhi children ka View bhi ON kar do
 
-    // const permissionMap = new Map(
-    //     permissions.map((p) => [p.moduleId, { ...p }])
-    // );
+    // ─────────────────────────────────────────
+    // Company Admin can only edit
+    // its own company's role
+    // ─────────────────────────────────────────
 
-    // for (const parent of permissions.filter((p) => p.canView)) {
-    //     const children = allModules.filter((m) => m.parentId === parent.moduleId);
+    if (
+        companyId !== null &&
+        role.companyId !== companyId
+    ) {
+        throw new Error(
+            "Access denied - this role doesn't belong to your company"
+        );
+    }
 
-    //     for (const child of children) {
-    //         const existing = permissionMap.get(child.id);
 
-    //         if (existing) {
-    //             existing.canView = true;
-    //         } else {
-    //             permissionMap.set(child.id, {
-    //                 moduleId: child.id,
-    //                 canView: true,
-    //                 canCreate: false,
-    //                 canEdit: false,
-    //                 canDelete: false,
-    //             });
-    //         }
-    //     }
-    // }
+    const targetCompanyId =
+        role.companyId;
 
-    // const finalPermissions = [...permissionMap.values()];
+
+    // ─────────────────────────────────────────
+    // Update Role Name
+    // ─────────────────────────────────────────
+
+    const trimmedRoleName =
+        roleName.trim();
+
+    if (!trimmedRoleName) {
+        throw new Error(
+            "Role name is required"
+        );
+    }
+
+
+    await prisma.role.update({
+        where: {
+            id: roleId,
+        },
+        data: {
+            name: trimmedRoleName,
+            ...(description !== undefined && {
+                description: description.trim(),
+            }),
+        },
+    });
+
+
+    // ─────────────────────────────────────────
+    // Update Permissions
+    // ─────────────────────────────────────────
 
     for (const mod of permissions) {
         await prisma.permission.upsert({
@@ -157,16 +181,19 @@ export const updateRolePermissions = async (
                     companyId: targetCompanyId!,
                 },
             },
+
             update: {
                 canView: mod.canView,
                 canCreate: mod.canCreate,
                 canEdit: mod.canEdit,
                 canDelete: mod.canDelete,
             },
+
             create: {
                 roleId,
                 moduleId: mod.moduleId,
                 companyId: targetCompanyId,
+
                 canView: mod.canView,
                 canCreate: mod.canCreate,
                 canEdit: mod.canEdit,
@@ -175,36 +202,15 @@ export const updateRolePermissions = async (
         });
     }
 
-    // Permission ka companyId — role ka companyId
-    // Har permission update karo
-    // for (const perm of permissions) {
-    //     await prisma.permission.upsert({
-    //         where: {
-    //             roleId_moduleId_companyId: {
-    //                 roleId,
-    //                 moduleId: perm.moduleId,
-    //                 companyId: targetCompanyId!,
-    //             },
-    //         },
-    //         update: {
-    //             canView: perm.canView,
-    //             canCreate: perm.canCreate,
-    //             canEdit: perm.canEdit,
-    //             canDelete: perm.canDelete,
-    //         },
-    //         create: {
-    //             roleId,
-    //             moduleId: perm.moduleId,
-    //             companyId: targetCompanyId,
-    //             canView: perm.canView,
-    //             canCreate: perm.canCreate,
-    //             canEdit: perm.canEdit,
-    //             canDelete: perm.canDelete,
-    //         },
-    //     });
-    // }
 
-    return await getRolePermissions(roleId, targetCompanyId);
+    // ─────────────────────────────────────────
+    // Return Updated Role Permissions
+    // ─────────────────────────────────────────
+
+    return await getRolePermissions(
+        roleId,
+        targetCompanyId
+    );
 };
 
 // Role delete karo

@@ -75,9 +75,14 @@ const Users = () => {
     };
 
     const formatRole = (role: string) => {
-        return role.split("_").map((r) =>
-            r.charAt(0).toUpperCase() + r.slice(1)
-        ).join(" ");
+        if (!role) return "User";
+
+        return role
+            .trim()
+            .toLowerCase()
+            .split("_")
+            .map((r) => r.charAt(0).toUpperCase() + r.slice(1))
+            .join(" ");
     };
 
     return (

@@ -25,9 +25,14 @@ import {
 
 const DashboardStats = () => {
     const { user } = useAuthStore();
-    const isCompanyAdmin = user?.role?.name === "company_admin";
-    const isSuperAdmin = user?.role?.name === "super_admin";
-    const isEmployee = user?.role?.name === "Employee";
+    const roleName = user?.role?.name
+        ?.trim()
+        .toLowerCase()
+        .replace(/[\s_-]+/g, "_");
+
+    const isCompanyAdmin = roleName === "company_admin";
+    const isSuperAdmin = roleName === "super_admin";
+    const isEmployee = roleName === "employee";
 
     const [companies, setCompanies] = useState<Company[]>([]);
     const [companyUsers, setCompanyUsers] = useState<CompanyUser[]>([]);

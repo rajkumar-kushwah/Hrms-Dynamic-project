@@ -56,16 +56,28 @@ export const updateRolePermissions = async (req: Request, res: Response) => {
         // const companyId = req.user?.companyId!;
         const id = (req.params.id as string);
         const roleId = parseInt(id);
-        const { permissions } = req.body;
+        const { permissions, name, description } = req.body;
 
-        const companyId = req.user?.role?.name === "super_admin"
+        const roleName = name
+            ? name
+            : description;
+
+        const roleNameNormalized =
+            req.user?.role?.name
+                ?.trim()
+                .toLowerCase()
+                .replace(/\s+/g, "_");
+
+        const companyId = roleNameNormalized === "super_admin"
             ? null
             : req.user?.companyId!;
 
         const role = await RoleService.updateRolePermissions(
             roleId,
             companyId,
-            permissions
+            roleName,
+            permissions,
+            description
         );
         res.status(200).json({
             success: true,

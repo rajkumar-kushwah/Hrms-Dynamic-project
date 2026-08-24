@@ -1,5 +1,19 @@
 import { prisma } from "../config/db.js";
 
+
+// ─────────────────────────────────────────────────────────────
+// Helper: Normalize Role Name
+// ─────────────────────────────────────────────────────────────
+
+const normalizeRoleName = (role?: string | null) => {
+    return role
+        ?.trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/_+/g, "_");
+};
+
+
 // ─────────────────────────────────────────────────────────────
 // Helper: Date Key
 // ─────────────────────────────────────────────────────────────
@@ -73,10 +87,13 @@ const calculateEmployeePayroll = async (
         throw new Error("Company settings not found");
     }
 
-    // Example:
+
     // Sunday = 0
     // Monday = 1
-    // ...
+    // Tuesday = 2
+    // Wednesday = 3
+    // Thursday = 4
+    // Friday = 5
     // Saturday = 6
 
     const weekOffDays =
@@ -125,15 +142,6 @@ const calculateEmployeePayroll = async (
 
     // ─────────────────────────────────────────
     // 4. Calculation End Date
-    //
-    // Current month:
-    //     Today tak calculate hoga.
-    //
-    // Previous month:
-    //     Pura month calculate hoga.
-    //
-    // Future month:
-    //     Abhi koi day calculate nahi hoga.
     // ─────────────────────────────────────────
 
     const today = new Date();
@@ -154,10 +162,7 @@ const calculateEmployeePayroll = async (
         year === today.getFullYear() &&
         month === today.getMonth() + 1
     ) {
-
-        calculationEndDate =
-            new Date(today);
-
+        calculationEndDate = new Date(today);
     }
 
     // Future month
@@ -168,21 +173,16 @@ const calculateEmployeePayroll = async (
             1
         ) > today
     ) {
-
-        calculationEndDate =
-            new Date(
-                year,
-                month - 1,
-                0
-            );
-
+        calculationEndDate = new Date(
+            year,
+            month - 1,
+            0
+        );
     }
 
     // Previous/completed month
     else {
-
-        calculationEndDate =
-            new Date(endDate);
+        calculationEndDate = new Date(endDate);
     }
 
 
@@ -195,15 +195,7 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 5. Calculate Elapsed Calendar Days
-    //
-    // Example:
-    // August 19 ko:
-    //
-    // 1 Aug → 19 Aug = 19 days
-    //
-    // 23 & 30 Aug future hain
-    // isliye count nahi honge.
+    // 5. Elapsed Calendar Days
     // ─────────────────────────────────────────
 
     let elapsedCalendarDays = 0;
@@ -212,16 +204,13 @@ const calculateEmployeePayroll = async (
     if (
         calculationEndDate >= startDate
     ) {
-
         const currentDate =
             new Date(startDate);
-
 
         while (
             currentDate <=
             calculationEndDate
         ) {
-
             elapsedCalendarDays++;
 
             currentDate.setDate(
@@ -233,9 +222,6 @@ const calculateEmployeePayroll = async (
 
     // ─────────────────────────────────────────
     // 6. Company Holidays
-    //
-    // Sirf calculation period ke andar
-    // company holidays lenge.
     // ─────────────────────────────────────────
 
     const holidays =
@@ -272,36 +258,11 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 7. Count Week-Off Days
-    //
-    // Sunday/week-off paid hai.
-    //
-    // Sirf calculation period ke andar
-    // ke Sunday count honge.
+    // 7. Count Week-Off / Working / Holidays
     // ─────────────────────────────────────────
 
     let weekOffCount = 0;
-
-
-    // ─────────────────────────────────────────
-    // 8. Count Company Holiday Days
-    //
-    // Holiday agar Sunday/week-off par hai
-    // to duplicate holiday nahi count hoga.
-    // ─────────────────────────────────────────
-
     let holidayDays = 0;
-
-
-    // ─────────────────────────────────────────
-    // 9. Actual Working Days
-    //
-    // Calendar Days
-    // - Week Off
-    // - Company Holiday
-    // = Actual Working Days
-    // ─────────────────────────────────────────
-
     let totalWorkingDays = 0;
 
 
@@ -312,7 +273,6 @@ const calculateEmployeePayroll = async (
     while (
         loopDate <= calculationEndDate
     ) {
-
         const dayOfWeek =
             loopDate.getDay();
 
@@ -320,43 +280,26 @@ const calculateEmployeePayroll = async (
             getDateKey(loopDate);
 
 
-        // ─────────────────────────────
         // Week Off
-        // ─────────────────────────────
-
         if (
             weekOffDays.includes(
                 dayOfWeek
             )
         ) {
-
             weekOffCount++;
-
         }
 
-        // ─────────────────────────────
         // Company Holiday
-        //
-        // Week-off par holiday ko
-        // separate count nahi karenge.
-        // ─────────────────────────────
-
         else if (
             holidayDates.has(
                 dateKey
             )
         ) {
-
             holidayDays++;
-
         }
 
-        // ─────────────────────────────
         // Normal Working Day
-        // ─────────────────────────────
-
         else {
-
             totalWorkingDays++;
         }
 
@@ -368,8 +311,32 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 10. Attendance
+    // 8. Attendance Check Start Date
     // ─────────────────────────────────────────
+
+    const attendanceCheckStartDate =
+        new Date(startDate);
+
+    const startDay =
+        attendanceCheckStartDate.getDay();
+
+    const daysSinceMonday =
+        startDay === 0
+            ? 6
+            : startDay - 1;
+
+    attendanceCheckStartDate.setDate(
+        attendanceCheckStartDate.getDate() -
+        daysSinceMonday
+    );
+
+    attendanceCheckStartDate.setHours(
+        0,
+        0,
+        0,
+        0
+    );
+
 
     const attendanceRecords =
         await prisma.attendance.findMany({
@@ -377,7 +344,7 @@ const calculateEmployeePayroll = async (
                 userId,
 
                 date: {
-                    gte: startDate,
+                    gte: attendanceCheckStartDate,
                     lte: calculationEndDate,
                 },
 
@@ -389,7 +356,7 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 11. Attendance Map
+    // 9. Attendance Map
     // ─────────────────────────────────────────
 
     const attendanceMap =
@@ -403,7 +370,6 @@ const calculateEmployeePayroll = async (
         const attendance
         of attendanceRecords
     ) {
-
         const key =
             getDateKey(
                 new Date(
@@ -412,11 +378,9 @@ const calculateEmployeePayroll = async (
             );
 
 
-        // Duplicate attendance avoid
         if (
             !attendanceMap.has(key)
         ) {
-
             attendanceMap.set(
                 key,
                 attendance
@@ -426,11 +390,10 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 12. Present / Half Day
+    // 10. Present / Half Day
     // ─────────────────────────────────────────
 
     let presentDays = 0;
-
     let halfDays = 0;
 
 
@@ -438,7 +401,6 @@ const calculateEmployeePayroll = async (
         const attendance
         of attendanceRecords
     ) {
-
         const attendanceDate =
             new Date(
                 attendance.date
@@ -451,8 +413,15 @@ const calculateEmployeePayroll = async (
             );
 
 
-        // Company Holiday par attendance
-        // normal working attendance nahi.
+        if (
+            attendanceDate < startDate ||
+            attendanceDate > calculationEndDate
+        ) {
+            continue;
+        }
+
+
+        // Company Holiday
         if (
             holidayDates.has(key)
         ) {
@@ -460,8 +429,7 @@ const calculateEmployeePayroll = async (
         }
 
 
-        // Week Off par attendance
-        // normal working attendance nahi.
+        // Week Off
         if (
             weekOffDays.includes(
                 attendanceDate.getDay()
@@ -472,30 +440,187 @@ const calculateEmployeePayroll = async (
 
 
         if (
-            attendance.status ===
-                "Present" ||
-            attendance.status ===
-                "Late"
+            attendance.status === "Present" ||
+            attendance.status === "Late"
         ) {
-
             presentDays++;
-
         }
 
 
         if (
-            attendance.status ===
-            "Half-day"
+            attendance.status === "Half-day"
         ) {
-
             halfDays++;
-
         }
     }
 
 
     // ─────────────────────────────────────────
-    // 13. Approved Leaves
+    // 11. Weekly-Off Eligibility
+    // ─────────────────────────────────────────
+
+    let paidWeekOffDays = 0;
+    let unpaidWeekOffDays = 0;
+
+
+    const weekOffEligibilityMap =
+        new Map<string, boolean>();
+
+
+    const weekOffCheckDate =
+        new Date(startDate);
+
+
+    while (
+        weekOffCheckDate <= calculationEndDate
+    ) {
+        const dayOfWeek =
+            weekOffCheckDate.getDay();
+
+        const currentDateKey =
+            getDateKey(
+                weekOffCheckDate
+            );
+
+
+        if (
+            weekOffDays.includes(
+                dayOfWeek
+            )
+        ) {
+
+            const monday =
+                new Date(
+                    weekOffCheckDate
+                );
+
+
+            const daysBackToMonday =
+                dayOfWeek === 0
+                    ? 6
+                    : dayOfWeek - 1;
+
+
+            monday.setDate(
+                monday.getDate() -
+                daysBackToMonday
+            );
+
+            monday.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+
+            const attendanceCheckEnd =
+                new Date(
+                    weekOffCheckDate
+                );
+
+
+            attendanceCheckEnd.setDate(
+                attendanceCheckEnd.getDate() - 1
+            );
+
+            attendanceCheckEnd.setHours(
+                23,
+                59,
+                59,
+                999
+            );
+
+
+            let hasAttendanceInWeek = false;
+
+
+            const attendanceDate =
+                new Date(monday);
+
+
+            while (
+                attendanceDate <=
+                attendanceCheckEnd
+            ) {
+                const checkDateKey =
+                    getDateKey(
+                        attendanceDate
+                    );
+
+                const checkDayOfWeek =
+                    attendanceDate.getDay();
+
+
+                if (
+                    !weekOffDays.includes(
+                        checkDayOfWeek
+                    )
+                ) {
+
+                    const isHoliday =
+                        holidayDates.has(
+                            checkDateKey
+                        );
+
+
+                    if (!isHoliday) {
+                        const attendance =
+                            attendanceMap.get(
+                                checkDateKey
+                            );
+
+
+                        if (
+                            attendance &&
+                            (
+                                attendance.status ===
+                                    "Present" ||
+                                attendance.status ===
+                                    "Late" ||
+                                attendance.status ===
+                                    "Half-day"
+                            )
+                        ) {
+                            hasAttendanceInWeek =
+                                true;
+
+                            break;
+                        }
+                    }
+                }
+
+
+                attendanceDate.setDate(
+                    attendanceDate.getDate() + 1
+                );
+            }
+
+
+            weekOffEligibilityMap.set(
+                currentDateKey,
+                hasAttendanceInWeek
+            );
+
+
+            if (
+                hasAttendanceInWeek
+            ) {
+                paidWeekOffDays++;
+            } else {
+                unpaidWeekOffDays++;
+            }
+        }
+
+
+        weekOffCheckDate.setDate(
+            weekOffCheckDate.getDate() + 1
+        );
+    }
+
+
+    // ─────────────────────────────────────────
+    // 12. Approved Leaves
     // ─────────────────────────────────────────
 
     const approvedLeaves =
@@ -526,11 +651,10 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 14. Paid / Unpaid Leave
+    // 13. Paid / Unpaid Leave
     // ─────────────────────────────────────────
 
     let paidLeaveDays = 0;
-
     let unpaidLeaveDays = 0;
 
 
@@ -538,7 +662,6 @@ const calculateEmployeePayroll = async (
         const leave
         of approvedLeaves
     ) {
-
         const leaveStart =
             new Date(
                 Math.max(
@@ -567,77 +690,49 @@ const calculateEmployeePayroll = async (
                 date.getDate() + 1
             )
         ) {
-
             const dayOfWeek =
                 date.getDay();
-
 
             const dateKey =
                 getDateKey(date);
 
 
-            // ─────────────────────────
             // Week Off
-            //
-            // Already paid hai.
-            // Leave mein count nahi hoga.
-            // ─────────────────────────
-
             if (
                 weekOffDays.includes(
                     dayOfWeek
                 )
             ) {
-
                 continue;
             }
 
 
-            // ─────────────────────────
             // Company Holiday
-            //
-            // Already paid hai.
-            // Leave mein count nahi hoga.
-            // ─────────────────────────
-
             if (
                 holidayDates.has(
                     dateKey
                 )
             ) {
-
                 continue;
             }
 
 
-            // ─────────────────────────
             // Already Present
-            //
-            // Leave count nahi hogi.
-            // ─────────────────────────
-
             if (
                 attendanceMap.has(
                     dateKey
                 )
             ) {
-
                 continue;
             }
 
 
-            // ─────────────────────────
             // Paid / Unpaid Leave
-            // ─────────────────────────
-
             if (
                 leave.leaveType.isPaid
             ) {
-
                 paidLeaveDays++;
-
             } else {
-
                 unpaidLeaveDays++;
             }
         }
@@ -645,7 +740,7 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 15. Prevent Duplicate Days
+    // 14. Prevent Duplicate Leave Days
     // ─────────────────────────────────────────
 
     const availableLeaveDays =
@@ -682,13 +777,7 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 16. Absent Days
-    //
-    // Sirf actual working days mein
-    // absent count hoga.
-    //
-    // Sunday = absent nahi
-    // Company Holiday = absent nahi
+    // 15. Absent Days
     // ─────────────────────────────────────────
 
     const accountedDays =
@@ -707,40 +796,12 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 17. Salary Calculation
-    //
-    // IMPORTANT:
-    //
-    // Current month:
-    //     Sirf elapsed days tak salary.
-    //
-    // Example:
-    //     August 19
-    //
-    //     Total elapsed = 19 days
-    //
-    //     Sunday = 3
-    //
-    //     23 & 30 August future hain,
-    //     isliye count nahi honge.
-    //
-    // Sunday = PAID
-    // Company Holiday = PAID
-    //
+    // 16. Salary Calculation
     // ─────────────────────────────────────────
 
     const grossSalary =
         user.grossSalary;
 
-
-    // Monthly salary ko poore month ke
-    // calendar days se divide karenge.
-    //
-    // Example:
-    // August = 31 days
-    // Gross = ₹31,000
-    //
-    // Per day = ₹1,000
 
     const perDaySalary =
         totalDaysInMonth > 0
@@ -750,13 +811,7 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 18. Earned Salary
-    //
-    // Abhi tak jitne calendar days aaye hain
-    // unki salary.
-    //
-    // Isme Sunday + company holiday
-    // already included hain.
+    // 17. Earned Salary
     // ─────────────────────────────────────────
 
     const earnedSalary =
@@ -765,7 +820,7 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 19. Half Day Deduction
+    // 18. Half Day Deduction
     // ─────────────────────────────────────────
 
     const halfDayDeduction =
@@ -773,17 +828,18 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 20. Total Unpaid Days
+    // 19. Total Unpaid Days
     // ─────────────────────────────────────────
 
     const totalUnpaidDays =
         unpaidLeaveDays +
         absentDays +
+        unpaidWeekOffDays +
         halfDayDeduction;
 
 
     // ─────────────────────────────────────────
-    // 21. Deduction Amount
+    // 20. Deduction Amount
     // ─────────────────────────────────────────
 
     const deductionAmount =
@@ -792,10 +848,7 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 22. Net Salary
-    //
-    // Earned Salary
-    // - Unpaid/Absent/Half-day deduction
+    // 21. Net Salary
     // ─────────────────────────────────────────
 
     const netSalary =
@@ -807,11 +860,22 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
+    // 22. Payable Days
+    // ─────────────────────────────────────────
+
+    const payableDays =
+        Math.max(
+            elapsedCalendarDays -
+            totalUnpaidDays,
+            0
+        );
+
+
+    // ─────────────────────────────────────────
     // 23. Return
     // ─────────────────────────────────────────
 
     return {
-
         userId,
 
         user: {
@@ -826,20 +890,16 @@ const calculateEmployeePayroll = async (
                 user.designation,
         },
 
-
         month,
 
         year,
 
 
-        // ─────────────────────────────
         // Date Information
-        // ─────────────────────────────
 
         totalDaysInMonth,
 
         elapsedCalendarDays,
-
 
         calculationStartDate:
             getDateKey(startDate),
@@ -850,20 +910,23 @@ const calculateEmployeePayroll = async (
             ),
 
 
-        // ─────────────────────────────
         // Week Off / Holiday
-        // ─────────────────────────────
 
         weekOffDays,
 
         weekOffCount,
 
-        holidayDays: Number(holidayDays || 0),
+        paidWeekOffDays,
+
+        unpaidWeekOffDays,
+
+        holidayDays:
+            Number(
+                holidayDays || 0
+            ),
 
 
-        // ─────────────────────────────
         // Working Days
-        // ─────────────────────────────
 
         totalWorkingDays,
 
@@ -872,9 +935,7 @@ const calculateEmployeePayroll = async (
         halfDays,
 
 
-        // ─────────────────────────────
         // Leaves
-        // ─────────────────────────────
 
         paidLeaveDays,
 
@@ -883,12 +944,9 @@ const calculateEmployeePayroll = async (
         absentDays,
 
 
-        // ─────────────────────────────
         // Salary
-        // ─────────────────────────────
 
-        payableDays:
-            elapsedCalendarDays,
+        payableDays,
 
         grossSalary,
 
@@ -902,18 +960,15 @@ const calculateEmployeePayroll = async (
                 perDaySalary.toFixed(2)
             ),
 
-
         totalUnpaidDays:
             Number(
                 totalUnpaidDays.toFixed(2)
             ),
 
-
         deductionAmount:
             Number(
                 deductionAmount.toFixed(2)
             ),
-
 
         netSalary:
             Number(
@@ -921,6 +976,7 @@ const calculateEmployeePayroll = async (
             ),
     };
 };
+
 
 // ─────────────────────────────────────────────────────────────
 // Get Payroll Summary
@@ -932,11 +988,54 @@ export const getPayrollSummary =
         month: number,
         year: number
     ) => {
+
         if (!companyId) {
             throw new Error(
                 "Company ID is required"
             );
         }
+
+
+        // ─────────────────────────────────────
+        // Get all roles
+        // ─────────────────────────────────────
+
+        const roles =
+            await prisma.role.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                },
+            });
+
+
+        // ─────────────────────────────────────
+        // Normalize role names
+        // ─────────────────────────────────────
+
+        const excludedRoleIds =
+            roles
+                .filter((role) => {
+                    const normalizedRole =
+                        normalizeRoleName(
+                            role.name
+                        );
+
+                    return (
+                        normalizedRole ===
+                            "company_admin" ||
+                        normalizedRole ===
+                            "super_admin"
+                    );
+                })
+                .map(
+                    (role) => role.id
+                );
+
+
+        // ─────────────────────────────────────
+        // Get Employees
+        // ─────────────────────────────────────
 
         const employees =
             await prisma.user.findMany({
@@ -945,20 +1044,23 @@ export const getPayrollSummary =
 
                     isActive: true,
 
-                    role: {
-                        name: {
-                            notIn: [
-                                "company_admin",
-                                "super_admin",
-                            ],
+                    ...(excludedRoleIds.length > 0 && {
+                        roleId: {
+                            notIn:
+                                excludedRoleIds,
                         },
-                    },
+                    }),
                 },
 
                 select: {
                     id: true,
                 },
             });
+
+
+        // ─────────────────────────────────────
+        // Calculate Payroll
+        // ─────────────────────────────────────
 
         const payrollData =
             await Promise.all(
@@ -973,8 +1075,10 @@ export const getPayrollSummary =
                 )
             );
 
+
         return payrollData;
     };
+
 
 // ─────────────────────────────────────────────────────────────
 // Get Single Employee Payroll Detail
@@ -987,6 +1091,7 @@ export const getEmployeePayrollDetail =
         month: number,
         year: number
     ) => {
+
         return await calculateEmployeePayroll(
             userId,
             companyId,
@@ -994,6 +1099,7 @@ export const getEmployeePayrollDetail =
             year
         );
     };
+
 
 // ─────────────────────────────────────────────────────────────
 // Update Employee Salary
@@ -1004,6 +1110,7 @@ export const updateEmployeeSalary =
         userId: string,
         grossSalary: number
     ) => {
+
         const user =
             await prisma.user.findUnique({
                 where: {
@@ -1011,17 +1118,20 @@ export const updateEmployeeSalary =
                 },
             });
 
+
         if (!user) {
             throw new Error(
                 "Employee not found"
             );
         }
 
+
         if (grossSalary < 0) {
             throw new Error(
                 "Gross salary cannot be negative"
             );
         }
+
 
         return await prisma.user.update({
             where: {

@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardContent, } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,16 @@ const months = [
 const MyAttendance = () => {
     const navigate = useNavigate();
     const { user } = useAuthStore();
-    const isAdmin = ["super_admin", "company_admin"].includes(user?.role?.name ?? "");
+    const normalizedRole = user?.role?.name
+        ?.trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/_+/g, "_");
+
+    const isAdmin = ["super_admin", "company_admin"].includes(
+        normalizedRole ?? ""
+    );
+
 
     const [loading, setLoading] = React.useState(true);
     const [loading1, setLoading1] = React.useState(true);
@@ -292,98 +301,169 @@ const MyAttendance = () => {
 
 
             {/* Full Month Table */}
-            <div className="bg-card  grid grid-cols-1 rounded border w-full overflow-x-auto">
-                <Card className='table-auto'>
-                    <CardContent className="p-0 min-w-full">
-                        <div className="overflow-auto">
-                            <Table>
-                                <TableHeader className="bg-muted rounded-lg">
-                                    <TableRow>
-                                        <TableHead>#</TableHead>
-                                        {isAdmin && <TableHead className="min-w-37.5">Employee</TableHead>}
-                                        {isAdmin && <TableHead>Branch</TableHead>}
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Punch In</TableHead>
-                                        <TableHead>Punch Out</TableHead>
-                                        <TableHead>Working Hours</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Geo Fence</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
+            <div className="bg-card grid grid-cols-1 rounded border w-full overflow-x-auto">
+                <Table className="table-auto">
+                    <TableHeader className="bg-muted rounded-lg">
+                        <TableRow>
+                            <TableHead>#</TableHead>
 
+                            {isAdmin && (
+                                <TableHead className="min-w-37.5">
+                                    Employee
+                                </TableHead>
+                            )}
 
-                                    {loading1 ? (
-                                        <TableRow >
-                                            <TableCell
-                                                colSpan={isAdmin ? 9 : 6}
-                                                className=" text-center"
-                                            >
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <Loader2 className={`h-4 w-4 mr-2 ${loading1 ? "animate-spin" : ""}`} />
-                                                    <span className="text-[var(--logo-green)] font-bold">Loading attendance...</span>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : attendances.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                                                No records for this month
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        filterAttendances.map((att, index) => (
-                                            <TableRow
-                                                key={att.id}
-                                                className="cursor-pointer hover:bg-muted/50"
-                                                onClick={() => {
-                                                    if (isAdmin) {
-                                                        navigate(`/attendance/employee/${att.userId}`);
-                                                    }
-                                                }}
+                            {isAdmin && (
+                                <TableHead>
+                                    Branch
+                                </TableHead>
+                            )}
 
-                                            >
-                                                <TableCell>{index + 1}</TableCell>
-                                                {isAdmin && (
-                                                    <TableCell>
-                                                        <div>
-                                                            <p className="font-medium">{att.user?.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{att.user?.employeeCode}</p>
-                                                        </div>
-                                                    </TableCell>
-                                                )}
-                                                {isAdmin && (
-                                                    <TableCell>{att.branch?.name ?? "—"}</TableCell>
-                                                )}
+                            <TableHead>Date</TableHead>
+                            <TableHead>Punch In</TableHead>
+                            <TableHead>Punch Out</TableHead>
+                            <TableHead>Working Hours</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Geo Fence</TableHead>
+                        </TableRow>
+                    </TableHeader>
 
-                                                <TableCell>
-                                                    {new Date(att.date).toLocaleDateString("en-IN", {
-                                                        day: "numeric", month: "short", weekday: "short"
-                                                    })}
-                                                </TableCell>
-                                                <TableCell>{formatTime(att.punchInTime)}</TableCell>
-                                                <TableCell>{formatTime(att.punchOutTime)}</TableCell>
-                                                <TableCell>{formatWorkingHours(att.workingHours)}</TableCell>
-                                                <TableCell>
-                                                    <Badge className={getStatusColor(att.status)}>
-                                                        {att.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge className={att.isWithinGeoFence
-                                                        ? "bg-green-100 text-green-700"
-                                                        : "bg-red-100 text-red-700"}>
-                                                        {att.isWithinGeoFence ? "Inside" : "Outside"}
-                                                    </Badge>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
+                    <TableBody>
+                        {loading1 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={isAdmin ? 9 : 7}
+                                    className="text-center py-8"
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        <Loader2
+                                            className={`h-4 w-4 ${loading1
+                                                    ? "animate-spin"
+                                                    : ""
+                                                }`}
+                                        />
+
+                                        <span className="text-[var(--logo-green)] font-bold">
+                                            Loading attendance...
+                                        </span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : filterAttendances.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={isAdmin ? 9 : 7}
+                                    className="text-center py-8 text-muted-foreground"
+                                >
+                                    No records for this month
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filterAttendances.map((att, index) => (
+                                <TableRow
+                                    key={att.id}
+                                    className={
+                                        isAdmin
+                                            ? "cursor-pointer hover:bg-muted/50"
+                                            : "hover:bg-muted/50"
+                                    }
+                                    onClick={() => {
+                                        if (isAdmin) {
+                                            navigate(
+                                                `/attendance/employee/${att.userId}`
+                                            );
+                                        }
+                                    }}
+                                >
+                                    {/* # */}
+                                    <TableCell>
+                                        {index + 1}
+                                    </TableCell>
+
+                                    {/* Employee */}
+                                    {isAdmin && (
+                                        <TableCell>
+                                            <div>
+                                                <p className="font-medium">
+                                                    {att.user?.name}
+                                                </p>
+
+                                                <p className="text-xs text-muted-foreground">
+                                                    {att.user?.employeeCode}
+                                                </p>
+                                            </div>
+                                        </TableCell>
                                     )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
+
+                                    {/* Branch */}
+                                    {isAdmin && (
+                                        <TableCell>
+                                            {att.branch?.name ?? "—"}
+                                        </TableCell>
+                                    )}
+
+                                    {/* Date */}
+                                    <TableCell>
+                                        {new Date(
+                                            att.date
+                                        ).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                            weekday: "short",
+                                        })}
+                                    </TableCell>
+
+                                    {/* Punch In */}
+                                    <TableCell>
+                                        {formatTime(
+                                            att.punchInTime
+                                        )}
+                                    </TableCell>
+
+                                    {/* Punch Out */}
+                                    <TableCell>
+                                        {formatTime(
+                                            att.punchOutTime
+                                        )}
+                                    </TableCell>
+
+                                    {/* Working Hours */}
+                                    <TableCell>
+                                        {formatWorkingHours(
+                                            att.workingHours
+                                        )}
+                                    </TableCell>
+
+                                    {/* Status */}
+                                    <TableCell>
+                                        <Badge
+                                            className={getStatusColor(
+                                                att.status
+                                            )}
+                                        >
+                                            {att.status}
+                                        </Badge>
+                                    </TableCell>
+
+                                    {/* Geo Fence */}
+                                    <TableCell>
+                                        <Badge
+                                            className={
+                                                att.isWithinGeoFence
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-red-100 text-red-700"
+                                            }
+                                        >
+                                            {att.isWithinGeoFence
+                                                ? "Inside"
+                                                : "Outside"}
+                                        </Badge>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
             </div>
         </div >
     );

@@ -4,7 +4,18 @@ import { useAuthStore } from '@/store/auth.store'
 
 function Dashboard() {
   const { user } = useAuthStore();
-  const isEmployee = !["super_admin", "company_admin"].includes(user?.role?.name ?? "");
+  const roleName = user?.role?.name
+    ?.trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "_");
+
+  const isEmployee =
+    !!roleName &&
+    roleName !== "super_admin" &&
+    roleName !== "company_admin";
+
+  console.log("ROLE NAME:", roleName);
+  console.log("IS EMPLOYEE:", isEmployee);
 
   return (
     <div className='flex flex-col gap-4'>

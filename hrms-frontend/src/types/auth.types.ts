@@ -56,5 +56,6 @@ interface Permission {
 interface Role {
     id: number;
     name: string;
+    isSystemRole: boolean;
     permissions: Permission[];
 }
