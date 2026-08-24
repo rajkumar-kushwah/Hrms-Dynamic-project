@@ -1,6 +1,14 @@
 import { prisma } from "../config/db.js";
 import { isWithinGeoFence, calculateDistance } from "../utilis/geoFencing.js";
 
+const normalizeName = (value?: string | null) => {
+    return value
+        ?.trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/_+/g, "_");
+};
+
 //  Helper — Settings lo (default fallback ke saath)
 const getCompanySettings = async (companyId: string) => {
     let settings = await prisma.companySettings.findUnique({
@@ -595,111 +603,372 @@ export const getMyAttendance = async (
 
 
 // ─── Get All Employees Attendance (Admin) ──
+
+
 // export const getAllAttendance = async (
 //     companyId: string | null,
 //     date?: string
 // ) => {
-//     const targetDate = date ? new Date(date) : new Date();
+//     // ─────────────────────────────────────────────
+//     // Target Date
+//     // ─────────────────────────────────────────────
+
+//     const targetDate = date
+//         ? new Date(date)
+//         : new Date();
+
 //     targetDate.setHours(0, 0, 0, 0);
 
+//     // ─────────────────────────────────────────────
+//     // Company Settings
+//     // ─────────────────────────────────────────────
+
 //     let weekOffDays = [0];
+
 //     if (companyId) {
 //         const settings = await getCompanySettings(companyId);
 //         weekOffDays = settings.weekOffDays;
 //     }
 
-//     const employees = await prisma.user.findMany({
+//     // ─────────────────────────────────────────────
+//     // Employees
+//     // ─────────────────────────────────────────────
+
+//     const users = await prisma.user.findMany({
 //         where: {
-//             ...(companyId ? { companyId } : { companyId: { not: null } }),
+//             // Company Admin → only own company
+//             // Super Admin → all companies
+//             ...(companyId
+//                 ? {
+//                     companyId,
+//                 }
+//                 : {
+//                     companyId: {
+//                         not: null,
+//                     },
+//                 }),
+
 //             isActive: true,
-//             role: { name: { notIn: ["company_admin", "super_admin"] } },
+
+//             // Role relation
+//             role: {
+//                 isSystemRole: false,
+//             },
 //         },
+
 //         select: {
-//             id: true, name: true, employeeCode: true, designation: true,
-//             branch: { select: { id: true, name: true } },
-//         }
+//             id: true,
+//             name: true,
+//             email: true,
+//             employeeCode: true,
+//             designation: true,
+
+//             role: {
+//                 select: {
+//                     name: true,
+//                     isSystemRole: true,
+//                 },
+//             },
+
+//             branch: {
+//                 select: {
+//                     id: true,
+//                     name: true,
+//                 },
+//             },
+//         },
 //     });
+
+//     // ─────────────────────────────────────────────
+//     // Extra role filtering using normalized name
+//     // ─────────────────────────────────────────────
+
+//     const employees = users.filter((user) => {
+//         const roleName = normalizeName(user.role?.name);
+
+//         // System roles ko attendance employee list se remove karo
+//         if (
+//             roleName === normalizeName("company_admin") ||
+//             roleName === normalizeName("super_admin")
+//         ) {
+//             return false;
+//         }
+
+//         return true;
+//     });
+
+//     // ─────────────────────────────────────────────
+//     // Attendance Records
+//     // ─────────────────────────────────────────────
 
 //     const records = await prisma.attendance.findMany({
 //         where: {
-//             ...(companyId && { companyId }),
+//             ...(companyId
+//                 ? {
+//                     companyId,
+//                 }
+//                 : {}),
+
 //             date: targetDate,
 //         },
+
 //         include: {
-//             user: { select: { id: true, name: true, employeeCode: true, designation: true } },
-//             branch: { select: { id: true, name: true } }
+//             user: {
+//                 select: {
+//                     id: true,
+//                     name: true,
+//                     employeeCode: true,
+//                     designation: true,
+//                 },
+//             },
+
+//             branch: {
+//                 select: {
+//                     id: true,
+//                     name: true,
+//                 },
+//             },
+//         },
+
+//         orderBy: {
+//             punchInTime: "desc",
 //         },
 //     });
 
-//     //  Naya — Us date ki approved leaves nikaalo
-//     const nextDay = new Date(targetDate);
-//     nextDay.setDate(nextDay.getDate() + 1);
+//     // ─────────────────────────────────────────────
+//     // Approved Leaves
+//     // ─────────────────────────────────────────────
 
-//     const approvedLeaves = await prisma.leaveRequest.findMany({
-//         where: {
-//             ...(companyId && { companyId }),
-//             status: "Approved",
-//             startDate: { lte: targetDate },
-//             endDate: { gte: targetDate },
-//         },
-//         include: { leaveType: { select: { name: true } } }
-//     });
+//     const approvedLeaves =
+//         await prisma.leaveRequest.findMany({
+//             where: {
+//                 ...(companyId
+//                     ? {
+//                         companyId,
+//                     }
+//                     : {}),
 
-//     const leaveMap = new Map(
-//         approvedLeaves.map((leave) => [leave.userId, leave.leaveType.name])
+//                 status: "Approved",
+
+//                 startDate: {
+//                     lte: targetDate,
+//                 },
+
+//                 endDate: {
+//                     gte: targetDate,
+//                 },
+//             },
+
+//             include: {
+//                 leaveType: {
+//                     select: {
+//                         name: true,
+//                     },
+//                 },
+//             },
+//         });
+
+//     // ─────────────────────────────────────────────
+//     // Leave Map
+//     // ─────────────────────────────────────────────
+
+//     const leaveMap = new Map<string, string>();
+
+//     for (const leave of approvedLeaves) {
+//         leaveMap.set(
+//             leave.userId,
+//             leave.leaveType.name
+//         );
+//     }
+
+//     // ─────────────────────────────────────────────
+//     // Attendance Map
+//     // ─────────────────────────────────────────────
+
+//     const recordMap = new Map(
+//         records.map((record) => [
+//             record.userId,
+//             record,
+//         ])
 //     );
 
-//     const recordMap = new Map(records.map((record) => [record.userId, record]));
-//     const isWeekOff = weekOffDays.includes(targetDate.getDay());
+//     // ─────────────────────────────────────────────
+//     // Week Off
+//     // ─────────────────────────────────────────────
+
+//     const isWeekOff = weekOffDays.includes(
+//         targetDate.getDay()
+//     );
+
+//     // ─────────────────────────────────────────────
+//     // Date Key
+//     // ─────────────────────────────────────────────
+
+//     const dateKey = targetDate
+//         .toISOString()
+//         .split("T")[0];
+
+//     // ─────────────────────────────────────────────
+//     // Final Result
+//     // ─────────────────────────────────────────────
 
 //     const result = employees.map((employee) => {
-//         const existing = recordMap.get(employee.id);
-//         if (existing) return existing; //  Priority 1 — Punch in record
 
-//         const leaveTypeName = leaveMap.get(employee.id);
+//         // ─────────────────────────────────────────
+//         // Priority 1 — Actual Attendance
+//         // ─────────────────────────────────────────
+
+//         const existing = recordMap.get(employee.id);
+
+//         if (existing) {
+//             // Agar punch-in + punch-out dono hain
+//             // to wahi actual record return hoga.
+//             return existing;
+//         }
+
+//         // ─────────────────────────────────────────
+//         // Priority 2 — Approved Leave
+//         // ─────────────────────────────────────────
+
+//         const leaveTypeName =
+//             leaveMap.get(employee.id);
+
 //         if (leaveTypeName) {
-//             //  Priority 2 — On Leave
 //             return {
-//                 id: `leave-${employee.id}-${targetDate.toISOString().split("T")[0]}`,
-//                 userId: employee.id, companyId,
-//                 branchId: employee.branch?.id ?? null,
+//                 id: `leave-${employee.id}-${dateKey}`,
+
+//                 userId: employee.id,
+//                 companyId,
+
+//                 branchId:
+//                     employee.branch?.id ?? null,
+
 //                 date: targetDate,
-//                 punchInTime: null, punchOutTime: null,
-//                 punchInLat: null, punchInLng: null,
-//                 punchOutLat: null, punchOutLng: null,
-//                 workingHours: 0, isWithinGeoFence: false,
+
+//                 punchInTime: null,
+//                 punchOutTime: null,
+
+//                 punchInLat: null,
+//                 punchInLng: null,
+
+//                 punchOutLat: null,
+//                 punchOutLng: null,
+
+//                 workingHours: 0,
+//                 isWithinGeoFence: false,
+
 //                 status: `On Leave (${leaveTypeName})`,
-//                 createdAt: new Date(), updatedAt: new Date(),
+
+//                 createdAt: new Date(),
+//                 updatedAt: new Date(),
+
 //                 user: {
-//                     id: employee.id, name: employee.name,
-//                     employeeCode: employee.employeeCode, designation: employee.designation,
+//                     id: employee.id,
+//                     name: employee.name,
+//                     employeeCode:
+//                         employee.employeeCode,
+//                     designation:
+//                         employee.designation,
 //                 },
-//                 branch: employee.branch
+
+//                 branch: employee.branch,
 //             };
 //         }
 
-//         // Priority 3/4 — Week Off / Absent
+//         // ─────────────────────────────────────────
+//         // Priority 3 — Week Off
+//         // ─────────────────────────────────────────
+
+//         if (isWeekOff) {
+//             return {
+//                 id: `weekoff-${employee.id}-${dateKey}`,
+
+//                 userId: employee.id,
+//                 companyId,
+
+//                 branchId:
+//                     employee.branch?.id ?? null,
+
+//                 date: targetDate,
+
+//                 punchInTime: null,
+//                 punchOutTime: null,
+
+//                 punchInLat: null,
+//                 punchInLng: null,
+
+//                 punchOutLat: null,
+//                 punchOutLng: null,
+
+//                 workingHours: 0,
+//                 isWithinGeoFence: false,
+
+//                 status: "Week Off",
+
+//                 createdAt: new Date(),
+//                 updatedAt: new Date(),
+
+//                 user: {
+//                     id: employee.id,
+//                     name: employee.name,
+//                     employeeCode:
+//                         employee.employeeCode,
+//                     designation:
+//                         employee.designation,
+//                 },
+
+//                 branch: employee.branch,
+//             };
+//         }
+
+//         // ─────────────────────────────────────────
+//         // Priority 4 — Absent
+//         // ─────────────────────────────────────────
+
 //         return {
-//             id: `${isWeekOff ? "weekoff" : "absent"}-${employee.id}-${targetDate.toISOString().split("T")[0]}`,
-//             userId: employee.id, companyId,
-//             branchId: employee.branch?.id ?? null,
+//             id: `absent-${employee.id}-${dateKey}`,
+
+//             userId: employee.id,
+//             companyId,
+
+//             branchId:
+//                 employee.branch?.id ?? null,
+
 //             date: targetDate,
-//             punchInTime: null, punchOutTime: null,
-//             punchInLat: null, punchInLng: null,
-//             punchOutLat: null, punchOutLng: null,
-//             workingHours: 0, isWithinGeoFence: false,
-//             status: isWeekOff ? "Week Off" : "Absent",
-//             createdAt: new Date(), updatedAt: new Date(),
+
+//             punchInTime: null,
+//             punchOutTime: null,
+
+//             punchInLat: null,
+//             punchInLng: null,
+
+//             punchOutLat: null,
+//             punchOutLng: null,
+
+//             workingHours: 0,
+//             isWithinGeoFence: false,
+
+//             status: "Absent",
+
+//             createdAt: new Date(),
+//             updatedAt: new Date(),
+
 //             user: {
-//                 id: employee.id, name: employee.name,
-//                 employeeCode: employee.employeeCode, designation: employee.designation,
+//                 id: employee.id,
+//                 name: employee.name,
+//                 employeeCode:
+//                     employee.employeeCode,
+//                 designation:
+//                     employee.designation,
 //             },
-//             branch: employee.branch
+
+//             branch: employee.branch,
 //         };
 //     });
 
 //     return result;
 // };
+
 
 // ─── Get All Employees Attendance (Admin) ─────────────────────
 
@@ -725,26 +994,15 @@ export const getAllAttendance = async (
 
     if (companyId) {
         const settings = await getCompanySettings(companyId);
-
         weekOffDays = settings.weekOffDays;
     }
 
     // ─────────────────────────────────────────────
-    // Get Employees Only
-    //
-    // isSystemRole = false
-    // System roles like Super Admin / Company Admin
-    // automatically exclude ho jayenge.
-    // Role name compare nahi kar rahe.
+    // Users
     // ─────────────────────────────────────────────
 
-    const employees = await prisma.user.findMany({
+    const users = await prisma.user.findMany({
         where: {
-            // Company Admin:
-            // sirf apni company ke employees
-            //
-            // Super Admin:
-            // sabhi companies ke employees
             ...(companyId
                 ? {
                     companyId,
@@ -755,20 +1013,23 @@ export const getAllAttendance = async (
                     },
                 }),
 
-            // Sirf active users
             isActive: true,
-
-            // System roles ko exclude karo
-            role: {
-                isSystemRole: false,
-            },
         },
 
         select: {
             id: true,
             name: true,
+            email: true,
             employeeCode: true,
             designation: true,
+            companyId: true,
+
+            role: {
+                select: {
+                    name: true,
+                    isSystemRole: true,
+                },
+            },
 
             branch: {
                 select: {
@@ -777,6 +1038,30 @@ export const getAllAttendance = async (
                 },
             },
         },
+    });
+
+    // ─────────────────────────────────────────────
+    // ONLY EMPLOYEES
+    // Role name comparison normalized
+    // ─────────────────────────────────────────────
+
+    const employees = users.filter((user) => {
+        const roleName = normalizeName(user.role?.name);
+
+        const companyAdminRole =
+            normalizeName("company_admin");
+
+        const superAdminRole =
+            normalizeName("super_admin");
+
+        if (
+            roleName === companyAdminRole ||
+            roleName === superAdminRole
+        ) {
+            return false;
+        }
+
+        return true;
     });
 
     // ─────────────────────────────────────────────
@@ -801,6 +1086,11 @@ export const getAllAttendance = async (
                     name: true,
                     employeeCode: true,
                     designation: true,
+                    role: {
+                        select: {
+                            name: true,
+                        },
+                    },
                 },
             },
 
@@ -816,6 +1106,18 @@ export const getAllAttendance = async (
             punchInTime: "desc",
         },
     });
+
+    // ─────────────────────────────────────────────
+    // Remove attendance of admin/system roles
+    // ─────────────────────────────────────────────
+
+    const employeeIds = new Set(
+        employees.map((employee) => employee.id)
+    );
+
+    const employeeRecords = records.filter((record) =>
+        employeeIds.has(record.userId)
+    );
 
     // ─────────────────────────────────────────────
     // Approved Leaves
@@ -868,7 +1170,7 @@ export const getAllAttendance = async (
     // ─────────────────────────────────────────────
 
     const recordMap = new Map(
-        records.map((record) => [
+        employeeRecords.map((record) => [
             record.userId,
             record,
         ])
@@ -891,18 +1193,27 @@ export const getAllAttendance = async (
         .split("T")[0];
 
     // ─────────────────────────────────────────────
-    // Final Attendance Result
+    // Final Result
     // ─────────────────────────────────────────────
 
     const result = employees.map((employee) => {
 
         // ─────────────────────────────────────────
-        // Priority 1 — Actual Attendance
+        // Priority 1 — ACTUAL ATTENDANCE
         // ─────────────────────────────────────────
 
         const existing = recordMap.get(employee.id);
 
         if (existing) {
+            // IMPORTANT:
+            // Punch-in only:
+            // punchOutTime = null
+            //
+            // Punch-out done:
+            // punchOutTime = actual checkout time
+            //
+            // workingHours = actual working hours
+
             return existing;
         }
 
@@ -918,7 +1229,6 @@ export const getAllAttendance = async (
                 id: `leave-${employee.id}-${dateKey}`,
 
                 userId: employee.id,
-
                 companyId,
 
                 branchId:
@@ -936,7 +1246,6 @@ export const getAllAttendance = async (
                 punchOutLng: null,
 
                 workingHours: 0,
-
                 isWithinGeoFence: false,
 
                 status: `On Leave (${leaveTypeName})`,
@@ -966,7 +1275,6 @@ export const getAllAttendance = async (
                 id: `weekoff-${employee.id}-${dateKey}`,
 
                 userId: employee.id,
-
                 companyId,
 
                 branchId:
@@ -984,7 +1292,6 @@ export const getAllAttendance = async (
                 punchOutLng: null,
 
                 workingHours: 0,
-
                 isWithinGeoFence: false,
 
                 status: "Week Off",
@@ -1013,7 +1320,6 @@ export const getAllAttendance = async (
             id: `absent-${employee.id}-${dateKey}`,
 
             userId: employee.id,
-
             companyId,
 
             branchId:
@@ -1031,7 +1337,6 @@ export const getAllAttendance = async (
             punchOutLng: null,
 
             workingHours: 0,
-
             isWithinGeoFence: false,
 
             status: "Absent",
@@ -1054,24 +1359,67 @@ export const getAllAttendance = async (
 
     return result;
 };
-
 // get live attendance
-export const getLiveAttendance = async (companyId: string | null) => {
+export const getLiveAttendance = async (
+    companyId: string | null
+) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    return await prisma.attendance.findMany({
+    const records = await prisma.attendance.findMany({
         where: {
-            ...(companyId ? { companyId } : {}),
+            ...(companyId
+                ? {
+                    companyId,
+                }
+                : {}),
+
             date: today,
         },
+
         include: {
-            user: { select: { id: true, name: true, employeeCode: true, designation: true } },
-            branch: { select: { id: true, name: true } }
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    employeeCode: true,
+                    designation: true,
+
+                    role: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                },
+            },
+
+            branch: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
         },
-        orderBy: { punchInTime: "desc" }
-    })
-}
+
+        orderBy: {
+            punchInTime: "desc",
+        },
+    });
+
+    // Sirf actual employees
+    const employeeRecords = records.filter((record) => {
+        const roleName = normalizeName(
+            record.user.role?.name
+        );
+
+        return (
+            roleName !== normalizeName("company_admin") &&
+            roleName !== normalizeName("super_admin")
+        );
+    });
+
+    return employeeRecords;
+};
 
 export const getEmployeeAttendance = async (
     userId: string,
@@ -1091,7 +1439,6 @@ export const getEmployeeAttendance = async (
         throw new Error("Employee not found");
     }
 
-    // Super Admin → companyId null → employee kisi bhi company ka ho sakta hai
     if (companyId === null) {
         return await getMyAttendance(
             userId,
@@ -1101,7 +1448,6 @@ export const getEmployeeAttendance = async (
         );
     }
 
-    // Admin/Company Admin → sirf apni company ka employee
     if (employee.companyId !== companyId) {
         throw new Error(
             "This employee does not belong to this company."
