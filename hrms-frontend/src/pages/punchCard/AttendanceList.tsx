@@ -343,7 +343,7 @@ const MyAttendance = () => {
                                                 }`}
                                         />
 
-                                        <span className="text-[var(--logo-green)] font-bold">
+                                        <span className="text-muted-foreground">
                                             Loading attendance...
                                         </span>
                                     </div>
