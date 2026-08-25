@@ -15,13 +15,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { isAdminRole } from "@/utilis/roleUtils";
 
 const EmployeeList = () => {
   const { user } = useAuthStore();
 
   // active and inactive super_admin kr skta h or  company admin (Employee nhi)
-  const roleName = user?.role?.name ?? "";
-  const canChangeStatus = ["super_admin", "company_admin"].includes(roleName);
+  const canChangeStatus = isAdminRole(user?.role?.name);
 
   const [employees, setEmployees] = React.useState<Employee[]>([]);
   const [open, setOpen] = React.useState(false);

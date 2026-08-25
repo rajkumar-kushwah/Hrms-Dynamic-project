@@ -12,11 +12,11 @@ import type { LeaveRequest, LeaveType } from "@/types/leave.types";
 import { getMyLeaveRequests, createLeaveRequest, cancelLeaveRequest } from "@/services/leaveRequest.service";
 import { getLeaveTypes } from "@/services/leaveType.service";
 import { useAuthStore } from "@/store/auth.store";
+import { isAdminRole } from "@/utilis/roleUtils";
 
 const LeaveRequestPage = () => {
     const { user } = useAuthStore();
-    const RoleName = user?.role?.name ?? "";
-    const canChangeStatus = ["super_admin", "company_admin"].includes(RoleName);
+    const canChangeStatus = !isAdminRole(user?.role?.name)
 
 
     const [leaves, setLeaves] = React.useState<LeaveRequest[]>([]);
@@ -95,7 +95,7 @@ const LeaveRequestPage = () => {
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-end">
-                {!canChangeStatus &&
+                {canChangeStatus &&
                     <Button size="sm" variant="add" onClick={() => setOpen(true)}>
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Apply Leave

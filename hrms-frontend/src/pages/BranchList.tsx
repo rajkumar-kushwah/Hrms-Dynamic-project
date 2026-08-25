@@ -13,6 +13,7 @@ import type { Branch, CreateBranchPayload } from "@/types/branch.types";
 import { getBranches, createBranch, updateBranch, permanentDeleteBranch } from "@/services/branch.service";
 import LocationPicker from "@/pages/LocationPicker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { isSuperAdminRole } from "@/utilis/roleUtils";
 
 type EditForm = {
     name?: string;
@@ -32,7 +33,7 @@ type EditForm = {
 
 const BranchList = () => {
     const { user } = useAuthStore();
-    const isSuperAdmin = user?.role?.name === "super_admin";
+    const isSuperAdmin = isSuperAdminRole(user?.role?.name);
 
     const [branches, setBranches] = React.useState<Branch[]>([]);
     const [open, setOpen] = React.useState(false);

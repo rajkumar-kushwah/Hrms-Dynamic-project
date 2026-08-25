@@ -1,21 +1,11 @@
 import PunchCard from '../punchCard/PunchCard';
 import DashboardStats from './DashboardStats'
 import { useAuthStore } from '@/store/auth.store'
+import { isEmployeeRole } from '@/utilis/roleUtils'
 
 function Dashboard() {
   const { user } = useAuthStore();
-  const roleName = user?.role?.name
-    ?.trim()
-    .toLowerCase()
-    .replace(/[\s_-]+/g, "_");
-
-  const isEmployee =
-    !!roleName &&
-    roleName !== "super_admin" &&
-    roleName !== "company_admin";
-
-  console.log("ROLE NAME:", roleName);
-  console.log("IS EMPLOYEE:", isEmployee);
+  const isEmployee = isEmployeeRole(user?.role?.name);
 
   return (
     <div className='flex flex-col gap-4'>

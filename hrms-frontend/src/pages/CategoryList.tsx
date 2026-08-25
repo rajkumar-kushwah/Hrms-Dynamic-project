@@ -14,10 +14,11 @@ import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from "@/t
 import type { Branch } from "@/types/branch.types";
 import { getCategories, createCategory, updateCategory, permanentDeleteCategory } from "@/services/category.service";
 import { getBranches } from "@/services/branch.service";
+import { isSuperAdminRole } from "@/utilis/roleUtils";
 
 const CategoryList = () => {
     const { user } = useAuthStore();
-    const isSuperAdmin = user?.role?.name === "super_admin";
+    const isSuperAdmin = isSuperAdminRole(user?.role?.name);
 
     const [categories, setCategories] = React.useState<Category[]>([]);
     const [branches, setBranches] = React.useState<Branch[]>([]);

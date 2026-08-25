@@ -16,7 +16,7 @@ import { getRoles } from "@/services/role.service";
 import type { Role } from "@/types/role.types";
 import { useAuthStore } from "@/store/auth.store";
 import { employeeSchema } from "@/validation/employee.validation";
-
+import { isAdminRole } from "@/utilis/roleUtils";
 
 // interface Role {
 //   id: number;
@@ -94,7 +94,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
     >({});
 
     // const isSuperAdmin = user?.role?.name === "super_admin";
-    const isCompanyAdmin = user?.role?.name === "company_admin";
+    const isCompanyAdmin = isAdminRole(user?.role?.name);
 
     const filteredRoles = isCompanyAdmin
         ? roles.filter((role) => !role.isSystemRole)

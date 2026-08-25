@@ -11,6 +11,7 @@ import { getAllAttendance, getMyAttendance } from "@/services/attendance.service
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { isAdminRole } from "@/utilis/roleUtils";
 
 const months = [
     { value: "1", label: "January" }, { value: "2", label: "February" },
@@ -40,16 +41,7 @@ const months = [
 const MyAttendance = () => {
     const navigate = useNavigate();
     const { user } = useAuthStore();
-    const normalizedRole = user?.role?.name
-        ?.trim()
-        .toLowerCase()
-        .replace(/\s+/g, "_")
-        .replace(/_+/g, "_");
-
-    const isAdmin = ["super_admin", "company_admin"].includes(
-        normalizedRole ?? ""
-    );
-
+    const isAdmin = isAdminRole(user?.role?.name);
 
     const [loading, setLoading] = React.useState(true);
     const [loading1, setLoading1] = React.useState(true);

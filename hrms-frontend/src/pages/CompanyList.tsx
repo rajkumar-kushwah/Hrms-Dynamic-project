@@ -12,11 +12,12 @@ import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuthStore } from '@/store/auth.store';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { isCompanyAdminRole, isSuperAdminRole } from '@/utilis/roleUtils';
 
 function CompanyList() {
   const { user } = useAuthStore();
-  const isSuperAdmin = user?.role?.name === "super_admin";
-  const isCompanyAdmin = user?.role?.name === "company_admin";
+  const isSuperAdmin = isSuperAdminRole(user?.role?.name);
+  const isCompanyAdmin = isCompanyAdminRole(user?.role?.name);
 
 
   const [searchQuery, setSearchQuery] = React.useState("");

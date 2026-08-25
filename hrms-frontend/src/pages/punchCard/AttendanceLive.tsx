@@ -9,10 +9,11 @@ import type { Attendance } from "@/types/attendance.types";
 import { getLiveAttendance } from "@/services/attendance.service";
 import { Table, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore } from "@/store/auth.store";
+import { isAdminRole } from "@/utilis/roleUtils";
 
 const AttendanceLive = () => {
     const { user } = useAuthStore();
-    const isAdmin = ["super_admin", "company_admin"].includes(user?.role?.name ?? "");
+    const isAdmin = isAdminRole(user?.role?.name);
 
     const [attendances, setAttendances] = React.useState<Attendance[]>([]);
     const [loading, setLoading] = React.useState(false);

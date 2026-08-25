@@ -49,14 +49,13 @@ import {
 } from "@/services/holiday.service";
 
 import { useAuthStore } from "@/store/auth.store";
+import { isEmployeeRole } from "@/utilis/roleUtils";
 
 const HolidayPage = () => {
     const { user } = useAuthStore();
 
-    const roleName = user?.role?.name ?? "";
-
     // Employee holiday manage nahi karega
-    const canChangeStatus = ["Employee"].includes(roleName);
+    const canChangeStatus = !isEmployeeRole(user?.role?.name);
 
     const [holidays, setHolidays] = React.useState<HolidayType[]>(
         []
@@ -256,7 +255,7 @@ const HolidayPage = () => {
 
             <div className="flex items-center justify-end">
 
-                {!canChangeStatus && (
+                {canChangeStatus && (
                     <Button
                         size="sm"
                         variant="add"
@@ -392,7 +391,7 @@ const HolidayPage = () => {
                                     Status
                                 </TableHead>
 
-                                {!canChangeStatus && (
+                                {canChangeStatus && (
                                     <TableHead className="bg-muted sticky right-0">
                                         Actions
                                     </TableHead>
@@ -450,7 +449,7 @@ const HolidayPage = () => {
                                             Actions
                                         ========================= */}
 
-                                        {!canChangeStatus && (
+                                        {canChangeStatus && (
 
                                             <TableCell className="bg-card sticky right-0">
 

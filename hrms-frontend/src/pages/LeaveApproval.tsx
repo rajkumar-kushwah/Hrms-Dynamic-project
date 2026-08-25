@@ -12,11 +12,11 @@ import type { LeaveRequest } from "@/types/leave.types";
 import { getAllLeaveRequests, approveRejectLeave, revokeLeave } from "@/services/leaveRequest.service";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth.store";
+import { isEmployeeRole } from "@/utilis/roleUtils";
 
 const LeaveApproval = () => {
     const { user } = useAuthStore();
-    const RoleName = user?.role?.name.toLowerCase() ?? "";
-    const isEmployee = RoleName === "employee";
+    const isEmployee = isEmployeeRole(user?.role?.name);
 
 
     const [leaves, setLeaves] = React.useState<LeaveRequest[]>([]);

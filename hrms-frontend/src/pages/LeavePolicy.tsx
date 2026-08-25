@@ -11,12 +11,12 @@ import { toast } from "sonner";
 import type { LeaveType } from "@/types/leave.types";
 import { getLeaveTypes, createLeaveType, updateLeaveType, deleteLeaveType } from "@/services/leaveType.service";
 import { useAuthStore } from "@/store/auth.store";
+import { isEmployeeRole } from "@/utilis/roleUtils";
 // import HolidayPage from "@/pages/Holiday";
 
 const LeavePolicy = () => {
     const { user } = useAuthStore();
-    const RoleName = user?.role?.name ?? "";
-    const canChangeStatus = ["Employee"].includes(RoleName);
+    const canChangeStatus = !isEmployeeRole(user?.role?.name);
 
     const [leaveTypes, setLeaveTypes] = React.useState<LeaveType[]>([]);
     const [open, setOpen] = React.useState(false);
@@ -89,7 +89,7 @@ const LeavePolicy = () => {
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-end">
-                {!canChangeStatus && (
+                {canChangeStatus && (
                     <Button size="sm" variant="add" onClick={() => setOpen(true)}>
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Add Leave Type
@@ -153,7 +153,7 @@ const LeavePolicy = () => {
                                             {lt.isActive ? "Active" : "Inactive"}
                                         </Badge>
                                     </TableCell>
-                                    {!canChangeStatus && (
+                                    {canChangeStatus && (
                                         <TableCell className="sticky right-0 bg-card">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
