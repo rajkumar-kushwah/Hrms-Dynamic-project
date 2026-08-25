@@ -117,7 +117,7 @@ export function NavUser() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground border border-transparent hover:border-[var(--logo-green)]"
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user?.avatar || ""} alt={user?.name || "User"} />
@@ -131,7 +131,9 @@ export function NavUser() {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-fit"
+            className="w-fit 
+            [&_[data-slot=dropdown-menu-item]:hover]:bg-[var(--logo-green)] border border-transparent
+            [&_[data-slot=dropdown-menu-item]:hover]:text-[#000]"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
@@ -146,7 +148,7 @@ export function NavUser() {
                   <span className="truncate font-medium">{user.name}  </span>
                   {/* {user?.company?.name ?? ""} */}
                   <span className="truncate text-xs text-muted-foreground">
-                     
+
                   </span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>

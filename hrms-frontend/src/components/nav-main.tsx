@@ -82,7 +82,7 @@ export function NavMain() {
 
   const visibleModules = permissions
     .filter((p) => p.canView && p.module.parentId === null)
-    .sort((a, b) => a.module.order - b.module.order); 
+    .sort((a, b) => a.module.order - b.module.order);
 
   return (
     <SidebarGroup>
@@ -99,7 +99,8 @@ export function NavMain() {
           const isParenttActive =
             location.pathname === mod.url ||
             children.some((cp) => location.pathname === cp.module.url);
-         // NavMain mein temporarily add karo
+
+          // NavMain mein temporarily add karo
           return (
             <Collapsible
               key={mod.name}
@@ -109,10 +110,16 @@ export function NavMain() {
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={mod.displayName} isActive={isParenttActive} {...(children.length === 0 && { asChild: true })} className="hover:bg-[var(--logo-green)] data-[active=true]:bg-[var(--logo-green)]">
+                  <SidebarMenuButton tooltip={mod.displayName} isActive={isParenttActive} {...(children.length === 0 && { asChild: true })} className={`
+            !transition-none
+    ${isParenttActive
+                      ? "!bg-[var(--logo-green)] !text-[#000]"
+                      : "text-sidebar-foreground hover:!bg-[var(--logo-green)] hover:!text-[#000]"
+                    }
+  `}>
                     {children.length === 0 ? (
                       //  Children nahi — directly Link
-                      <Link to={mod.url ?? "#"} className="flex items-center gap-2 w-full">
+                      <Link to={mod.url ?? "#"} className="flex items-center gap-2 w-full text-inherit">
                         {iconMap[mod.icon ?? ""]}
                         <span>{mod.displayName}</span>
                       </Link>
@@ -135,8 +142,14 @@ export function NavMain() {
 
                         return (
                           <SidebarMenuSubItem key={cp.module.name}>
-                            <SidebarMenuSubButton asChild isActive={isSubActive} className="hover:bg-[var(--logo-green)] data-[active=true]:bg-[var(--logo-green)]">
-                              <Link to={cp.module.url ?? "#"}>
+                            <SidebarMenuSubButton asChild isActive={isSubActive} className={`
+                                  !transition-none
+                                  ${isSubActive
+                                ? "!bg-[var(--logo-green)] !text-[#000]"
+                                : "text-sidebar-foreground hover:!bg-[var(--logo-green)] hover:!text-[#000]"
+                              }
+                            `}>
+                              <Link to={cp.module.url ?? "#"} className="text-inherit">
                                 <span>{cp.module.displayName}</span>
                               </Link>
                             </SidebarMenuSubButton>
