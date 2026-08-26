@@ -98,6 +98,14 @@ export const employeeSchema = z.object({
         .min(2, "Designation must be at least 2 characters")
         .max(100, "Designation must not exceed 100 characters"),
 
+    grossSalary: z
+        .number({
+            message: "Gross salary is required",
+        })
+        .positive("Gross salary must be greater than 0")
+        .max(100000000, "Gross salary is too large")
+        .optional(),
+
     joiningDate: z
         .string()
         .min(1, "Joining date is required"),
