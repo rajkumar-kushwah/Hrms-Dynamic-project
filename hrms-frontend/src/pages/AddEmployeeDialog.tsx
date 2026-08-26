@@ -17,11 +17,9 @@ import type { Role } from "@/types/role.types";
 import { useAuthStore } from "@/store/auth.store";
 import { employeeSchema } from "@/validation/employee.validation";
 import { isAdminRole } from "@/utilis/roleUtils";
-
-// interface Role {
-//   id: number;
-//   name: string;
-// }
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 const fieldTabMap: Record<string, string> = {
     name: "basic",
@@ -92,7 +90,8 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
     const [errors, setErrors] = React.useState<
         Partial<Record<keyof CreateEmployeePayload, string>>
     >({});
-
+    const [isPhoneValid, setIsPhoneValid] = React.useState(false);
+    const [isEmergencyPhoneValid, setIsEmergencyPhoneValid] = React.useState(false);
     // const isSuperAdmin = user?.role?.name === "super_admin";
     const isCompanyAdmin = isAdminRole(user?.role?.name);
 
@@ -104,6 +103,14 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
     React.useEffect(() => {
         if (open) {
             loadDropdownData();
+            setIsPhoneValid(
+                !!editEmployee?.phone && isValidPhoneNumber(editEmployee.phone)
+            );
+
+            setIsEmergencyPhoneValid(
+                !!editEmployee?.emergencyContactPhone &&
+                isValidPhoneNumber(editEmployee.emergencyContactPhone)
+            );
             if (isEditeMode && editEmployee) {
                 setForm({
                     ...initialForm,
@@ -145,6 +152,8 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                 });
             } else {
                 setForm(initialForm);
+                setIsPhoneValid(false);
+                setIsEmergencyPhoneValid(false);
             }
         }
     }, [open, editEmployee]);
@@ -441,10 +450,30 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                             </div>
                             <div>
                                 <Label>Phone</Label>
-                                <Input name="phone" value={form.phone} onChange={handleChange} placeholder="phone" />
+                                {/* <Input name="phone" value={form.phone} onChange={handleChange} placeholder="phone" /> */}
+                                <PhoneInput
+                                    value={form.phone}
+                                    onChange={(value) => {
+                                        handleSelectChange("phone", value || "")
+                                        setIsPhoneValid(!!value && isValidPhoneNumber(value))
+                                    }}
+                                    placeholder="Enter phone number"
+                                    defaultCountry="IN"
+                                    international
+                                    withCountryCallingCode
+                                    numberInputProps={{
+                                        className:
+                                            "h-9 w-full bg-[var(--themePrimary)]/5 focus-visible:border-[var(--themePrimary)] focus-visible:border-[var(--themePrimary)] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none placeholder:text-muted-foreground",
+                                    }}
+                                />
                                 {errors.phone && (
-                                    <p className="mt-1 text-sm text-red-500">
-                                        {errors.phone}
+                                    <p className="mt-1 text-sm text-red-500 flex gap-2 items-center">
+                                        <XCircle className="h-4 w-4 text-red-600" /> {errors.phone}
+                                    </p>
+                                )}
+                                {isPhoneValid && (
+                                    <p className="mt-1 text-sm text-green-600 flex gap-2 items-center">
+                                        <CheckCircle2 className="h-4 w-4 text-green-600" /> Valid phone number
                                     </p>
                                 )}
                             </div>
@@ -475,9 +504,40 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <div className="flex-1">
+                                {/* <div className="flex-1">
                                     <Label>Blood Group</Label>
                                     <Input name="bloodGroup" placeholder="e.g. O+" value={form.bloodGroup} onChange={handleChange} />
+                                    {errors.bloodGroup && (
+                                        <p className="mt-1 text-sm text-red-500">
+                                        {errors.bloodGroup}
+                                        </p>
+                                        )}
+                                        </div> */}
+                                <div className="flex-1">
+                                    <Label>Blood Group</Label>
+
+                                    <Select
+                                        value={form.bloodGroup}
+                                        onValueChange={(value) =>
+                                            handleSelectChange("bloodGroup", value)
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Blood Group" />
+                                        </SelectTrigger>
+
+                                        <SelectContent position="popper" align="start">
+                                            <SelectItem value="A+">A+</SelectItem>
+                                            <SelectItem value="A-">A-</SelectItem>
+                                            <SelectItem value="B+">B+</SelectItem>
+                                            <SelectItem value="B-">B-</SelectItem>
+                                            <SelectItem value="AB+">AB+</SelectItem>
+                                            <SelectItem value="AB-">AB-</SelectItem>
+                                            <SelectItem value="O+">O+</SelectItem>
+                                            <SelectItem value="O-">O-</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+
                                     {errors.bloodGroup && (
                                         <p className="mt-1 text-sm text-red-500">
                                             {errors.bloodGroup}
@@ -525,10 +585,39 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                                 </div>
                                 <div className="flex-1">
                                     <Label>Emergency Contact Phone</Label>
-                                    <Input name="emergencyContactPhone" value={form.emergencyContactPhone} onChange={handleChange} />
+
+                                    <PhoneInput
+                                        value={form.emergencyContactPhone}
+                                        onChange={(value) => {
+                                            const phone = value || "";
+
+                                            handleSelectChange("emergencyContactPhone", phone);
+
+                                            setIsEmergencyPhoneValid(
+                                                !!phone && isValidPhoneNumber(phone)
+                                            );
+                                        }}
+                                        placeholder="Enter emergency phone number"
+                                        defaultCountry="IN"
+                                        international
+                                        withCountryCallingCode
+                                        numberInputProps={{
+                                            className:
+                                                "h-9 w-full bg-[var(--themePrimary)]/5 focus-visible:border-[var(--themePrimary)] rounded-md border border-input px-3 py-2 text-sm shadow-sm outline-none placeholder:text-muted-foreground",
+                                        }}
+                                    />
+
                                     {errors.emergencyContactPhone && (
-                                        <p className="mt-1 text-sm text-red-500">
+                                        <p className="mt-1 flex items-center gap-2 text-sm text-red-500">
+                                            <XCircle className="h-4 w-4 text-red-600" />
                                             {errors.emergencyContactPhone}
+                                        </p>
+                                    )}
+
+                                    {isEmergencyPhoneValid && !errors.emergencyContactPhone && (
+                                        <p className="mt-1 flex items-center gap-2 text-sm text-green-600">
+                                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                            Valid phone number
                                         </p>
                                     )}
                                 </div>

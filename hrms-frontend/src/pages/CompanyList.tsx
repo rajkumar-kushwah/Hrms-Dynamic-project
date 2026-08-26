@@ -13,6 +13,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { useAuthStore } from '@/store/auth.store';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { isCompanyAdminRole, isSuperAdminRole } from '@/utilis/roleUtils';
+import PhoneInput, {
+  isValidPhoneNumber,
+} from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 function CompanyList() {
   const { user } = useAuthStore();
@@ -26,6 +31,9 @@ function CompanyList() {
   const [open, setOpen] = React.useState(false);
   const [assignOpen, setAssignOpen] = React.useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = React.useState<string>("");
+
+  const [isPhoneValid, setIsPhoneValid] = React.useState(false);
+  const [isEditPhoneValid, setIsEditPhoneValid] = React.useState(false);
 
   const [form, setForm] = React.useState<CreateCompanyPayload>({
     name: "",
@@ -95,12 +103,19 @@ function CompanyList() {
 
   const handleEdit = async () => {
     if (!selectedCompany) return;
+
+    if (editForm.phone && !isValidPhoneNumber(editForm.phone)) {
+      toast.error("Invalid phone number");
+      return;
+    }
     try {
       await updateCompany(selectedCompany.id, editForm);
       toast.success("Company updated successfully");
       setCompanies((prev) => prev.map((c) => c.id === selectedCompany.id ? { ...c, ...editForm } : c));
       setEditOpen(false);
+      setEditOpen(false);
       setSelectedCompany(null);
+      setIsEditPhoneValid(false);
     } catch (err: any) {
       const message =
         err?.message || "Failed to update company";
@@ -168,6 +183,10 @@ function CompanyList() {
       toast.error("Invalid GST Number format");
       return;
     }
+    if (form.phone && !isValidPhoneNumber(form.phone)) {
+      toast.error("Invalid phone number");
+      return;
+    }
 
     try {
       const res = await createCompany(form);
@@ -184,6 +203,7 @@ function CompanyList() {
         maxBranches: 1,
         maxEmployees: 10,
       });
+      setIsPhoneValid(false);
       setOpen(false);
     } catch (err: any) {
       const message =
@@ -280,9 +300,50 @@ function CompanyList() {
                     <Label>Email</Label>
                     <Input type="email" placeholder="name@example.com" name='email' value={form.email} onChange={handleChange} />
                   </div>
-                  <div className='flex-1'>
+                  {/* <div className='flex-1'>
                     <Label>Phone</Label>
                     <Input type="text" placeholder="Phone" name='phone' value={form.phone} onChange={handleChange} />
+                  </div> */}
+                  <div className="flex-1">
+                    <Label>Phone</Label>
+
+                    <PhoneInput
+                      value={form.phone}
+                      onChange={(value) => {
+                        const phone = value || "";
+
+                        setForm((prev) => ({
+                          ...prev,
+                          phone,
+                        }));
+
+                        setIsPhoneValid(
+                          !!phone && isValidPhoneNumber(phone)
+                        );
+                      }}
+                      placeholder="Enter phone number"
+                      defaultCountry="IN"
+                      international
+                      withCountryCallingCode
+                      numberInputProps={{
+                        className:
+                          "h-9 w-full bg-[var(--themePrimary)]/5 focus-visible:border-[var(--themePrimary)] rounded-md border border-input px-3 py-2 text-sm shadow-sm outline-none placeholder:text-muted-foreground",
+                      }}
+                    />
+
+                    {form.phone && !isPhoneValid && (
+                      <p className="mt-1 flex items-center gap-2 text-sm text-red-500">
+                        <XCircle className="h-4 w-4 text-red-600" />
+                        Invalid phone number
+                      </p>
+                    )}
+
+                    {isPhoneValid && (
+                      <p className="mt-1 flex items-center gap-2 text-sm text-green-600">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        Valid phone number
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className='flex items-center w-full gap-2'>
@@ -359,7 +420,44 @@ function CompanyList() {
               </div>
               <div className="flex-1">
                 <Label>Phone</Label>
-                <Input name="phone" value={editForm.phone} onChange={handleEditChange} placeholder='Phone' />
+
+                <PhoneInput
+                  value={editForm.phone || ""}
+                  onChange={(value) => {
+                    const phone = value || "";
+
+                    setEditForm((prev) => ({
+                      ...prev,
+                      phone,
+                    }));
+
+                    setIsEditPhoneValid(
+                      !!phone && isValidPhoneNumber(phone)
+                    );
+                  }}
+                  placeholder="Enter phone number"
+                  defaultCountry="IN"
+                  international
+                  withCountryCallingCode
+                  numberInputProps={{
+                    className:
+                      "h-9 w-full bg-[var(--themePrimary)]/5 focus-visible:border-[var(--themePrimary)] rounded-md border border-input px-3 py-2 text-sm shadow-sm outline-none placeholder:text-muted-foreground",
+                  }}
+                />
+
+                {editForm.phone && !isEditPhoneValid && (
+                  <p className="mt-1 flex items-center gap-2 text-sm text-red-500">
+                    <XCircle className="h-4 w-4 text-red-600" />
+                    Invalid phone number
+                  </p>
+                )}
+
+                {isEditPhoneValid && (
+                  <p className="mt-1 flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Valid phone number
+                  </p>
+                )}
               </div>
             </div>
             <div>
@@ -510,12 +608,25 @@ function CompanyList() {
                         <DropdownMenuItem
                           onClick={() => {
                             setSelectedCompany(company);
+
                             setEditForm({
-                              ...company,
+                              name: company.name || "",
+                              email: company.email || "",
+                              phone: company.phone || "",
+                              website: company.website || "",
+                              address: company.address || "",
+                              gstNumber: company.gstNumber || "",
                             });
+
+                            setIsEditPhoneValid(
+                              !!company.phone && isValidPhoneNumber(company.phone)
+                            );
+
                             setEditOpen(true);
                           }}
-                        >Edit</DropdownMenuItem>
+                        >
+                          Edit
+                        </DropdownMenuItem>
                         {!isCompanyAdmin && (
                           <>
                             <DropdownMenuItem

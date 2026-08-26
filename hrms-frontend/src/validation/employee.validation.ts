@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
 export const employeeSchema = z.object({
     // TAB 1 - Basic
@@ -40,7 +41,10 @@ export const employeeSchema = z.object({
 
     phone: z
         .string()
-        .regex(/^[6-9]\d{9}$/, "Invalid phone number"),
+        .refine(
+            (value) => isValidPhoneNumber(value),
+            "Invalid phone number"
+        ),
 
     // TAB 2 - Personal
     dateOfBirth: z
@@ -82,7 +86,10 @@ export const employeeSchema = z.object({
 
     emergencyContactPhone: z
         .string()
-        .regex(/^[6-9]\d{9}$/, "Invalid emergency contact phone"),
+        .refine(
+            (value) => isValidPhoneNumber(value),
+            "Invalid emergency contact phone number"
+        ),
 
     // TAB 3 - Employment
     designation: z
