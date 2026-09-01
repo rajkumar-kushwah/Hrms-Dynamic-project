@@ -192,6 +192,7 @@ model Branch {
   address      String?
   phone        String?
   email        String?
+  countryCode  String?
   city         String?
   state        String?
   pincode      String?
@@ -365,12 +366,11 @@ model Holiday {
   @@unique([companyId, date])
 }
 
-
 model Session {
   sid    String   @id
   sess   Json
   expire DateTime
 
-  @@map("sessions")
   @@index([expire])
+  @@map("sessions")
 }

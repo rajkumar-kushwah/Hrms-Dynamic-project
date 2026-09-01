@@ -10,6 +10,7 @@ export const createBranch = async (
         address?: string;
         phone?: string;
         email?: string;
+        countryCode: string;
         city?: string;
         state?: string;
         pincode?: string;
@@ -101,6 +102,7 @@ export const updateBranch = async (
         address?: string;
         phone?: string;
         email?: string;
+        countryCode?: string;
         city?: string;
         state?: string;
         pincode?: string;

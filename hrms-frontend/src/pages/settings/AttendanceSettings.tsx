@@ -102,7 +102,7 @@ const Settings = () => {
         <div className="flex flex-col gap-4 max-w-2xl">
 
             {/* Attendance Settings */}
-            <Card>
+            <Card className="transition-none duration-0 ease-none hover:opacity-100 hover:scale-100 active:scale-100">
                 <CardHeader>
                     <CardTitle>Attendance Settings</CardTitle>
                     <CardDescription>

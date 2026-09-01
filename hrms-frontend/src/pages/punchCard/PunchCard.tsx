@@ -124,7 +124,7 @@ function PunchCard() {
     return (
 
         <div>
-            <Card className='p-4 border rounded-xl'>
+            <Card className='p-4 border rounded-xl transition-none duration-0 ease-none hover:opacity-100 hover:scale-100 active:scale-100'>
                 <CardContent className="p-0 flex flex-col gap-4" >
                     {/* Live clock */}
                     <div className='flex items-center justify-between' >

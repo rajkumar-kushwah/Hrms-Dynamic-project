@@ -18,6 +18,7 @@ import PhoneInput, {
 } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { companySchema, assignAdminSchema } from "@/validation/company.validation";
 
 function CompanyList() {
   const { user } = useAuthStore();
@@ -68,6 +69,30 @@ function CompanyList() {
   const [dangerOpen, setDangerOpen] = React.useState(false);
   const [confirmText, setConfirmText] = React.useState("");
 
+  const [errors, setErrors] = React.useState<{
+    name?: string;
+    email?: string;
+    phone?: string;
+    website?: string;
+    address?: string;
+    gstNumber?: string;
+  }>({});
+
+  const [editErrors, setEditErrors] = React.useState<{
+    name?: string;
+    email?: string;
+    phone?: string;
+    website?: string;
+    address?: string;
+    gstNumber?: string;
+  }>({});
+
+  const [adminErrors, setAdminErrors] = React.useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+  }>({});
+
   React.useEffect(() => {
     loadCompanies();
   }, []);
@@ -89,12 +114,52 @@ function CompanyList() {
 
   };
 
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setForm({ ...form, [e.target.name]: e.target.value });
+  // };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    const fieldSchema = companySchema.shape[
+      name as keyof typeof companySchema.shape
+    ];
+
+    const result = fieldSchema.safeParse(value);
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: result.success
+        ? undefined
+        : result.error.issues[0]?.message,
+    }));
   };
 
   const handleAdminChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAdminForm({ ...adminForm, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setAdminForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    const fieldSchema =
+      assignAdminSchema.shape[
+      name as keyof typeof assignAdminSchema.shape
+      ];
+
+    const result = fieldSchema.safeParse(value);
+
+    setAdminErrors((prev) => ({
+      ...prev,
+      [name]: result.success
+        ? undefined
+        : result.error.issues[0]?.message,
+    }));
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,10 +169,35 @@ function CompanyList() {
   const handleEdit = async () => {
     if (!selectedCompany) return;
 
-    if (editForm.phone && !isValidPhoneNumber(editForm.phone)) {
-      toast.error("Invalid phone number");
+    const result = companySchema.safeParse({
+      name: editForm.name,
+      email: editForm.email,
+      phone: editForm.phone,
+      website: editForm.website,
+      address: editForm.address,
+      gstNumber: editForm.gstNumber,
+    });
+
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors;
+
+      setEditErrors({
+        name: fieldErrors.name?.[0],
+        email: fieldErrors.email?.[0],
+        phone: fieldErrors.phone?.[0],
+        website: fieldErrors.website?.[0],
+        address: fieldErrors.address?.[0],
+        gstNumber: fieldErrors.gstNumber?.[0],
+      });
+
       return;
     }
+
+    setEditErrors({});
+    // if (editForm.phone && !isValidPhoneNumber(editForm.phone)) {
+    //   toast.error("Invalid phone number");
+    //   return;
+    // }
     try {
       await updateCompany(selectedCompany.id, editForm);
       toast.success("Company updated successfully");
@@ -174,19 +264,45 @@ function CompanyList() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name) {
-      toast.error("Company name is required");
+    // if (!form.name) {
+    //   toast.error("Company name is required");
+    //   return;
+    // }
+
+    const result = companySchema.safeParse({
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      website: form.website,
+      address: form.address,
+      gstNumber: form.gstNumber,
+    });
+
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors;
+
+      setErrors({
+        name: fieldErrors.name?.[0],
+        email: fieldErrors.email?.[0],
+        phone: fieldErrors.phone?.[0],
+        website: fieldErrors.website?.[0],
+        address: fieldErrors.address?.[0],
+        gstNumber: fieldErrors.gstNumber?.[0],
+      });
+
       return;
     }
 
-    if (form.gstNumber && !validateGST(form.gstNumber)) {
-      toast.error("Invalid GST Number format");
-      return;
-    }
-    if (form.phone && !isValidPhoneNumber(form.phone)) {
-      toast.error("Invalid phone number");
-      return;
-    }
+    setErrors({});
+
+    // if (form.gstNumber && !validateGST(form.gstNumber)) {
+    //   toast.error("Invalid GST Number format");
+    //   return;
+    // }
+    // if (form.phone && !isValidPhoneNumber(form.phone)) {
+    //   toast.error("Invalid phone number");
+    //   return;
+    // }
 
     try {
       const res = await createCompany(form);
@@ -214,10 +330,26 @@ function CompanyList() {
 
   const handleAssignAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adminForm.name || !adminForm.email || !adminForm.password) {
-      toast.error("All fields are required");
+    // if (!adminForm.name || !adminForm.email || !adminForm.password) {
+    //   toast.error("All fields are required");
+    //   return;
+    // }
+
+    const result = assignAdminSchema.safeParse(adminForm);
+
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors;
+
+      setAdminErrors({
+        name: fieldErrors.name?.[0],
+        email: fieldErrors.email?.[0],
+        password: fieldErrors.password?.[0],
+      });
+
       return;
     }
+
+    setAdminErrors({});
     try {
       await assignCompanyAdmin(selectedCompanyId, adminForm);
       toast.success("Company Admin assigned successfully!");
@@ -293,12 +425,22 @@ function CompanyList() {
                   <div className='flex-1'>
                     <Label>Company Name *</Label>
                     <Input type="text" placeholder="Company Name" name='name' value={form.name} onChange={handleChange} />
+                    {errors.name && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.name}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className='flex items-center w-full gap-2'>
                   <div className='flex-1'>
                     <Label>Email</Label>
                     <Input type="email" placeholder="name@example.com" name='email' value={form.email} onChange={handleChange} />
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.email}
+                      </p>
+                    )}
                   </div>
                   {/* <div className='flex-1'>
                     <Label>Phone</Label>
@@ -352,7 +494,12 @@ function CompanyList() {
                     <Input type="text" placeholder="e.g. 07AABCS1234A1Z5" maxLength={15} name='gstNumber' value={form.gstNumber} onChange={handleChange}
                       className={form.gstNumber && !validateGST(form.gstNumber) ? "border-red-500 focus-visible:ring-red-500" : ""}
                     />
-                    {form.gstNumber && !validateGST(form.gstNumber) && <p className="text-red-500 text-xs mt-1">Invalid GST Number format</p>}
+                    {/* {form.gstNumber && !validateGST(form.gstNumber) && <p className="text-red-500 text-xs mt-1">Invalid GST Number format</p>} */}
+                    {errors.gstNumber && (
+                      <p className="mt-1 text-sm text-red-500">
+                        {errors.gstNumber}
+                      </p>
+                    )}
                   </div>
                   {/* <div className='flex-1'>
                     <Label>Subscription Plan</Label>
@@ -362,10 +509,20 @@ function CompanyList() {
                 <div>
                   <Label>Website</Label>
                   <Input type="url" placeholder="https://example.com" name='website' value={form.website} onChange={handleChange} />
+                  {errors.website && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.website}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label>Address</Label>
                   <Input type="text" placeholder="Company Address" name='address' value={form.address} onChange={handleChange} />
+                  {errors.address && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.address}
+                    </p>
+                  )}
                 </div>
                 <Button variant="add" className='cursor-pointer' onClick={handleSubmit}>
                   Submit
@@ -386,14 +543,29 @@ function CompanyList() {
           <div>
             <Label>Name</Label>
             <Input type="text" placeholder="Admin Name" name="name" value={adminForm.name} onChange={handleAdminChange} />
+            {adminErrors.name && (
+              <p className="mt-1 text-sm text-red-500">
+                {adminErrors.name}
+              </p>
+            )}
           </div>
           <div>
             <Label>Email</Label>
             <Input type="email" placeholder="admin@company.com" name="email" value={adminForm.email} onChange={handleAdminChange} />
+            {adminErrors.email && (
+              <p className="mt-1 text-sm text-red-500">
+                {adminErrors.email}
+              </p>
+            )}
           </div>
           <div>
             <Label>Password</Label>
             <Input type="password" placeholder="Password" name="password" value={adminForm.password} onChange={handleAdminChange} />
+            {adminErrors.password && (
+              <p className="mt-1 text-sm text-red-500">
+                {adminErrors.password}
+              </p>
+            )}
           </div>
           <Button variant='add' onClick={handleAssignAdmin}>
             Assign Admin
@@ -412,11 +584,21 @@ function CompanyList() {
             <div>
               <Label>Company Name</Label>
               <Input name="name" value={editForm.name} onChange={handleEditChange} placeholder='Company Name' />
+              {editErrors.name && (
+                <p className="mt-1 text-sm text-red-500">
+                  {editErrors.name}
+                </p>
+              )}
             </div>
             <div className="flex gap-2">
               <div className="flex-1">
                 <Label>Email</Label>
                 <Input name="email" value={editForm.email} onChange={handleEditChange} placeholder='name@example.com' />
+                {editErrors.email && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {editErrors.email}
+                  </p>
+                )}
               </div>
               <div className="flex-1">
                 <Label>Phone</Label>
@@ -463,14 +645,29 @@ function CompanyList() {
             <div>
               <Label>GST Number</Label>
               <Input name="gstNumber" value={editForm.gstNumber} onChange={handleEditChange} placeholder='GST Number' />
+              {editErrors.gstNumber && (
+                <p className="mt-1 text-sm text-red-500">
+                  {editErrors.gstNumber}
+                </p>
+              )}
             </div>
             <div>
               <Label>Website</Label>
               <Input name="website" value={editForm.website} onChange={handleEditChange} placeholder='https://example.com' />
+              {editErrors.website && (
+                <p className="mt-1 text-sm text-red-500">
+                  {editErrors.website}
+                </p>
+              )}
             </div>
             <div>
               <Label>Address</Label>
               <Input name="address" value={editForm.address} onChange={handleEditChange} placeholder='Company Address' />
+              {editErrors.address && (
+                <p className="mt-1 text-sm text-red-500">
+                  {editErrors.address}
+                </p>
+              )}
             </div>
             <Button variant='add' onClick={handleEdit}>Update Company</Button>
           </div>

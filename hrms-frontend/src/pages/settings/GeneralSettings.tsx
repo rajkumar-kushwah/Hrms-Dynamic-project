@@ -61,7 +61,7 @@ const GeneralSettings = () => {
     }
 
     return (
-        <Card>
+        <Card className="transition-none duration-0 ease-none hover:opacity-100 hover:scale-100  active:scale-100">
             <CardHeader>
                 <CardTitle>General Settings</CardTitle>
                 <CardDescription>Manage your company's basic information</CardDescription>

@@ -6,20 +6,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertTriangle, MapPin, MoreVertical, PlusIcon } from "lucide-react";
+import { AlertTriangle, CheckCircle2, MapPin, MoreVertical, PlusIcon, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
-import type { Branch, CreateBranchPayload } from "@/types/branch.types";
+import type { Branch, City, State, Country, Pincode, CreateBranchPayload } from "@/types/branch.types";
 import { getBranches, createBranch, updateBranch, permanentDeleteBranch } from "@/services/branch.service";
 import LocationPicker from "@/pages/LocationPicker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { isSuperAdminRole } from "@/utilis/roleUtils";
+import {
+    getCountries,
+    getStates,
+    getCities,
+    getPincodes,
+} from "@/services/location.service";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { branchSchema } from "@/validation/branch.validation";
 
 type EditForm = {
     name?: string;
     address?: string;
     phone?: string;
     email?: string;
+    countryCode?: string;
     city?: string;
     state?: string;
     pincode?: string;
@@ -52,11 +62,43 @@ const BranchList = () => {
     const [searchQuery, setSearchQuery] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState("all");
 
+    const [countries, setCountries] = React.useState<Country[]>([]);
+    const [states, setStates] = React.useState<State[]>([]);
+    const [cities, setCities] = React.useState<City[]>([]);
+    const [pincodes, setPincodes] = React.useState<Pincode[]>([]);
+
+    const [selectedCountry, setSelectedCountry] = React.useState("");
+    const [selectedState, setSelectedState] = React.useState("");
+    const [selectedCity, setSelectedCity] = React.useState("");
+
+    const [isPhoneValid, setIsPhoneValid] = React.useState(false);
+    const [phoneError, setPhoneError] = React.useState("");
+
+    const [isEditPhoneValid, setIsEditPhoneValid] = React.useState(false);
+    const [editPhoneError, setEditPhoneError] = React.useState("");
+
+    const [errors, setErrors] = React.useState<{
+        name?: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+        managerName?: string;
+    }>({});
+
+    const [editErrors, setEditErrors] = React.useState<{
+        name?: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+        managerName?: string;
+    }>({});
+
     const [form, setForm] = React.useState<CreateBranchPayload>({
         name: "",
         address: "",
         phone: "",
         email: "",
+        countryCode: "",
         city: "",
         state: "",
         pincode: "",
@@ -67,7 +109,192 @@ const BranchList = () => {
 
     React.useEffect(() => {
         loadBranches();
+        loadCountries();
     }, []);
+
+    const loadCountries = async () => {
+        try {
+            const res = await getCountries();
+            setCountries(res.data);
+            console.log("COUNTRIES:", res);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to load countries");
+        }
+    };
+
+    const handleCountryChange = async (countryCode: string) => {
+        setSelectedCountry(countryCode);
+
+        // purane selections clear
+        setSelectedState("");
+        setSelectedCity("");
+
+        setStates([]);
+        setCities([]);
+        setPincodes([]);
+
+        setForm((prev) => ({
+            ...prev,
+            countryCode,
+            state: "",
+            city: "",
+            pincode: "",
+        }));
+
+        try {
+            const res = await getStates(countryCode);
+
+            console.log("STATES:", res);
+
+            setStates(res.data);
+        } catch (error) {
+            toast.error("Failed to load states");
+        }
+    };
+
+    const handleStateChange = async (stateCode: string) => {
+        setSelectedState(stateCode);
+
+        setSelectedCity("");
+        setCities([]);
+        setPincodes([]);
+
+        const selectedStateData = states.find(
+            (state) => state.iso2 === stateCode
+        );
+
+        setForm((prev) => ({
+            ...prev,
+            state: selectedStateData?.name || "",
+            city: "",
+            pincode: "",
+        }));
+
+        try {
+            const res = await getCities(
+                selectedCountry,
+                stateCode
+            );
+
+            console.log("CITIES:", res);
+
+            setCities(res.data);
+        } catch (error) {
+            toast.error("Failed to load cities");
+        }
+    };
+
+    // const handleCityChange = async (city: string) => {
+    //     setSelectedCity(city);
+
+    //     setForm((prev) => ({
+    //         ...prev,
+    //         city,
+    //         pincode: "",
+    //     }));
+
+    //     setPincodes([]);
+
+    //     try {
+    //         const res = await getPincodes(city);
+
+    //         console.log("PIN CODES:", res);
+
+    //         setPincodes(res.data);
+    //     } catch (error) {
+    //         toast.error("Failed to load pincodes");
+    //     }
+    // };
+
+    const handleCityChange = async (city: string) => {
+        setSelectedCity(city);
+
+        setForm((prev) => ({
+            ...prev,
+            city,
+            pincode: "",
+        }));
+
+        setPincodes([]);
+
+        try {
+            const res = await getPincodes(city);
+
+            console.log("PIN CODES:", res);
+
+            const uniquePincodes: Pincode[] = Array.from(
+                new Map<string, Pincode>(
+                    res.data.map((item: Pincode) => [
+                        item.Pincode,
+                        item,
+                    ])
+                ).values()
+            );
+
+            setPincodes(uniquePincodes);
+        } catch (error) {
+            toast.error("Failed to load pincodes");
+        }
+    };
+
+    const loadEditLocationData = async (branch: Branch) => {
+        try {
+            // Country
+            setSelectedCountry(branch.countryCode || "");
+
+            if (!branch.countryCode) return;
+
+            // States
+            const stateRes = await getStates(branch.countryCode);
+            const stateList = stateRes.data as State[];
+
+            setStates(stateList);
+
+            // Branch ka state name hai, API ko state iso2 chahiye
+            const selectedStateData = stateList.find(
+                (state) =>
+                    state.name.trim().toLowerCase() ===
+                    (branch.state ?? "").trim().toLowerCase()
+            );
+
+            if (!selectedStateData) return;
+
+            setSelectedState(selectedStateData.iso2);
+
+            // Cities
+            const cityRes = await getCities(
+                branch.countryCode,
+                selectedStateData.iso2
+            );
+
+            const cityList = cityRes.data as City[];
+            setCities(cityList);
+
+            setSelectedCity(branch.city || "");
+
+            // Pincodes
+            if (branch.city) {
+                const pincodeRes = await getPincodes(branch.city);
+
+                const pincodeList = pincodeRes.data as Pincode[];
+
+                const uniquePincodes: Pincode[] = Array.from(
+                    new Map(
+                        pincodeList.map((item) => [
+                            item.Pincode,
+                            item,
+                        ])
+                    ).values()
+                );
+
+                setPincodes(uniquePincodes);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to load location data");
+        }
+    };
 
     const loadBranches = async () => {
         try {
@@ -78,12 +305,49 @@ const BranchList = () => {
         }
     };
 
+    // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     setForm({ ...form, [e.target.name]: e.target.value });
+    // };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        setForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+        const result = branchSchema.shape[
+            name as keyof typeof branchSchema.shape
+        ]?.safeParse(value);
+
+        setErrors((prev) => ({
+            ...prev,
+            [name]: result?.success ? undefined : result?.error.issues[0]?.message,
+        }));
     };
+    // const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    // };
 
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditForm({ ...editForm, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        setEditForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+        const result = branchSchema.shape[
+            name as keyof typeof branchSchema.shape
+        ].safeParse(value);
+
+        setEditErrors((prev) => ({
+            ...prev,
+            [name]: result.success
+                ? undefined
+                : result.error.issues[0]?.message,
+        }));
     };
 
     //  Filtered branches
@@ -104,11 +368,34 @@ const BranchList = () => {
     //  Create
     const handleSubmit = async () => {
         if (!form.name.trim()) { toast.error("Branch name is required"); return; }
+        const result = branchSchema.safeParse({
+            name: form.name,
+            email: form.email,
+            phone: form.phone,
+            address: form.address,
+            managerName: form.managerName,
+        });
+
+        if (!result.success) {
+            const fieldErrors = result.error.flatten().fieldErrors;
+
+            setErrors({
+                name: fieldErrors.name?.[0],
+                email: fieldErrors.email?.[0],
+                phone: fieldErrors.phone?.[0],
+                address: fieldErrors.address?.[0],
+                managerName: fieldErrors.managerName?.[0],
+            });
+
+            return;
+        }
+
+        setErrors({});
         try {
             const res = await createBranch(form);
             toast.success("Branch created successfully!");
             setBranches((prev) => [res.data.data, ...prev]);
-            setForm({ name: "", address: "", phone: "", email: "", city: "", state: "", pincode: "", managerName: "" });
+            setForm({ name: "", address: "", phone: "", email: "", countryCode: "", city: "", state: "", pincode: "", managerName: "" });
             setOpen(false);
         } catch (err: any) {
             toast.error(err?.message || "Failed to create branch");
@@ -120,6 +407,7 @@ const BranchList = () => {
         address: editForm.address,
         phone: editForm.phone,
         email: editForm.email,
+        countryCode: editForm.countryCode,
         city: editForm.city,
         state: editForm.state,
         pincode: editForm.pincode,
@@ -132,6 +420,30 @@ const BranchList = () => {
     //  Update
     const handleUpdate = async () => {
         if (!selectedBranch) return;
+        const result = branchSchema.safeParse({
+            name: editForm.name,
+            email: editForm.email,
+            phone: editForm.phone,
+            address: editForm.address,
+            managerName: editForm.managerName,
+        });
+
+        if (!result.success) {
+            const fieldErrors = result.error.flatten().fieldErrors;
+
+            setEditErrors({
+                name: fieldErrors.name?.[0],
+                email: fieldErrors.email?.[0],
+                phone: fieldErrors.phone?.[0],
+                address: fieldErrors.address?.[0],
+                managerName: fieldErrors.managerName?.[0],
+            });
+
+            return;
+        }
+
+        setEditErrors({});
+
         try {
             const res = await updateBranch(selectedBranch.id, payload);
 
@@ -236,38 +548,198 @@ const BranchList = () => {
                         <div>
                             <Label>Branch Name *</Label>
                             <Input type="text" name="name" placeholder="e.g. Delhi Branch" value={form.name} onChange={handleChange} />
+                            {errors.name && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
                         <div className="flex gap-2">
                             <div className="flex-1">
                                 <Label>Phone</Label>
-                                <Input type="tel" name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
+
+                                <PhoneInput
+                                    value={form.phone}
+                                    onChange={(value) => {
+                                        const phone = value || "";
+
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            phone,
+                                        }));
+
+                                        if (!phone) {
+                                            setPhoneError("");
+                                            setIsPhoneValid(false);
+                                            return;
+                                        }
+
+                                        const valid = isValidPhoneNumber(phone);
+
+                                        setIsPhoneValid(valid);
+                                        setPhoneError(valid ? "" : "Invalid phone number");
+                                    }}
+                                    placeholder="Enter phone number"
+                                    defaultCountry="IN"
+                                    international
+                                    withCountryCallingCode
+                                    countrySelectProps={{
+                                        className:
+                                            "dark:[color-scheme:dark] dark:bg-background dark:text-foreground",
+                                    }}
+                                    numberInputProps={{
+                                        className:
+                                            "h-9 w-full bg-[var(--themePrimary)]/5 focus-visible:border-[var(--themePrimary)] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none placeholder:text-muted-foreground",
+                                    }}
+                                />
+
+                                {/* Invalid */}
+                                {phoneError && (
+                                    <p className="mt-1 text-sm text-red-500 flex gap-2 items-center">
+                                        <XCircle className="h-4 w-4" />
+                                        {phoneError}
+                                    </p>
+                                )}
+
+                                {/* Valid */}
+                                {isPhoneValid && !phoneError && (
+                                    <p className="mt-1 text-sm text-green-600 flex gap-2 items-center">
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        Valid phone number
+                                    </p>
+                                )}
                             </div>
                             <div className="flex-1">
                                 <Label>Email</Label>
                                 <Input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} />
+                                {errors.email && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {errors.email}
+                                    </p>
+                                )}
                             </div>
                         </div>
+                        {/* Country */}
+                        <div>
+                            <Label>Country</Label>
+
+                            <Select
+                                value={selectedCountry}
+                                onValueChange={handleCountryChange}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select Country" />
+                                </SelectTrigger>
+
+                                <SelectContent position="popper">
+                                    {countries.map((country) => (
+                                        <SelectItem
+                                            key={country.iso2}
+                                            value={country.iso2}
+                                        >
+                                            {country.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* State + City + Pincode */}
                         <div className="flex gap-2">
-                            <div className="flex-1">
-                                <Label>City</Label>
-                                <Input type="text" name="city" placeholder="City" value={form.city} onChange={handleChange} />
-                            </div>
+
+                            {/* State */}
                             <div className="flex-1">
                                 <Label>State</Label>
-                                <Input type="text" name="state" placeholder="State" value={form.state} onChange={handleChange} />
+
+                                <Select
+                                    value={selectedState}
+                                    onValueChange={handleStateChange}
+                                    disabled={!selectedCountry}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select State" />
+                                    </SelectTrigger>
+
+                                    <SelectContent position="popper">
+                                        {states.map((state) => (
+                                            <SelectItem
+                                                key={state.iso2}
+                                                value={state.iso2}
+                                            >
+                                                {state.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
+
+                            {/* City */}
+                            <div className="flex-1">
+                                <Label>City</Label>
+
+                                <Select
+                                    value={selectedCity}
+                                    onValueChange={handleCityChange}
+                                    disabled={!selectedState}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select City" />
+                                    </SelectTrigger>
+
+                                    <SelectContent position="popper">
+                                        {cities.map((city) => (
+                                            <SelectItem
+                                                key={city.name}
+                                                value={city.name}
+                                            >
+                                                {city.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Pincode */}
                             <div className="flex-1">
                                 <Label>Pincode</Label>
-                                <Input type="number" name="pincode" placeholder="Pincode" value={form.pincode} onChange={handleChange} />
+
+                                <Select
+                                    value={form.pincode}
+                                    onValueChange={(value) =>
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            pincode: value,
+                                        }))
+                                    }
+                                    disabled={!selectedCity}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Pincode" />
+                                    </SelectTrigger>
+
+                                    <SelectContent position="popper">
+                                        {pincodes.map((pincode, index) => (
+                                            <SelectItem
+                                                key={`${pincode.Pincode}-${index}`}
+                                                value={pincode.Pincode}
+                                            >
+                                                {pincode.Pincode}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
+
                         </div>
                         <div>
                             <Label>Address</Label>
                             <Input type="text" name="address" placeholder="Full Address" value={form.address} onChange={handleChange} />
+                            {errors.address && <span className="text-red-500 text-xs">{errors.address}</span>}
                         </div>
                         <div>
                             <Label>Manager Name</Label>
                             <Input type="text" name="managerName" placeholder="Manager Name" value={form.managerName} onChange={handleChange} />
+                            {errors.managerName && <span className="text-red-500 text-xs">{errors.managerName}</span>}
                         </div>
                         <div>
                             <Label>Branch Location</Label>
@@ -317,40 +789,310 @@ const BranchList = () => {
                             <div>
                                 <Label>Branch Name</Label>
                                 <Input type="text" name="name" value={editForm.name ?? ""} onChange={handleEditChange} />
+                                {editErrors.name && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {editErrors.name}
+                                    </p>
+                                )}
                             </div>
                             <div className="flex gap-2">
                                 <div className="flex-1">
                                     <Label>Phone</Label>
-                                    <Input type="tel" name="phone" value={editForm.phone ?? ""} onChange={handleEditChange} />
+
+                                    <PhoneInput
+                                        value={editForm.phone ?? ""}
+                                        onChange={(value) => {
+                                            const phone = value || "";
+
+                                            setEditForm((prev) => ({
+                                                ...prev,
+                                                phone,
+                                            }));
+
+                                            if (!phone) {
+                                                setEditPhoneError("");
+                                                setIsEditPhoneValid(false);
+                                                return;
+                                            }
+
+                                            const valid = isValidPhoneNumber(phone);
+
+                                            setIsEditPhoneValid(valid);
+                                            setEditPhoneError(valid ? "" : "Invalid phone number");
+                                        }}
+                                        placeholder="Enter phone number"
+                                        defaultCountry="IN"
+                                        international
+                                        withCountryCallingCode
+                                        countrySelectProps={{
+                                            className:
+                                                "dark:[color-scheme:dark] dark:bg-background dark:text-foreground",
+                                        }}
+                                        numberInputProps={{
+                                            className:
+                                                "h-9 w-full bg-[var(--themePrimary)]/5 focus-visible:border-[var(--themePrimary)] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none placeholder:text-muted-foreground",
+                                        }}
+                                    />
+
+                                    {editPhoneError && (
+                                        <p className="mt-1 text-sm text-red-500 flex gap-2 items-center">
+                                            <XCircle className="h-4 w-4" />
+                                            {editPhoneError}
+                                        </p>
+                                    )}
+
+                                    {isEditPhoneValid && !editPhoneError && (
+                                        <p className="mt-1 text-sm text-green-600 flex gap-2 items-center">
+                                            <CheckCircle2 className="h-4 w-4" />
+                                            Valid phone number
+                                        </p>
+                                    )}
                                 </div>
+
                                 <div className="flex-1">
                                     <Label>Email</Label>
-                                    <Input type="email" name="email" value={editForm.email ?? ""} onChange={handleEditChange} />
+
+                                    <Input
+                                        type="email"
+                                        name="email"
+                                        value={editForm.email ?? ""}
+                                        onChange={handleEditChange}
+                                    />
+
+                                    {editErrors.email && (
+                                        <p className="mt-1 text-sm text-red-500">
+                                            {editErrors.email}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
+                            {/* Country */}
+                            <div>
+                                <Label>Country</Label>
+
+                                <Select
+                                    value={editForm.countryCode ?? ""}
+                                    onValueChange={async (countryCode) => {
+                                        setEditForm((prev) => ({
+                                            ...prev,
+                                            countryCode,
+                                            state: "",
+                                            city: "",
+                                            pincode: "",
+                                        }));
+
+                                        setSelectedCountry(countryCode);
+                                        setSelectedState("");
+                                        setSelectedCity("");
+
+                                        setStates([]);
+                                        setCities([]);
+                                        setPincodes([]);
+
+                                        try {
+                                            const res = await getStates(countryCode);
+
+                                            const stateList = res.data as State[];
+
+                                            setStates(stateList);
+                                        } catch (error) {
+                                            console.error(error);
+                                            toast.error("Failed to load states");
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Country" />
+                                    </SelectTrigger>
+
+                                    <SelectContent position="popper">
+                                        {countries.map((country) => (
+                                            <SelectItem
+                                                key={country.iso2}
+                                                value={country.iso2}
+                                            >
+                                                {country.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+
+                            {/* State + City + Pincode */}
                             <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <Label>City</Label>
-                                    <Input type="text" name="city" value={editForm.city ?? ""} onChange={handleEditChange} />
-                                </div>
-                                <div className="flex-1">
+
+                                {/* State */}
+                                <div className="flex-1 min-w-0">
                                     <Label>State</Label>
-                                    <Input type="text" name="state" value={editForm.state ?? ""} onChange={handleEditChange} />
+
+                                    <Select
+                                        value={
+                                            states.find(
+                                                (state) =>
+                                                    state.name.trim().toLowerCase() ===
+                                                    (editForm.state ?? "").trim().toLowerCase()
+                                            )?.iso2 ?? ""
+                                        }
+                                        onValueChange={async (stateCode) => {
+                                            const selectedStateData = states.find(
+                                                (state) => state.iso2 === stateCode
+                                            );
+
+                                            setEditForm((prev) => ({
+                                                ...prev,
+                                                state: selectedStateData?.name ?? "",
+                                                city: "",
+                                                pincode: "",
+                                            }));
+
+                                            setSelectedState(stateCode);
+                                            setSelectedCity("");
+
+                                            setCities([]);
+                                            setPincodes([]);
+
+                                            try {
+                                                const res = await getCities(
+                                                    editForm.countryCode ?? "",
+                                                    stateCode
+                                                );
+
+                                                const cityList = res.data as City[];
+
+                                                setCities(cityList);
+                                            } catch (error) {
+                                                console.error(error);
+                                                toast.error("Failed to load cities");
+                                            }
+                                        }}
+                                        disabled={!editForm.countryCode}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select State" />
+                                        </SelectTrigger>
+
+                                        <SelectContent position="popper">
+                                            {states.map((state) => (
+                                                <SelectItem
+                                                    key={state.iso2}
+                                                    value={state.iso2}
+                                                >
+                                                    {state.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                                <div className="flex-1">
+
+
+                                {/* City */}
+                                <div className="flex-1 min-w-0">
+                                    <Label>City</Label>
+
+                                    <Select
+                                        value={editForm.city ?? ""}
+                                        onValueChange={async (city) => {
+                                            setEditForm((prev) => ({
+                                                ...prev,
+                                                city,
+                                                pincode: "",
+                                            }));
+
+                                            setSelectedCity(city);
+                                            setPincodes([]);
+
+                                            try {
+                                                const res = await getPincodes(city);
+
+                                                const pincodeList = res.data as Pincode[];
+
+                                                const uniquePincodes: Pincode[] = Array.from(
+                                                    new Map(
+                                                        pincodeList.map((item) => [
+                                                            item.Pincode,
+                                                            item,
+                                                        ])
+                                                    ).values()
+                                                );
+
+                                                setPincodes(uniquePincodes);
+                                            } catch (error) {
+                                                console.error(error);
+                                                toast.error("Failed to load pincodes");
+                                            }
+                                        }}
+                                        disabled={!editForm.state}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select City" />
+                                        </SelectTrigger>
+
+                                        <SelectContent position="popper">
+                                            {cities.map((city) => (
+                                                <SelectItem
+                                                    key={city.name}
+                                                    value={city.name}
+                                                >
+                                                    {city.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+
+                                {/* Pincode */}
+                                <div className="flex-1 min-w-0">
                                     <Label>Pincode</Label>
-                                    <Input type="number" name="pincode" value={editForm.pincode ?? ""} onChange={handleEditChange} />
+
+                                    <Select
+                                        value={editForm.pincode ?? ""}
+                                        onValueChange={(value) => {
+                                            setEditForm((prev) => ({
+                                                ...prev,
+                                                pincode: value,
+                                            }));
+                                        }}
+                                        disabled={!editForm.city}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Pincode" />
+                                        </SelectTrigger>
+
+                                        <SelectContent position="popper">
+                                            {pincodes.map((pincode) => (
+                                                <SelectItem
+                                                    key={pincode.Pincode}
+                                                    value={pincode.Pincode}
+                                                >
+                                                    {pincode.Pincode}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
+
                             </div>
                             <div>
                                 <Label>Address</Label>
                                 <Input type="text" name="address" value={editForm.address ?? ""} onChange={handleEditChange} />
+                                {editErrors.address && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {editErrors.address}
+                                    </p>
+                                )}
                             </div>
 
 
                             <div>
                                 <Label>Manager Name</Label>
                                 <Input type="text" name="managerName" value={editForm.managerName ?? ""} onChange={handleEditChange} />
+                                {editErrors.managerName && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {editErrors.managerName}
+                                    </p>
+                                )}
                             </div>
                             <div>
                                 <Label>Branch Location</Label>
@@ -518,25 +1260,46 @@ const BranchList = () => {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuGroup>
-                                                    <DropdownMenuItem onClick={() => {
-                                                        setSelectedBranch(branch);
-                                                        setEditForm({
-                                                            name: branch.name,
-                                                            address: branch.address,
-                                                            phone: branch.phone,
-                                                            email: branch.email,
-                                                            city: branch.city,
-                                                            state: branch.state,
-                                                            pincode: branch.pincode,
-                                                            managerName: branch.managerName,
-                                                            latitude: branch.latitude,
-                                                            longitude: branch.longitude,
-                                                            geoRadius: branch.geoRadius,
-                                                            locationName: branch.locationName
+                                                    <DropdownMenuItem
+                                                        onClick={async () => {
+                                                            setSelectedBranch(branch);
 
-                                                        });
-                                                        setEditOpen(true);
-                                                    }}>
+                                                            setEditForm({
+                                                                name: branch.name,
+                                                                address: branch.address,
+                                                                phone: branch.phone,
+                                                                email: branch.email,
+                                                                countryCode: branch.countryCode,
+                                                                city: branch.city,
+                                                                state: branch.state,
+                                                                pincode: branch.pincode,
+                                                                managerName: branch.managerName,
+                                                                latitude: branch.latitude,
+                                                                longitude: branch.longitude,
+                                                                geoRadius: branch.geoRadius,
+                                                                locationName: branch.locationName,
+                                                            });
+                                                            const phone = branch.phone || "";
+
+                                                            setIsPhoneValid(
+                                                                !!phone && isValidPhoneNumber(phone)
+                                                            );
+
+                                                            setPhoneError(
+                                                                phone && !isValidPhoneNumber(phone)
+                                                                    ? "Invalid phone number"
+                                                                    : ""
+                                                            );
+                                                            // Old location data clear
+                                                            setStates([]);
+                                                            setCities([]);
+                                                            setPincodes([]);
+
+                                                            await loadEditLocationData(branch);
+
+                                                            setEditOpen(true);
+                                                        }}
+                                                    >
                                                         Edit
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem variant="destructive"

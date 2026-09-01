@@ -213,7 +213,7 @@ const DashboardStats = () => {
                     <Card className="group p-4 border rounded-xl  hover:shadow-lg transition-all duration-300 ease-in-out hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]">
                         <div className="flex items-center gap-3">
 
-                            <div className="flex bg-card-red-light text hover:text-white transition-colors h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300 group-hover:bg-card-red/80 group-active:bg-card-red/80">
+                            <div className="flex bg-card-red-light text-card-red transition-colors h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-300 group-hover:bg-card-red/80 group-active:bg-card-red/80">
                                 <UserX className="h-5 w-5 transition-colors duration-300 group-hover:text-white group-active:text-white" />
                             </div>
 

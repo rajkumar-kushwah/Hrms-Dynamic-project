@@ -461,6 +461,9 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                                     defaultCountry="IN"
                                     international
                                     withCountryCallingCode
+                                    countrySelectProps={{
+                                        className: "dark:[color-scheme:dark] dark:bg-background dark:text-foreground"
+                                    }}
                                     numberInputProps={{
                                         className:
                                             "h-9 w-full bg-[var(--themePrimary)]/5 focus-visible:border-[var(--themePrimary)] focus-visible:border-[var(--themePrimary)] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none placeholder:text-muted-foreground",
