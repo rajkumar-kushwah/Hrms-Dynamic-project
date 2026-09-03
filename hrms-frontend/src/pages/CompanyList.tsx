@@ -162,8 +162,40 @@ function CompanyList() {
     }));
   };
 
+  // const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  // };
+
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setEditForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    const fieldSchema =
+      companySchema.shape[
+      name as keyof typeof companySchema.shape
+      ];
+
+    // Sirf in fields par live validation
+    if (
+      name === "name" ||
+      name === "email" ||
+      name === "gstNumber" ||
+      name === "website" ||
+      name === "address"
+    ) {
+      const result = fieldSchema.safeParse(value);
+
+      setEditErrors((prev) => ({
+        ...prev,
+        [name]: result.success
+          ? undefined
+          : result.error.issues[0]?.message,
+      }));
+    }
   };
 
   const handleEdit = async () => {

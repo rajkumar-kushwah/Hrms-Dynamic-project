@@ -275,9 +275,9 @@ export const signin = async (req: Request, res: Response) => {
         const { email, password } = req.body;
 
         // Check if email and password are provided
-        if (!email || !password) {
-            return res.status(400).json({ success: false, message: 'Email and password are required' });
-        }
+        // if (!email || !password) {
+        //     return res.status(400).json({ success: false, message: 'Email and password are required' });
+        // }
 
         // find user
         const user = await prisma.user.findUnique({

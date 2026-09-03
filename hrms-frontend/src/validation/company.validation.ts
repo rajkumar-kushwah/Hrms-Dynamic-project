@@ -62,6 +62,22 @@ export const assignAdminSchema = z.object({
 
     password: z
         .string()
-        .min(8, "Password must be at least 8 characters")
-        .max(64, "Password must not exceed 64 characters"),
+        .min(8, {
+            message: "Password must be at least 8 characters",
+        })
+        .max(30, {
+            message: "Password must not exceed 30 characters",
+        })
+        .regex(/[A-Z]/, {
+            message: "Password must contain at least 1 uppercase letter",
+        })
+        .regex(/[a-z]/, {
+            message: "Password must contain at least 1 lowercase letter",
+        })
+        .regex(/[0-9]/, {
+            message: "Password must contain at least 1 numeric character",
+        })
+        .regex(/[^A-Za-z0-9]/, {
+            message: "Password must contain at least 1 special character",
+        }),
 });
