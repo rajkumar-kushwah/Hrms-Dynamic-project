@@ -38,6 +38,7 @@
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3",
+    "libphonenumber-js": "^1.13.12",
     "prisma": "^7.4.1",
     "zod": "^4.5.4"
   },

@@ -71,6 +71,8 @@ const LocationPicker = ({
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
       );
       const data = await res.json();
+      console.log("REVERSE GEOCODE RESPONSE:", data);
+console.log("LOCATION NAME:", data.display_name);
       setLocationName(data.display_name ?? "");
     } catch (err: any) {
       const message =
@@ -114,8 +116,14 @@ const LocationPicker = ({
   };
 
   const handleConfirm = () => {
+     console.log("LOCATION BEFORE CONFIRM:", {
+    position,
+    locationName,
+    radius,
+  });
     onConfirm(position[0], position[1], radius, locationName);
     onOpenChange(false);
+    
   };
 
   return (

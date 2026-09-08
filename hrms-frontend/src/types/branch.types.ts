@@ -5,7 +5,6 @@ export interface Branch {
   address?: string;
   phone?: string;
   email?: string;
-  countryCode: string;
   city?: string;
   state?: string;
   pincode?: string;
@@ -29,7 +28,6 @@ export interface CreateBranchPayload {
   address?: string;
   phone?: string;
   email?: string;
-  countryCode: string;
   city?: string;
   state?: string;
   pincode?: string;
@@ -45,7 +43,6 @@ export interface UpdateBranchPayload {
   address?: string;
   phone?: string;
   email?: string;
-  countryCode?: string;
   city?: string;
   state?: string;
   pincode?: string;
@@ -57,30 +54,3 @@ export interface UpdateBranchPayload {
   locationName?: string;
 }
 
-export interface Country {
-    iso2: string;
-    name: string;
-}
-
-export interface State {
-    iso2: string;
-    name: string;
-}
-
-export interface City {
-    name: string;
-}
-
-export interface Pincode {
-    Name: string;
-    Pincode: string;
-    State: string;
-    Country: string;
-    District: string;
-    Division: string;
-    Region: string;
-    Circle: string;
-    BranchType: string;
-    DeliveryStatus: string;
-    Description: string | null;
-}
