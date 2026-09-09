@@ -710,7 +710,7 @@ export const updateEmployee = async (
 
         if (
             normalizedRequestingRole ===
-                "company_admin" &&
+            "company_admin" &&
             role.isSystemRole
         ) {
             throw new Error(
@@ -840,7 +840,7 @@ export const updateEmployee = async (
     // Update Employee
     // ─────────────────────────────────────────
 
-    return await prisma.user.update({
+    const employee = await prisma.user.update({
         where: {
             id,
         },
@@ -849,13 +849,11 @@ export const updateEmployee = async (
             ...rest,
 
             ...(dateOfBirth && {
-                dateOfBirth:
-                    new Date(dateOfBirth),
+                dateOfBirth: new Date(dateOfBirth),
             }),
 
             ...(joiningDate && {
-                joiningDate:
-                    new Date(joiningDate),
+                joiningDate: new Date(joiningDate),
             }),
         },
 
@@ -882,7 +880,11 @@ export const updateEmployee = async (
             },
         },
     });
-};
+
+    const { password, ...employeeWithoutPassword } = employee;
+
+    return employeeWithoutPassword;
+}
 
 
 // ─────────────────────────────────────────────
