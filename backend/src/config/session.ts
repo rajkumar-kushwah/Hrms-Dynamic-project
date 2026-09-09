@@ -35,7 +35,10 @@ import { Pool } from "pg";
 const PgStore = pgSession(session);
 
 const pgPool = new Pool({
-    connectionString: process.env.DATABASE_URL
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false,
+    },
 });
 
 export const sessionMiddleware = session({
