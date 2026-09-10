@@ -12,6 +12,10 @@ import type { LeaveType } from "@/types/leave.types";
 import { getLeaveTypes, createLeaveType, updateLeaveType, deleteLeaveType } from "@/services/leaveType.service";
 import { useAuthStore } from "@/store/auth.store";
 import { isEmployeeRole } from "@/utilis/roleUtils";
+import {
+    createLeaveTypeSchema,
+    updateLeaveTypeSchema,
+} from "@/validation/leavepolicy.validation";
 // import HolidayPage from "@/pages/Holiday";
 
 const LeavePolicy = () => {
@@ -22,6 +26,8 @@ const LeavePolicy = () => {
     const [open, setOpen] = React.useState(false);
     const [editType, setEditType] = React.useState<LeaveType | null>(null);
     const [form, setForm] = React.useState({ name: "", description: "", daysPerYear: 0, isPaid: false, });
+
+    const [errors, setErrors] = React.useState<Record<string, string>>({});
 
     React.useEffect(() => { loadLeaveTypes(); }, []);
 
@@ -38,7 +44,29 @@ const LeavePolicy = () => {
     };
 
     const handleSubmit = async () => {
-        if (!form.name) { toast.error("Leave type name is required"); return; }
+        // if (!form.name) { toast.error("Leave type name is required"); return; }
+        const schema = editType
+            ? updateLeaveTypeSchema
+            : createLeaveTypeSchema;
+
+        const result = schema.safeParse(form);
+
+        if (!result.success) {
+            const fieldErrors: Record<string, string> = {};
+
+            result.error.issues.forEach((issue) => {
+                const field = issue.path[0];
+
+                if (typeof field === "string") {
+                    fieldErrors[field] = issue.message;
+                }
+            });
+
+            setErrors(fieldErrors);
+            return;
+        }
+
+        setErrors({});
         try {
             if (editType) {
                 await updateLeaveType(editType.id, form);
@@ -64,6 +92,38 @@ const LeavePolicy = () => {
         }
     };
 
+    const handleChange = (
+        field: keyof typeof form,
+        value: string | number | boolean
+    ) => {
+        const updatedForm = {
+            ...form,
+            [field]: value,
+        };
+
+        setForm(updatedForm);
+
+        const schema = editType
+            ? updateLeaveTypeSchema
+            : createLeaveTypeSchema;
+
+        const result = schema.safeParse(updatedForm);
+
+        if (result.success) {
+            setErrors({});
+            return;
+        }
+
+        const fieldError = result.error.issues.find(
+            (issue) => issue.path[0] === field
+        );
+
+        setErrors((prev) => ({
+            ...prev,
+            [field]: fieldError?.message ?? "",
+        }));
+    };
+
     const handleActivate = async (id: string) => {
         try {
             await updateLeaveType(id, {
@@ -83,6 +143,7 @@ const LeavePolicy = () => {
     const handleClose = () => {
         setOpen(false);
         setEditType(null);
+        setErrors({});
         setForm({ name: "", description: "", daysPerYear: 0, isPaid: false });
     };
 
@@ -106,18 +167,33 @@ const LeavePolicy = () => {
                     <div className="flex flex-col gap-3">
                         <div>
                             <Label>Name *</Label>
-                            <Input placeholder="e.g. Sick Leave" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                            <Input placeholder="e.g. Sick Leave" value={form.name} onChange={(e) => handleChange("name", e.target.value)} />
+                            {errors.name && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
                         <div>
                             <Label>Description</Label>
-                            <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                            <Input value={form.description} onChange={(e) => handleChange("description", e.target.value)} />
+                            {errors.description && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {errors.description}
+                                </p>
+                            )}
                         </div>
                         <div>
                             <Label>Days Per Year</Label>
-                            <Input type="number" value={form.daysPerYear} onChange={(e) => setForm({ ...form, daysPerYear: Number(e.target.value) })} />
+                            <Input type="number" value={form.daysPerYear} onChange={(e) => handleChange("daysPerYear", Number(e.target.value))} />
+                            {errors.daysPerYear && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {errors.daysPerYear}
+                                </p>
+                            )}
                         </div>
                         <div className="flex items-center gap-2">
-                            <input id="isPaid" type="checkbox" checked={form.isPaid} onChange={(e) => setForm({ ...form, isPaid: e.target.checked, })}
+                            <input id="isPaid" type="checkbox" checked={form.isPaid} onChange={(e) => handleChange("isPaid", e.target.checked)}
                                 className="h-4 w-4 cursor-pointer  "
                             />
                             <Label htmlFor="isPaid">Paid Leave</Label>

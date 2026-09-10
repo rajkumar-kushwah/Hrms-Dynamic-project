@@ -575,11 +575,11 @@ const calculateEmployeePayroll = async (
                             attendance &&
                             (
                                 attendance.status ===
-                                    "Present" ||
+                                "Present" ||
                                 attendance.status ===
-                                    "Late" ||
+                                "Late" ||
                                 attendance.status ===
-                                    "Half-day"
+                                "Half-day"
                             )
                         ) {
                             hasAttendanceInWeek =
@@ -806,7 +806,7 @@ const calculateEmployeePayroll = async (
     const perDaySalary =
         totalDaysInMonth > 0
             ? grossSalary /
-              totalDaysInMonth
+            totalDaysInMonth
             : 0;
 
 
@@ -874,6 +874,55 @@ const calculateEmployeePayroll = async (
     // ─────────────────────────────────────────
     // 23. Return
     // ─────────────────────────────────────────
+
+    // ─────────────────────────────────────────
+    // 23. Save Payroll
+    // ─────────────────────────────────────────
+
+    await prisma.payroll.upsert({
+        where: {
+            userId_month_year: {
+                userId,
+                month,
+                year,
+            },
+        },
+
+        update: {
+            grossSalary,
+            workingDays: totalWorkingDays,
+            holidayDays,
+            presentDays,
+            paidLeaveDays,
+            unpaidLeaveDays,
+            absentDays,
+            unpaidDeduction: Number(
+                deductionAmount.toFixed(2)
+            ),
+            netSalary: Number(
+                netSalary.toFixed(2)
+            ),
+        },
+
+        create: {
+            userId,
+            month,
+            year,
+            grossSalary,
+            workingDays: totalWorkingDays,
+            holidayDays,
+            presentDays,
+            paidLeaveDays,
+            unpaidLeaveDays,
+            absentDays,
+            unpaidDeduction: Number(
+                deductionAmount.toFixed(2)
+            ),
+            netSalary: Number(
+                netSalary.toFixed(2)
+            ),
+        },
+    });
 
     return {
         userId,
@@ -986,7 +1035,8 @@ export const getPayrollSummary =
     async (
         companyId: string | null,
         month: number,
-        year: number
+        year: number,
+        userId?: string
     ) => {
 
         if (!companyId) {
@@ -1023,9 +1073,9 @@ export const getPayrollSummary =
 
                     return (
                         normalizedRole ===
-                            "company_admin" ||
+                        "company_admin" ||
                         normalizedRole ===
-                            "super_admin"
+                        "super_admin"
                     );
                 })
                 .map(
@@ -1043,7 +1093,9 @@ export const getPayrollSummary =
                     companyId,
 
                     isActive: true,
-
+                    ...(userId && {
+                        id: userId,
+                    }),
                     ...(excludedRoleIds.length > 0 && {
                         roleId: {
                             notIn:
@@ -1108,6 +1160,7 @@ export const getEmployeePayrollDetail =
 export const updateEmployeeSalary =
     async (
         userId: string,
+        companyId: string,
         grossSalary: number
     ) => {
 
@@ -1115,6 +1168,7 @@ export const updateEmployeeSalary =
             await prisma.user.findUnique({
                 where: {
                     id: userId,
+                    companyId,
                 },
             });
 

@@ -1,23 +1,32 @@
 import type { Request, Response } from "express";
 import * as PayrollService from "../services/payroll.service.js";
 
+
 export const getPayrollSummary = async (req: Request, res: Response) => {
     try {
-        const companyId = req.user?.role?.name === "super_admin"
-            ? null
-            : req.user?.companyId!;
+
+        const roleName = req.user?.role?.name
+            ?.trim()
+            .toLowerCase()
+            .replace(/\s+/g, "_");
+
+        const isAdmin =
+            roleName === "super_admin" ||
+            roleName === "company_admin";
+
+        const companyId = req.user?.companyId ?? null;
 
         const month = Number(req.query.month) || new Date().getMonth() + 1;
         const year = Number(req.query.year) || new Date().getFullYear();
 
-        if (!companyId && req.user?.role?.name === "super_admin") {
+        if (!companyId && isAdmin) {
             return res.status(400).json({
                 success: false,
                 message: "Super Admin cannot view payroll — please select a company context"
             });
         }
 
-        const data = await PayrollService.getPayrollSummary(companyId, month, year);
+        const data = await PayrollService.getPayrollSummary(companyId, month, year, isAdmin ? undefined : req.user!.id);
 
         return res.status(200).json({ success: true, data });
     } catch (error: any) {
@@ -27,8 +36,28 @@ export const getPayrollSummary = async (req: Request, res: Response) => {
 
 export const getEmployeePayrollDetail = async (req: Request, res: Response) => {
     try {
-        const userId = req.params.userId as string;
-        const companyId = req.user?.companyId!;
+
+        const roleName = req.user?.role?.name
+            ?.trim()
+            .toLowerCase()
+            .replace(/\s+/g, "_");
+
+        const isAdmin =
+            roleName === "super_admin" ||
+            roleName === "company_admin";
+
+        const userId = isAdmin
+            ? (req.params.userId as string)
+            : req.user!.id;
+
+        const companyId = req.user?.companyId;
+
+        if (!companyId && isAdmin) {
+            return res.status(400).json({
+                success: false,
+                message: "Super Admin cannot view payroll — please select a company context",
+            });
+        }
         const month = Number(req.query.month) || new Date().getMonth() + 1;
         const year = Number(req.query.year) || new Date().getFullYear();
 
@@ -44,6 +73,7 @@ export const updateEmployeeSalary = async (req: Request, res: Response) => {
     try {
         const userId = req.params.userId as string;
         const { grossSalary } = req.body;
+        const companyId = req.user?.companyId;
 
         if (grossSalary === undefined || grossSalary < 0) {
             return res.status(400).json({
@@ -52,7 +82,7 @@ export const updateEmployeeSalary = async (req: Request, res: Response) => {
             });
         }
 
-        const result = await PayrollService.updateEmployeeSalary(userId, grossSalary);
+        const result = await PayrollService.updateEmployeeSalary(userId, companyId, grossSalary);
 
         return res.status(200).json({
             success: true,

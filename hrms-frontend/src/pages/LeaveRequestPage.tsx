@@ -13,6 +13,7 @@ import { getMyLeaveRequests, createLeaveRequest, cancelLeaveRequest } from "@/se
 import { getLeaveTypes } from "@/services/leaveType.service";
 import { useAuthStore } from "@/store/auth.store";
 import { isAdminRole } from "@/utilis/roleUtils";
+import { createLeaveRequestSchema } from "@/validation/leaveRequest.validation";
 
 const LeaveRequestPage = () => {
     const { user } = useAuthStore();
@@ -23,6 +24,8 @@ const LeaveRequestPage = () => {
     const [leaveTypes, setLeaveTypes] = React.useState<LeaveType[]>([]);
     const [open, setOpen] = React.useState(false);
     const [form, setForm] = React.useState({ leaveTypeId: "", startDate: "", endDate: "", reason: "" });
+
+    const [errors, setErrors] = React.useState<Record<string, string>>({});
 
     React.useEffect(() => {
         loadLeaves();
@@ -53,8 +56,20 @@ const LeaveRequestPage = () => {
     };
 
     const handleSubmit = async () => {
-        if (!form.leaveTypeId || !form.startDate || !form.endDate) {
-            toast.error("Please fill all required fields");
+        const result = createLeaveRequestSchema.safeParse(form);
+
+        if (!result.success) {
+            const fieldErrors: Record<string, string> = {};
+
+            result.error.issues.forEach((issue) => {
+                const field = issue.path[0];
+
+                if (typeof field === "string" && !fieldErrors[field]) {
+                    fieldErrors[field] = issue.message;
+                }
+            });
+
+            setErrors(fieldErrors);
             return;
         }
         try {
@@ -63,12 +78,42 @@ const LeaveRequestPage = () => {
             loadLeaves();
             setOpen(false);
             setForm({ leaveTypeId: "", startDate: "", endDate: "", reason: "" });
+            setErrors({});
         } catch (err: any) {
             const message =
                 err?.message || "Failed to submit leave request";
             toast.error(message);
         }
 
+    };
+    const handleChange = (
+        field: keyof typeof form,
+        value: string
+    ) => {
+        const updatedForm = {
+            ...form,
+            [field]: value,
+        };
+
+        setForm(updatedForm);
+
+        const result = createLeaveRequestSchema.safeParse(updatedForm);
+
+        const nextErrors = { ...errors };
+
+        delete nextErrors[field];
+
+        if (!result.success) {
+            const fieldError = result.error.issues.find(
+                (issue) => issue.path[0] === field
+            );
+
+            if (fieldError) {
+                nextErrors[field] = fieldError.message;
+            }
+        }
+
+        setErrors(nextErrors);
     };
 
     const handleCancel = async (id: string) => {
@@ -109,7 +154,12 @@ const LeaveRequestPage = () => {
                     <div className="flex flex-col gap-3">
                         <div>
                             <Label>Leave Type *</Label>
-                            <Select value={form.leaveTypeId} onValueChange={(val) => setForm({ ...form, leaveTypeId: val })}>
+                            <Select value={form.leaveTypeId} onValueChange={(val) => handleChange("leaveTypeId", val)}>
+                                {errors.leaveTypeId && (
+                                    <p className="text-sm text-red-500 mt-1">
+                                        {errors.leaveTypeId}
+                                    </p>
+                                )}
                                 <SelectTrigger><SelectValue placeholder="Select Leave Type" /></SelectTrigger>
                                 <SelectContent position="popper">
                                     {leaveTypes.map((lt) => (
@@ -121,16 +171,31 @@ const LeaveRequestPage = () => {
                         <div className="flex gap-2">
                             <div className="flex-1">
                                 <Label>Start Date *</Label>
-                                <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+                                <Input type="date" value={form.startDate} onChange={(e) => handleChange("startDate", e.target.value)} />
+                                {errors.startDate && (
+                                    <p className="text-sm text-red-500 mt-1">
+                                        {errors.startDate}
+                                    </p>
+                                )}
                             </div>
                             <div className="flex-1">
                                 <Label>End Date *</Label>
-                                <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+                                <Input type="date" value={form.endDate} onChange={(e) => handleChange("endDate", e.target.value)} />
+                                {errors.endDate && (
+                                    <p className="text-sm text-red-500 mt-1">
+                                        {errors.endDate}
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <div>
                             <Label>Reason</Label>
-                            <Input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Optional" />
+                            <Input value={form.reason} onChange={(e) => handleChange("reason", e.target.value)} placeholder="Optional" />
+                            {errors.reason && (
+                                <p className="text-sm text-red-500 mt-1">
+                                    {errors.reason}
+                                </p>
+                            )}
                         </div>
                         <Button variant="add" onClick={handleSubmit}>Submit Request</Button>
                     </div>

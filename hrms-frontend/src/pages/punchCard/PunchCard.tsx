@@ -7,6 +7,7 @@ import { Clock, MapPin, LogIn, LogOut, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import React from 'react'
 import { Button } from '@/components/ui/button';
+import { attendanceLocationSchema } from '@/validation/attendance.validation';
 
 
 
@@ -64,6 +65,12 @@ function PunchCard() {
         setLoading(true);
         try {
             const location = await getCurrentLocation();
+            const result = attendanceLocationSchema.safeParse(location);
+
+            if (!result.success) {
+                toast.error(result.error.issues[0].message);
+                return;
+            }
             const res = await punchIn(location);
             setAttendance(res.data.data);
             toast.success(res.data.message);
@@ -79,6 +86,12 @@ function PunchCard() {
         setLoading(true);
         try {
             const location = await getCurrentLocation();
+            const result = attendanceLocationSchema.safeParse(location);
+
+            if (!result.success) {
+                toast.error(result.error.issues[0].message);
+                return;
+            }
             const res = await punchOut(location);
             setAttendance(res.data.data);
             toast.success(res.data.message);

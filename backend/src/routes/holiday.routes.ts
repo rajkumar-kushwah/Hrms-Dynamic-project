@@ -11,6 +11,8 @@ import {
 
 import { protect } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/role.middleware.js";
+import { validate } from "../middleware/validation.middleware.js";
+import { createHolidaySchema, updateHolidaySchema } from "../validations/holiday.validation.js";
 
 const router = express.Router();
 
@@ -38,6 +40,7 @@ router.post(
     "/",
     protect,
     authorize("holiday", "canCreate"),
+    validate(createHolidaySchema),
     createHolidayController
 );
 
@@ -47,6 +50,7 @@ router.put(
     "/:id",
     protect,
     authorize("holiday", "canEdit"),
+    validate(updateHolidaySchema),
     updateHolidayController
 );
 

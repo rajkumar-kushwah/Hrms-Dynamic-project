@@ -20,20 +20,6 @@ export const createHolidayController = async (
     try {
         const { name, date } = req.body;
 
-        if (!name || !name.trim()) {
-            return res.status(400).json({
-                success: false,
-                message: "Holiday name is required",
-            });
-        }
-
-        if (!date) {
-            return res.status(400).json({
-                success: false,
-                message: "Holiday date is required",
-            });
-        }
-
         const companyId = req.user?.companyId;
 
         if (!companyId) {
@@ -43,13 +29,10 @@ export const createHolidayController = async (
             });
         }
 
-        const holiday = await createHoliday(
-            companyId,
-            {
-                name,
-                date,
-            }
-        );
+        const holiday = await createHoliday(companyId, {
+            name,
+            date,
+        });
 
         return res.status(201).json({
             success: true,
@@ -152,16 +135,6 @@ export const updateHolidayController = async (
             return res.status(400).json({
                 success: false,
                 message: "Invalid holiday ID",
-            });
-        }
-
-        if (
-            name !== undefined &&
-            (!name || !name.trim())
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Holiday name cannot be empty",
             });
         }
 
