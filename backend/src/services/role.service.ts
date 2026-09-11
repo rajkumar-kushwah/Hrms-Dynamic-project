@@ -214,22 +214,59 @@ export const updateRolePermissions = async (
 };
 
 // Role delete karo
-export const deleteRole = async (roleId: number, companyId: string) => {
+// export const deleteRole = async (roleId: number, companyId: string) => {
+//     const role = await prisma.role.findFirst({
+//         where: { id: roleId, companyId },
+//     });
+
+//     if (!role) throw new Error("Role not found");
+
+//     // Pehle permissions delete karo
+//     await prisma.permission.deleteMany({
+//         where: { roleId, companyId },
+//     });
+
+//     // Phir role delete karo
+//     await prisma.role.delete({
+//         where: { id: roleId },
+//     });
+
+//     return { message: "Role deleted successfully" };
+// };
+
+export const deleteRole = async (
+    roleId: number,
+    companyId: string
+) => {
     const role = await prisma.role.findFirst({
-        where: { id: roleId, companyId },
+        where: {
+            id: roleId,
+            companyId,
+        },
     });
 
-    if (!role) throw new Error("Role not found");
+    if (!role) {
+        throw new Error("Role not found");
+    }
 
-    // Pehle permissions delete karo
+    if (role.isSystemRole) {
+        throw new Error("System roles cannot be deleted");
+    }
+
     await prisma.permission.deleteMany({
-        where: { roleId, companyId },
+        where: {
+            roleId,
+            companyId,
+        },
     });
 
-    // Phir role delete karo
     await prisma.role.delete({
-        where: { id: roleId },
+        where: {
+            id: roleId,
+        },
     });
 
-    return { message: "Role deleted successfully" };
+    return {
+        message: "Role deleted successfully",
+    };
 };

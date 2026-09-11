@@ -59,8 +59,7 @@ export const updateRolePermissions = async (req: Request, res: Response) => {
         const { permissions, name, description } = req.body;
 
         const roleName = name
-            ? name
-            : description;
+
 
         const roleNameNormalized =
             req.user?.role?.name

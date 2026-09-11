@@ -18,6 +18,8 @@ import {
     updateRole,
     deleteRole,
 } from "@/services/role.service";
+import { roleSchema } from "@/validation/role.validation";
+import { isAdminRole } from "@/utilis/roleUtils";
 
 
 
@@ -63,6 +65,8 @@ const Roles = () => {
     );
     const canDelete = rolePermission?.canDelete;
 
+    const isSuperAdmin = isAdminRole(user?.role?.name);
+
     const [roles, setRoles] = useState<Role[]>([]);
     const [modules, setModules] = useState<Module[]>([]);
     const [open, setOpen] = useState(false);
@@ -72,6 +76,12 @@ const Roles = () => {
         name: "",
         description: "",
     });
+
+    const [errors, setErrors] = useState<{
+        name?: string;
+        description?: string;
+        permissions?: string;
+    }>({});
 
     //  Permissions state — har module ke liye
     const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -114,7 +124,7 @@ const Roles = () => {
         }
     };
 
-    
+
 
     const loadModules = async () => {
         try {
@@ -140,76 +150,161 @@ const Roles = () => {
 
     };
 
-  
-   
+
+
+
+    // const togglePermission = (
+    //     moduleId: number,
+    //     field: "canView" | "canCreate" | "canEdit" | "canDelete"
+    // ) => {
+    //     setPermissions((prev) => {
+    //         const currentModule = modules.find((m) => m.id === moduleId);
+    //         const isParent = currentModule?.parentId == null;
+
+    //         let updated = prev.map((p) => {
+    //             if (p.moduleId !== moduleId) return p;
+
+    //             const value = !p[field];
+
+    //             // View OFF => sab OFF
+    //             if (field === "canView" && !value) {
+    //                 return {
+    //                     ...p,
+    //                     canView: false,
+    //                     canCreate: false,
+    //                     canEdit: false,
+    //                     canDelete: false,
+    //                 };
+    //             }
+
+    //             // Create/Edit/Delete ON => View bhi ON
+    //             if (field !== "canView" && value) {
+    //                 return {
+    //                     ...p,
+    //                     [field]: true,
+    //                     canView: true,
+    //                 };
+    //             }
+
+    //             return {
+    //                 ...p,
+    //                 [field]: value,
+    //             };
+    //         });
+
+    //         // Parent ka View change hua
+    //         if (field === "canView" && isParent) {
+    //             const parent = updated.find((p) => p.moduleId === moduleId);
+    //             const isNowOn = parent?.canView ?? false;
+
+    //             updated = updated.map((p) => {
+    //                 const module = modules.find((m) => m.id === p.moduleId);
+
+    //                 if (module?.parentId === moduleId) {
+    //                     return {
+    //                         ...p,
+    //                         canView: isNowOn,
+    //                         canCreate: isNowOn ? p.canCreate : false,
+    //                         canEdit: isNowOn ? p.canEdit : false,
+    //                         canDelete: isNowOn ? p.canDelete : false,
+    //                     };
+    //                 }
+
+    //                 return p;
+    //             });
+    //         }
+
+    //         return updated;
+    //     });
+    // };
+    //  Create Role
 
     const togglePermission = (
         moduleId: number,
-        field: "canView" | "canCreate" | "canEdit" | "canDelete"
+        action: "canView" | "canCreate" | "canEdit" | "canDelete"
     ) => {
-        setPermissions((prev) => {
-            const currentModule = modules.find((m) => m.id === moduleId);
-            const isParent = currentModule?.parentId == null;
-
-            let updated = prev.map((p) => {
-                if (p.moduleId !== moduleId) return p;
-
-                const value = !p[field];
-
-                // View OFF => sab OFF
-                if (field === "canView" && !value) {
-                    return {
-                        ...p,
-                        canView: false,
-                        canCreate: false,
-                        canEdit: false,
-                        canDelete: false,
-                    };
+        setForm((prev) => {
+            const updatedPermissions = permissions.map((permission) => {
+                if (permission.moduleId !== moduleId) {
+                    return permission;
                 }
 
-                // Create/Edit/Delete ON => View bhi ON
-                if (field !== "canView" && value) {
-                    return {
-                        ...p,
-                        [field]: true,
-                        canView: true,
-                    };
-                }
-
-                return {
-                    ...p,
-                    [field]: value,
+                const updatedPermission = {
+                    ...permission,
+                    [action]: !permission[action],
                 };
+
+                // View off => all actions off
+                if (action === "canView" && !updatedPermission.canView) {
+                    updatedPermission.canCreate = false;
+                    updatedPermission.canEdit = false;
+                    updatedPermission.canDelete = false;
+                }
+
+                // Any action on => View on
+                if (
+                    action !== "canView" &&
+                    updatedPermission[action]
+                ) {
+                    updatedPermission.canView = true;
+                }
+
+                return updatedPermission;
             });
 
-            // Parent ka View change hua
-            if (field === "canView" && isParent) {
-                const parent = updated.find((p) => p.moduleId === moduleId);
-                const isNowOn = parent?.canView ?? false;
-
-                updated = updated.map((p) => {
-                    const module = modules.find((m) => m.id === p.moduleId);
-
-                    if (module?.parentId === moduleId) {
-                        return {
-                            ...p,
-                            canView: isNowOn,
-                            canCreate: isNowOn ? p.canCreate : false,
-                            canEdit: isNowOn ? p.canEdit : false,
-                            canDelete: isNowOn ? p.canDelete : false,
-                        };
-                    }
-
-                    return p;
-                });
+            // Permission validation
+            const hasPermission = updatedPermissions.some(
+                (permission) =>
+                    permission.canView ||
+                    permission.canCreate ||
+                    permission.canEdit ||
+                    permission.canDelete
+            );
+            if (!hasPermission) {
+                toast.error("At least one permission must be selected");
             }
 
-            return updated;
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                permissions: hasPermission
+                    ? undefined
+                    : "At least one permission must be selected",
+            }));
+
+            return {
+                ...prev,
+                permissions: updatedPermissions,
+            };
         });
     };
-    //  Create Role
+
     const handleSubmit = async () => {
-        if (!form.name) { toast.error("Role name is required"); return; }
+        // if (!form.name) { toast.error("Role name is required"); return; }
+        const result = roleSchema.safeParse({
+            ...form,
+            permissions,
+        });
+
+        if (!result.success) {
+            const fieldErrors: {
+                name?: string;
+                description?: string;
+                permissions?: string;
+            } = {};
+
+            result.error.issues.forEach((issue) => {
+                const field = issue.path[0];
+
+                if (field === "name" || field === "description" || field === "permissions") {
+                    fieldErrors[field as "name" | "description" | "permissions"] = issue.message;
+                }
+            });
+
+            setErrors(fieldErrors);
+            return;
+        }
+
+        setErrors({});
 
         try {
             if (editRole) {
@@ -236,6 +331,22 @@ const Roles = () => {
             toast.error(message);
         }
 
+    };
+    const handleChange = (field: "name" | "description", value: string) => {
+        setForm((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+
+        const schema = roleSchema.shape[field];
+        const result = schema.safeParse(value);
+
+        setErrors((prev) => ({
+            ...prev,
+            [field]: result.success
+                ? undefined
+                : result.error.issues[0].message,
+        }));
     };
 
     //  Edit Role
@@ -294,16 +405,22 @@ const Roles = () => {
                                 <Input
                                     placeholder="e.g. HR Manager"
                                     value={form.name}
-                                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                    onChange={(e) => handleChange("name", e.target.value)}
                                 />
+                                {errors.name && (
+                                    <p className="text-sm text-red-600 mt-1">{errors.name}</p>
+                                )}
                             </div>
                             <div className="flex-1">
                                 <Label>Description</Label>
                                 <Input
                                     placeholder="Role description"
                                     value={form.description}
-                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                    onChange={(e) => handleChange("description", e.target.value)}
                                 />
+                                {errors.description && (
+                                    <p className="text-sm text-red-600 mt-1">{errors.description}</p>
+                                )}
                             </div>
                         </div>
 
@@ -360,6 +477,11 @@ const Roles = () => {
                                     })}
                                 </TableBody>
                             </Table>
+                            {errors.permissions && (
+                                <p className="text-sm text-red-500">
+                                    {errors.permissions}
+                                </p>
+                            )}
                         </div>
 
                         <Button variant="add" onClick={handleSubmit}>
@@ -409,7 +531,7 @@ const Roles = () => {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            {role.name !== "super_admin" && (
+                                            {isSuperAdmin && (
                                                 <>
                                                     <DropdownMenuItem onClick={() => handleEdit(role)}>
                                                         Edit
@@ -425,7 +547,7 @@ const Roles = () => {
                                                     )}
                                                 </>
                                             )}
-                                            {role.name === "super_admin" && (
+                                            {!isSuperAdmin && (
                                                 <DropdownMenuItem disabled>
                                                     Cannot modify
                                                 </DropdownMenuItem>
