@@ -347,11 +347,23 @@ export const signin = async (req: Request, res: Response) => {
 
         const { password: _, ...userWithoutPassword } = UpdateUser;
 
-        // session Response 
-        return res.status(200).json({
-            success: true,
-            message: 'Login successful',
-            data: userWithoutPassword
+        req.session.save((err) => {
+            if (err) {
+                console.error("SESSION SAVE ERROR:", err);
+
+                return res.status(500).json({
+                    success: false,
+                    message: "Session save failed",
+                });
+            }
+
+            console.log("SESSION SAVED:", req.session);
+
+            return res.status(200).json({
+                success: true,
+                message: "Login successful",
+                data: userWithoutPassword,
+            });
         });
     } catch (error) {
         console.error(error);
@@ -369,10 +381,16 @@ export const logout = async (req: Request, res: Response) => {
                 return res.status(500).json({ success: false, message: 'Logout failed' });
             }
 
-            res.clearCookie("connect.sid", {
+            // res.clearCookie("connect.sid", {
+            //     path: "/",
+            //     httpOnly: true,
+            //     sameSite: "lax",
+            // });
+            res.clearCookie("sid", {
                 path: "/",
                 httpOnly: true,
-                sameSite: "lax",
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             });
             return res.status(200).json({ success: true, message: 'Logged out successfully' });
 

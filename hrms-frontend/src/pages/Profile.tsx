@@ -330,7 +330,7 @@ const Profile = () => {
                             <Label>New Password</Label>
                             <Input
                                 type={showNewPassword ? 'text' : 'password'}
-                                placeholder="Min 6 characters"
+                                placeholder="Min 8 characters"
                                 value={newPassword}
                                 onChange={(e) => handleNewPasswordChange(e.target.value)}
                             />
@@ -352,6 +352,7 @@ const Profile = () => {
                             <Label>Confirm New Password</Label>
                             <Input
                                 type={showConfirmPassword ? 'text' : 'password'}
+                                placeholder="Confirm Password"
                                 value={confirmPassword}
                                 onChange={(e) =>
                                     handleConfirmPasswordChange(e.target.value)

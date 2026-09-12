@@ -111,7 +111,7 @@ const EmployeeAttendanceDetail = () => {
 
             {/* Employee Header */}
             {employee && (
-                <Card className="p-4 flex  gap-4">
+                <Card className="p-4 flex  gap-4 bg-card text-card-foreground border-border transition-none duration-0 ease-none hover:opacity-100 hover:scale-100 active:scale-100">
                     <Avatar className="h-14 w-14">
                         <AvatarFallback>{getInitials(employee.name)}</AvatarFallback>
                     </Avatar>
