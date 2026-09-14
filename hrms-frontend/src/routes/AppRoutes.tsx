@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Signin from "@/pages/Auth/Signin";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import Layout from "@/components/layout";
@@ -23,7 +23,7 @@ import LeaveRequestPage from "@/pages/LeaveRequestPage";
 import LeaveApproval from "@/pages/LeaveApproval";
 import PayrollPage from "@/pages/Payroll";
 import HolidayPage from "@/pages/Holiday";
-
+import LandingPage from "@/pages/LandingPage";
 
 const AppRoutes = () => {
     return (
@@ -32,7 +32,9 @@ const AppRoutes = () => {
             <Toaster position="top-right" />
             <Routes>
 
-                <Route path="/" element={<Navigate to="/signin" />} />
+                {/* <Route path="/" element={<Navigate to="/signin" />} />
+                <Route path="/signin" element={<Signin />} /> */}
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/signin" element={<Signin />} />
 
                 <Route element={<ProtectedRoute />}>

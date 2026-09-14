@@ -41,7 +41,7 @@ export function NavUser() {
     try {
       await LogoutUser()
 
-      navigate("/signin");
+      navigate("/");
     } catch (error) {
       console.error(error);
     }
