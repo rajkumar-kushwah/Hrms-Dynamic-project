@@ -5,7 +5,6 @@ import cors from 'cors'
 import { prisma } from "./config/db.js";
 import authRouter from "./routes/auth.route.js";
 // import { sessionMiddlewere } from "./config/session.js";
-import permissionRouter from "./routes/permission.route.js";
 import roleRouter from "./routes/Role.route.js";
 import employeeRouter from "./routes/employee.route.js";
 import checkInRouter from "./routes/checkIn.route.js";
@@ -59,7 +58,7 @@ app.use("/api/payroll", payrollRoutes);
 app.use("/api/holidays", holidayRoutes);
 
 
-app.use('/permission', permissionRouter)
+
 app.use('/checkin', checkInRouter)
 app.use('/monthly-attendance', monthlyRouter)
 

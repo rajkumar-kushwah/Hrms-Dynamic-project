@@ -23,11 +23,31 @@ export const branchSchema = z.object({
             (value) => isValidPhoneNumber(value),
             "Invalid phone number"
         ),
+
     address: z
         .string()
         .trim()
         .min(3, "Address must be at least 3 characters")
         .max(255, "Address must not exceed 255 characters"),
+
+    city: z
+        .string()
+        .trim()
+        .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/, "City can contain only letters and spaces")
+        .optional(),
+
+    state: z
+        .string()
+        .trim()
+        .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/, "State can contain only letters and spaces")
+        .optional(),
+
+    pincode: z
+        .string()
+        .trim()
+        .regex(/^\d{6}$/, "Pincode must be 6 digits")
+        .optional(),
+
     managerName: z
         .string()
         .trim()
@@ -36,4 +56,28 @@ export const branchSchema = z.object({
         .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/, {
             message: "Manager name can contain only letters and spaces",
         }),
-})
+
+    latitude: z
+        .number()
+        .min(-90, "Latitude must be between -90 and 90")
+        .max(90, "Latitude must be between -90 and 90"),
+
+    longitude: z
+        .number()
+        .min(-180, "Longitude must be between -180 and 180")
+        .max(180, "Longitude must be between -180 and 180"),
+
+    geoRadius: z
+        .number()
+        .positive("Geo radius must be greater than 0")
+        .optional(),
+
+    locationName: z
+        .string()
+        .trim()
+        .regex(
+            /^[A-Za-z0-9]+(?:[ ,.-][A-Za-z0-9]+)*$/,
+            "Location name contains invalid characters"
+        )
+        .optional(),
+});

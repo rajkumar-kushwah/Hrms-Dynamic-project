@@ -72,7 +72,7 @@ const LocationPicker = ({
       );
       const data = await res.json();
       console.log("REVERSE GEOCODE RESPONSE:", data);
-console.log("LOCATION NAME:", data.display_name);
+      console.log("LOCATION NAME:", data.display_name);
       setLocationName(data.display_name ?? "");
     } catch (err: any) {
       const message =
@@ -115,15 +115,36 @@ console.log("LOCATION NAME:", data.display_name);
     }
   };
 
+  // const handleConfirm = () => {
+  //    console.log("LOCATION BEFORE CONFIRM:", {
+  //   position,
+  //   locationName,
+  //   radius,
+  // });
+  //   onConfirm(position[0], position[1], radius, locationName);
+  //   onOpenChange(false);
+
+  // };
   const handleConfirm = () => {
-     console.log("LOCATION BEFORE CONFIRM:", {
-    position,
-    locationName,
-    radius,
-  });
-    onConfirm(position[0], position[1], radius, locationName);
+    const [lat, lng] = position;
+
+    if (lat < -90 || lat > 90) {
+      toast.error("Invalid latitude");
+      return;
+    }
+
+    if (lng < -180 || lng > 180) {
+      toast.error("Invalid longitude");
+      return;
+    }
+
+    if (radius <= 0) {
+      toast.error("Geo radius must be greater than 0");
+      return;
+    }
+
+    onConfirm(lat, lng, radius, locationName);
     onOpenChange(false);
-    
   };
 
   return (

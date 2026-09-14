@@ -131,6 +131,9 @@ const BranchList = () => {
         name?: string;
         email?: string;
         phone?: string;
+        city?: string;
+        state?: string;
+        pincode?: string;
         address?: string;
         managerName?: string;
     }>({});
@@ -140,6 +143,9 @@ const BranchList = () => {
             name?: string;
             email?: string;
             phone?: string;
+            city?: string;
+            state?: string;
+            pincode?: string;
             address?: string;
             managerName?: string;
         }>({});
@@ -279,6 +285,9 @@ const BranchList = () => {
                 name: form.name,
                 email: form.email,
                 phone: form.phone,
+                city: form.city,
+                state: form.state,
+                pincode: form.pincode,
                 address: form.address,
                 managerName: form.managerName,
                 latitude: form.latitude,
@@ -294,6 +303,9 @@ const BranchList = () => {
                 name: fieldErrors.name?.[0],
                 email: fieldErrors.email?.[0],
                 phone: fieldErrors.phone?.[0],
+                city: fieldErrors.city?.[0],
+                state: fieldErrors.state?.[0],
+                pincode: fieldErrors.pincode?.[0],
                 address:
                     fieldErrors.address?.[0],
                 managerName:
@@ -742,6 +754,14 @@ const BranchList = () => {
                                         handleChange
                                     }
                                 />
+
+                                {errors.city && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {
+                                            errors.city
+                                        }
+                                    </p>
+                                )}
                             </div>
 
                             <div className="flex-1">
@@ -760,6 +780,14 @@ const BranchList = () => {
                                         handleChange
                                     }
                                 />
+
+                                {errors.state && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {
+                                            errors.state
+                                        }
+                                    </p>
+                                )}
                             </div>
 
                             <div className="flex-1">
@@ -778,6 +806,14 @@ const BranchList = () => {
                                         handleChange
                                     }
                                 />
+
+                                {errors.pincode && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {
+                                            errors.pincode
+                                        }
+                                    </p>
+                                )}
                             </div>
                         </div>
 

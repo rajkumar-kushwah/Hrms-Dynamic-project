@@ -42,6 +42,7 @@ export const createBranchSchema = z.object({
     pincode: z
         .string()
         .trim()
+        .regex(/^\d{6}$/, "Pincode must be 6 digits")
         .optional(),
 
     managerName: z
@@ -118,14 +119,17 @@ export const updateBranchSchema = z.object({
         .min(-180, "Longitude must be between -180 and 180")
         .max(180, "Longitude must be between -180 and 180")
         .optional(),
+
     city: z
         .string()
         .trim()
+        .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/, "City can contain only letters and spaces")
         .optional(),
 
     state: z
         .string()
         .trim()
+        .regex(/^[A-Za-z]+(?: [A-Za-z]+)*$/, "State can contain only letters and spaces")
         .optional(),
 
     pincode: z
@@ -135,6 +139,7 @@ export const updateBranchSchema = z.object({
 
     geoRadius: z
         .number()
+        .positive("Geo radius must be greater than 0")
         .optional(),
 
     locationName: z
@@ -144,5 +149,5 @@ export const updateBranchSchema = z.object({
 });
 
 export const branchIdSchema = z.object({
-    id: z.uuid("Invalid branch ID"),
+    id: z.string().uuid("Invalid branch ID"),
 });
