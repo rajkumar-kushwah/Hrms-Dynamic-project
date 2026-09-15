@@ -51,7 +51,7 @@ const LandingPage = () => {
                         />
 
                         <span className="text-2xl font-bold text-[var(--themePrimary)]">
-                            Dynamic HRMS
+                            HRMS
                         </span>
                     </div>
 
@@ -89,10 +89,10 @@ const LandingPage = () => {
                         <Button
                             size="lg"
                             onClick={() => window.location.href = "/signin"}
-                            className="bg-[var(--themePrimary)] hover:opacity-90"
+                            className=" group bg-[var(--themePrimary)] hover:bg-[var(--card-green-hover)] hover:opacity-90 cursor-pointer"
                         >
                             Login to Dashboard
-                            <ArrowRight className="ml-2 h-4 w-4" />
+                            <ArrowRight className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white" />
                         </Button>
                     </div>
                 </div>
@@ -184,10 +184,10 @@ const LandingPage = () => {
                 <Button
                     size="lg"
                     onClick={() => window.location.href = "/signin"}
-                    className="mt-8 bg-[var(--themePrimary)] hover:opacity-90"
+                    className="group mt-8 bg-[var(--themePrimary)] hover:bg-[var(--card-green-hover)] hover:opacity-90 cursor-pointer"
                 >
                     Go to Login
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white" />
                 </Button>
             </section>
 
