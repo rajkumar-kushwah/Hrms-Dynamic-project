@@ -1,6 +1,7 @@
-import { ArrowRight, CalendarDays, CircleDollarSign, ShieldCheck, Users, Clock3, Building2 } from "lucide-react";
+import { ArrowRight, CalendarDays, CircleDollarSign, ShieldCheck, Users, Clock3, Building2, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Light_BG from "../assets/Light_BG.png";
+import { useTheme } from "@/providers/ThemeContext";
 
 const features = [
     {
@@ -36,6 +37,8 @@ const features = [
 ];
 
 const LandingPage = () => {
+    const { dark, toggleTheme } = useTheme();
+
     return (
         <div className="min-h-screen bg-background text-foreground">
             {/* Navbar */}
@@ -47,7 +50,7 @@ const LandingPage = () => {
                         <img
                             src={Light_BG}
                             alt="Dynamic HRMS Logo"
-                            className="h-12 w-auto object-contain"
+                            className="h-12 w-auto object-contain rounded-md"
                         />
 
                         <span className="text-2xl font-bold text-[var(--themePrimary)]">
@@ -55,13 +58,27 @@ const LandingPage = () => {
                         </span>
                     </div>
 
-                    {/* Login */}
-                    <Button
-                        onClick={() => (window.location.href = "/signin")}
-                        className="bg-[var(--themePrimary)] px-6 hover:opacity-90"
-                    >
-                        Login
-                    </Button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={toggleTheme}
+                            className="flex h-10 w-10 items-center justify-center rounded-full border border-transparent transition hover:border-[var(--logo-green)] hover:bg-[var(--logo-green)]/10 cursor-pointer"
+                            aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+                        >
+                            {dark ? (
+                                <Sun className="h-5 w-5" />
+                            ) : (
+                                <Moon className="h-5 w-5" />
+                            )}
+                        </button>
+
+                        <Button
+                            onClick={() => (window.location.href = "/signin")}
+                            className="bg-[var(--themePrimary)] px-6 hover:bg-[var(--card-green-hover)] hover:opacity-90 cursor-pointer"
+                        >
+                            Login
+                        </Button>
+                    </div>
 
                 </div>
             </header>
