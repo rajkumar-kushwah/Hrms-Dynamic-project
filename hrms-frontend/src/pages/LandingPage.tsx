@@ -43,22 +43,24 @@ const LandingPage = () => {
         <div className="min-h-screen bg-background text-foreground">
             {/* Navbar */}
             <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
-                <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+                <div className="mx-auto flex h-17 max-w-[1500px] items-center justify-between px-6">
 
                     {/* Logo */}
-                    <div className="flex items-center gap-3">
+                    <div
+                        onClick={() => (window.location.href = "/")}
+                        className="flex items-center gap-4 cursor-pointer">
                         <img
                             src={Light_BG}
                             alt="Dynamic HRMS Logo"
-                            className="h-12 w-auto object-contain rounded-md"
+                            className="h-10 w-auto object-contain rounded-lg"
                         />
 
-                        <span className="text-2xl font-bold text-[var(--themePrimary)]">
+                        <span className="text-xl font-bold">
                             HRMS
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                         <button
                             type="button"
                             onClick={toggleTheme}
@@ -74,9 +76,12 @@ const LandingPage = () => {
 
                         <Button
                             onClick={() => (window.location.href = "/signin")}
-                            className="bg-[var(--themePrimary)] px-6 hover:bg-[var(--card-green-hover)] hover:opacity-90 cursor-pointer"
+                            className="group relative overflow-hidden bg-[var(--logo-green)] py-2 px-6 text-black font-medium transition-colors duration-500 before:absolute before:-left-[100%] before:top-1/2 before:z-0 before:h-[250%] before:w-[100%] before:-translate-y-1/2 before:rounded-full before:bg-[var(--logo-green)] before:transition-all before:duration-700 before:ease-in-out hover:text-black hover:before:left-0 active:scale-95  cursor-pointer"
+
                         >
-                            Login
+                            <span className="relative z-10">
+                                Login
+                            </span>
                         </Button>
                     </div>
 
@@ -84,7 +89,7 @@ const LandingPage = () => {
             </header>
 
             {/* Hero */}
-            <section className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-20 lg:grid-cols-2">
+            <section className="mx-auto grid max-w-10xl items-center gap-12 px-6 py-12 lg:grid-cols-2">
                 <div>
                     <p className="mb-4 font-medium text-[var(--themePrimary)]">
                         HUMAN RESOURCE MANAGEMENT SYSTEM
@@ -106,10 +111,12 @@ const LandingPage = () => {
                         <Button
                             size="lg"
                             onClick={() => window.location.href = "/signin"}
-                            className=" group bg-[var(--themePrimary)] hover:bg-[var(--card-green-hover)] hover:opacity-90 cursor-pointer"
+                            className=" group relative overflow-hidden bg-[var(--themePrimary)] py-5 text-base font-medium text-white transition-colors duration-500 before:absolute before:-left-[100%] before:top-1/2 before:z-0 before:h-[250%] before:w-[100%] before:-translate-y-1/2 before:rounded-full before:bg-[var(--logo-green)] before:transition-all before:duration-700 before:ease-in-out hover:text-black hover:before:left-0 active:scale-95  cursor-pointer"
                         >
-                            Login to Dashboard
-                            <ArrowRight className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white" />
+                            <span className="relative z-10">
+                                Login to Dashboard
+                            </span>
+                            <ArrowRight className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1 " />
                         </Button>
                     </div>
                 </div>
@@ -148,8 +155,8 @@ const LandingPage = () => {
             </section>
 
             {/* Features */}
-            <section className="bg-muted/40 px-6 py-20">
-                <div className="mx-auto max-w-7xl">
+            <section className="bg-muted/40 px-6 py-12">
+                <div className="mx-auto max-w-10xl">
                     <div className="mx-auto mb-12 max-w-2xl text-center">
                         <h2 className="text-3xl font-bold md:text-4xl">
                             Everything You Need to Manage HR
@@ -188,7 +195,7 @@ const LandingPage = () => {
             </section>
 
             {/* Bottom CTA */}
-            <section className="px-6 py-20 text-center">
+            <section className="px-6 py-12 text-center">
                 <h2 className="text-3xl font-bold">
                     Ready to manage your workforce?
                 </h2>
@@ -201,10 +208,12 @@ const LandingPage = () => {
                 <Button
                     size="lg"
                     onClick={() => window.location.href = "/signin"}
-                    className="group mt-8 bg-[var(--themePrimary)] hover:bg-[var(--card-green-hover)] hover:opacity-90 cursor-pointer"
+                    className="group relative overflow-hidden bg-[var(--themePrimary)] py-5 text-base font-medium text-white transition-colors duration-500 before:absolute before:-left-[100%] before:top-1/2 before:z-0 before:h-[250%] before:w-[100%] before:-translate-y-1/2 before:rounded-full before:bg-[var(--logo-green)] before:transition-all before:duration-700 before:ease-in-out hover:text-black hover:before:left-0 active:scale-95 cursor-pointer"
                 >
-                    Go to Login
-                    <ArrowRight className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white" />
+                    <span className="relative z-10">
+                        Go to Login
+                    </span>
+                    <ArrowRight className="relative z-10 ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1" />
                 </Button>
             </section>
 

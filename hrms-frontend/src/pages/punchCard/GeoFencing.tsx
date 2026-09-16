@@ -71,7 +71,7 @@ const GeoFencing = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {branches.map((branch) => (
-                        <Card key={branch.id} className="p-4">
+                        <Card key={branch.id} className="p-4 transition-none duration-0 ease-none hover:opacity-100 hover:scale-100 active:scale-100">
                             <CardContent className="p-0 flex flex-col gap-3">
 
                                 {/* Branch Name */}
