@@ -132,7 +132,10 @@ export const updateEmployeeSchema = createEmployeeSchema
         email: true,
         password: true,
     })
-    .partial();
+    .partial()
+    .extend({
+        isActive: z.boolean().optional(),
+    });
 
 export const employeeIdSchema = z.object({
     id: z.uuid("Invalid employee ID"),

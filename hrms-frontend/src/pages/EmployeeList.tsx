@@ -92,6 +92,8 @@ const EmployeeList = () => {
         prev.map((e) => e.id === selectedEmployee.id ? { ...e, isActive: !e.isActive } : e)
       );
       setStatusDialogOpen(false);
+      setSelectedEmployee(null);
+      setView("list");
     } catch (err: any) {
       const message =
         err?.message || "Failed to update employee";
