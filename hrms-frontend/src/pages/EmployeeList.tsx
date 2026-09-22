@@ -276,9 +276,12 @@ const EmployeeList = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-wrap">
           <Input
+            type="search"
+            name="employee-search"
             placeholder="Search name, code or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            autoComplete="off"
             className="w-64"
           />
 

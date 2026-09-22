@@ -146,6 +146,10 @@ export const updateBranchSchema = z.object({
         .string()
         .trim()
         .optional(),
+
+    isActive: z
+        .boolean()
+        .optional(),
 });
 
 export const branchIdSchema = z.object({

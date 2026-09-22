@@ -15,7 +15,7 @@ import { getCategories } from "@/services/category.service";
 import { getRoles } from "@/services/role.service";
 import type { Role } from "@/types/role.types";
 import { useAuthStore } from "@/store/auth.store";
-import { employeeSchema } from "@/validation/employee.validation";
+import { employeeSchema, updateEmployeeSchema } from "@/validation/employee.validation";
 import { isAdminRole } from "@/utilis/roleUtils";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
@@ -248,7 +248,11 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
     };
 
     const handleSubmit = async () => {
-        const result = employeeSchema.safeParse(form);
+        const schema = isEditeMode
+            ? updateEmployeeSchema
+            : employeeSchema;
+
+        const result = schema.safeParse(form);
 
         if (!result.success) {
 
@@ -280,8 +284,8 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
 
 
 
-        if (!form.name || !form.email || !form.password || !form.roleId) {
-            toast.error("Name, Email, Password and Role are required");
+        if (!form.name || !form.email || !form.roleId) {
+            toast.error("Name, Email, and Role are required");
             setActiveTab("basic");
             return;
         }
@@ -297,6 +301,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
             if (isEditeMode && editEmployee) {
                 const updateData = {
                     name: form.name,
+                    email: form.email,
                     phone: form.phone,
                     roleId: form.roleId,
                     branchId: form.branchId,
@@ -368,7 +373,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                         <TabsContent value="basic" className="flex flex-col gap-3 mt-4">
                             <div>
                                 <Label>Name *</Label>
-                                <Input name="name" value={form.name} onChange={handleChange} />
+                                <Input name="name" autoComplete="off" value={form.name} onChange={handleChange} />
                                 {errors.name && (
                                     <p className="mt-1 text-sm text-red-500">
                                         {errors.name}
@@ -378,7 +383,7 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                             <div className="flex gap-2 space-x-3">
                                 <div className="flex-1">
                                     <Label>Email *</Label>
-                                    <Input name="email" type="email" value={form.email} onChange={handleChange} />
+                                    <Input name="email" type="email" autoComplete="off" value={form.email} onChange={handleChange} />
                                     {errors.email && (
                                         <p className="mt-1 text-sm text-red-500">
                                             {errors.email}
@@ -386,8 +391,10 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                                     )}
                                 </div>
                                 <div className="flex-1">
-                                    <Label>Password *</Label>
-                                    <Input name="password" type="password" value={form.password} onChange={handleChange} />
+                                    {!isEditeMode && <>
+                                        <Label>Password *</Label>
+                                        <Input name="password" type="password" autoComplete="new-password" value={form.password} onChange={handleChange} />
+                                    </>}
                                     {errors.password && (
                                         <p className="mt-1 text-sm text-red-500">
                                             {errors.password}

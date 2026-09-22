@@ -129,7 +129,6 @@ export const createEmployeeSchema = z.object({
 
 export const updateEmployeeSchema = createEmployeeSchema
     .omit({
-        email: true,
         password: true,
     })
     .partial()

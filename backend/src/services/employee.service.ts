@@ -597,6 +597,7 @@ export const updateEmployee = async (
     requestingCompanyId: string,
     data: {
         name?: string;
+        email?: string;
         phone?: string;
         dateOfBirth?: string;
         gender?: string;
@@ -638,6 +639,7 @@ export const updateEmployee = async (
     if (!existing) {
         throw new Error("Employee not found");
     }
+
 
 
     // ─────────────────────────────────────────
@@ -683,6 +685,17 @@ export const updateEmployee = async (
     let safeData = { ...data };
 
 
+    if (safeData.email && safeData.email !== existing.email) {
+        const existingEmail = await prisma.user.findUnique({
+            where: {
+                email: safeData.email,
+            },
+        });
+
+        if (existingEmail && existingEmail.id !== id) {
+            throw new Error("Email already exists");
+        }
+    }
     // ─────────────────────────────────────────
     // Role Validation
     // ─────────────────────────────────────────

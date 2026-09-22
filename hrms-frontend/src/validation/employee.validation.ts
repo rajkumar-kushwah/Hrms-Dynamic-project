@@ -149,3 +149,7 @@ export const employeeSchema = z.object({
     esiNumber: z
         .string(),
 });
+
+export const updateEmployeeSchema = employeeSchema.omit({
+  password: true,
+});
