@@ -152,6 +152,7 @@ export const updateBranchSchema = z.object({
         .optional(),
 });
 
+
 export const branchIdSchema = z.object({
     id: z.string().uuid("Invalid branch ID"),
 });

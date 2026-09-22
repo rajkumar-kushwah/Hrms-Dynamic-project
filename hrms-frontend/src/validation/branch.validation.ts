@@ -80,6 +80,7 @@ export const branchSchema = z.object({
             "Location name contains invalid characters"
         )
         .optional(),
+        
     isActive: z
         .boolean()
         .optional(),
