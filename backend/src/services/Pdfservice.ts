@@ -17,6 +17,7 @@ const getBrowser = async (): Promise<Browser> => {
 
     browserInstance = await puppeteer.launch({
         headless: true,
+        executablePath: await puppeteer.executablePath(),
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
