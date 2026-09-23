@@ -9,3 +9,7 @@ export const getEmployeePayrollDetail = (userId: string, month: number, year: nu
 
 export const updateEmployeeSalary = (userId: string, grossSalary: number) =>
     api.patch(`/payroll/employee/${userId}/salary`, { grossSalary });
+
+
+
+export const downloadBulkSalarySlips = (userIds: string[], month: number, year: number) => api.post(`/payroll/salary-slips/bulk`, { userIds, month, year }, { responseType: "blob", });

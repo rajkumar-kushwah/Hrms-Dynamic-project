@@ -21,7 +21,7 @@ import GeoFencing from "@/pages/punchCard/GeoFencing";
 import LeavePolicy from "@/pages/LeavePolicy";
 import LeaveRequestPage from "@/pages/LeaveRequestPage";
 import LeaveApproval from "@/pages/LeaveApproval";
-import PayrollPage from "@/pages/Payroll";
+import PayrollPage from "@/pages/payroll/Payroll";
 import HolidayPage from "@/pages/Holiday";
 import LandingPage from "@/pages/LandingPage";
 
