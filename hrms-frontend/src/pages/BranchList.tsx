@@ -292,6 +292,8 @@ const BranchList = () => {
                 managerName: form.managerName,
                 latitude: form.latitude,
                 longitude: form.longitude,
+                locationName: form.locationName,
+                geoRadius: form.geoRadius,
             });
 
         if (!result.success) {

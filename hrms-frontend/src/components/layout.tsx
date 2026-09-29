@@ -111,6 +111,9 @@ export default function Layout() {
             case "/payroll":
                 return "Payroll";
 
+            case "/reports/payroll":
+                return "Payroll Report";
+
             default:
                 return "Dashboard";
         }

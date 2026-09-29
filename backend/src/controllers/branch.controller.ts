@@ -1,6 +1,13 @@
 import type { Request, Response } from "express";
 import * as BranchService from "../services/branch.service.js";
 
+const normalizeName = (value?: string | null) => {
+    return value
+        ?.trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/_+/g, "_");
+};
 
 // create branch
 export const createBranch = async (req: Request, res: Response) => {
@@ -21,7 +28,9 @@ export const createBranch = async (req: Request, res: Response) => {
 // Get all branch
 export const getBranches = async (req: Request, res: Response) => {
     try {
-        const companyId = req.user?.role?.name === "super_admin" ? null : req.user?.companyId!;
+        const roleName = req.user?.role?.name;
+        const normalizedRole = roleName ? normalizeName(roleName) : "";
+        const companyId = normalizedRole === "super_admin" ? null : req.user?.companyId!;
 
         const branches = await BranchService.getAllBranches(companyId);
 
@@ -38,9 +47,13 @@ export const getBranches = async (req: Request, res: Response) => {
 export const getBranchById = async (req: Request, res: Response) => {
     try {
         const id = (req.params.id as string);
+        const roleName = req.user?.role?.name;
+        const normalizedRole = roleName ? normalizeName(roleName) : "";
+        const companyId = normalizedRole === "super_admin" ? null : req.user?.companyId!;
+
         if (!id) return res.status(400).json({ success: false, message: "Invalid branch id" });
 
-        const branch = await BranchService.getBranchById(id);
+        const branch = await BranchService.getBranchById(id, companyId);
 
         return res.status(200).json({
             success: true,
@@ -56,10 +69,14 @@ export const getBranchById = async (req: Request, res: Response) => {
 export const updateBranch = async (req: Request, res: Response) => {
     try {
         const id = (req.params.id as string);
+        const roleName = req.user?.role?.name;
+        const normalizedRole = roleName ? normalizeName(roleName) : "";
+        const companyId = normalizedRole === "super_admin" ? null : req.user?.companyId!;
+
         if (!id) return res.status(400).json({ success: false, message: "Invalid branch id" });
 
-        const branch = await BranchService.updateBranch(id, req.body);
-
+        const branch = await BranchService.updateBranch(id, companyId, req.body);
+  
         return res.status(200).json({
             success: true,
             message: "Branch updated successfully",
@@ -70,13 +87,17 @@ export const updateBranch = async (req: Request, res: Response) => {
     }
 }
 
-// delete branch 
+// delete branch
 export const deleteBranch = async (req: Request, res: Response) => {
     try {
         const id = (req.params.id as string);
+        const roleName = req.user?.role?.name;
+        const normalizedRole = roleName ? normalizeName(roleName) : "";
+        const companyId = normalizedRole === "super_admin" ? null : req.user?.companyId!;
+
         if (!id) return res.status(400).json({ success: false, message: "Invalid branch id" });
 
-        const result = await BranchService.deleteBranch(id);
+        const result = await BranchService.deleteBranch(id, companyId);
 
         return res.status(200).json({
             success: true,
@@ -91,9 +112,13 @@ export const deleteBranch = async (req: Request, res: Response) => {
 export const permanentDeleteBranch = async (req: Request, res: Response) => {
     try {
         const id = (req.params.id as string);
+        const roleName = req.user?.role?.name;
+        const normalizedRole = roleName ? normalizeName(roleName) : "";
+        const companyId = normalizedRole === "super_admin" ? null : req.user?.companyId!;
+
         if (!id) return res.status(400).json({ success: false, message: "Invalid branch id" });
 
-        const result = await BranchService.permanentDeleteBranch(id);
+        const result = await BranchService.permanentDeleteBranch(id, companyId);
 
         return res.status(200).json({
             success: true,
@@ -107,9 +132,9 @@ export const permanentDeleteBranch = async (req: Request, res: Response) => {
 // getGeoFencing
 export const getGeoFencingOverview = async (req: Request, res: Response) => {
     try {
-        const companyId = req.user?.role?.name === "super_admin" 
-        ? null
-        : req.user?.companyId!;
+        const roleName = req.user?.role?.name;
+        const normalizedRole = roleName ? normalizeName(roleName) : "";
+        const companyId = normalizedRole === "super_admin" ? null : req.user?.companyId!;
 
         const result = await BranchService.getGeoFencingOverview(companyId);
 

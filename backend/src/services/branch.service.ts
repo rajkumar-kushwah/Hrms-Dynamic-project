@@ -79,9 +79,12 @@ export const getAllBranches = async (companyId: string | null) => {
 };
 
 // Get single branch
-export const getBranchById = async (id: string) => {
+export const getBranchById = async (id: string, companyId: string | null) => {
     const branch = await prisma.branch.findUnique({
-        where: { id },
+        where: {
+            id,
+            ...(companyId ? { companyId } : {}),
+        },
         include: {
             company: {
                 select: { id: true, name: true }
@@ -96,6 +99,7 @@ export const getBranchById = async (id: string) => {
 // Update Branch
 export const updateBranch = async (
     id: string,
+    companyId: string | null,
     data: {
         name?: string;
         address?: string;
@@ -112,8 +116,13 @@ export const updateBranch = async (
         locationName?: string;
     }
 ) => {
-    const exiting = await prisma.branch.findUnique({ where: { id } });
-    if (!exiting) throw new Error("Branch not found");
+    const existing = await prisma.branch.findUnique({
+        where: {
+            id,
+            ...(companyId ? { companyId } : {}),
+        }
+    });
+    if (!existing) throw new Error("Branch not found");
 
     return await prisma.branch.update({
         where: { id },
@@ -122,8 +131,13 @@ export const updateBranch = async (
 };
 
 // Delete Branch
-export const deleteBranch = async (id: string) => {
-    const existing = await prisma.branch.findUnique({ where: { id } });
+export const deleteBranch = async (id: string, companyId: string | null) => {
+    const existing = await prisma.branch.findUnique({
+        where: {
+            id,
+            ...(companyId ? { companyId } : {}),
+        }
+    });
     if (!existing) throw new Error("Branch not found");
 
     await prisma.branch.update({
@@ -135,9 +149,12 @@ export const deleteBranch = async (id: string) => {
 }
 
 // Danger Zone - Delete branch permanently
-export const permanentDeleteBranch = async (id: string) => {
+export const permanentDeleteBranch = async (id: string, companyId: string | null) => {
     const branch = await prisma.branch.findUnique({
-        where: { id },
+        where: {
+            id,
+            ...(companyId ? { companyId } : {}),
+        },
         include: {
             _count: { select: { users: true } }
         }

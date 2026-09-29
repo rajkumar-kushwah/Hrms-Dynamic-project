@@ -80,14 +80,8 @@ const Payroll = () => {
 
             // Clear selection whenever payroll period changes
             setSelectedIds(new Set());
-        } catch (error: unknown) {
-            console.error("Failed to load payroll:", error);
-
-            if (error instanceof Error) {
-                toast.error(error.message);
-            } else {
-                toast.error("Failed to load payroll data");
-            }
+        } catch (error: any) {
+            toast.error(error?.message || "Failed to load payroll");
         } finally {
             setLoading(false);
         }
@@ -362,10 +356,9 @@ const Payroll = () => {
                                         flex h-4 w-4 items-center justify-center
                                         rounded-sm border
                                         transition-colors
-                                        ${
-                                            allFilteredSelected
-                                                ? "bg-[var(--themePrimary)] border-[var(--themePrimary)] text-white"
-                                                : "bg-background border-input"
+                                        ${allFilteredSelected
+                                            ? "bg-[var(--themePrimary)] border-[var(--themePrimary)] text-white"
+                                            : "bg-background border-input"
                                         }
                                     `}
                                     aria-label="Select all employees"
@@ -476,10 +469,9 @@ const Payroll = () => {
                                                     flex h-4 w-4 items-center justify-center
                                                     rounded-sm border
                                                     transition-colors
-                                                    ${
-                                                        isSelected
-                                                            ? "bg-[var(--themePrimary)] border-[var(--themePrimary)] text-white"
-                                                            : "bg-background border-input"
+                                                    ${isSelected
+                                                        ? "bg-[var(--themePrimary)] border-[var(--themePrimary)] text-white"
+                                                        : "bg-background border-input"
                                                     }
                                                 `}
                                                 aria-label={`Select ${emp.user.name}`}

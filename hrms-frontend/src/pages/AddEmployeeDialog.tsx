@@ -342,12 +342,8 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
             setForm(initialForm);
             setActiveTab("basic");
 
-        } catch (err) {
-            if (err instanceof Error) {
-                console.log(err.message);
-            } else {
-                toast.error("Failed to create employee");
-            }
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to process employee");
         }
     };
 

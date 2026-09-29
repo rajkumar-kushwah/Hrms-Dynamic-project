@@ -219,64 +219,117 @@ const Roles = () => {
     // };
     //  Create Role
 
+    // const togglePermission = (
+    //     moduleId: number,
+    //     action: "canView" | "canCreate" | "canEdit" | "canDelete"
+    // ) => {
+    //     setForm((prev) => {
+    //         const updatedPermissions = permissions.map((permission) => {
+    //             if (permission.moduleId !== moduleId) {
+    //                 return permission;
+    //             }
+
+    //             const updatedPermission = {
+    //                 ...permission,
+    //                 [action]: !permission[action],
+    //             };
+
+    //             // View off => all actions off
+    //             if (action === "canView" && !updatedPermission.canView) {
+    //                 updatedPermission.canCreate = false;
+    //                 updatedPermission.canEdit = false;
+    //                 updatedPermission.canDelete = false;
+    //             }
+
+    //             // Any action on => View on
+    //             if (
+    //                 action !== "canView" &&
+    //                 updatedPermission[action]
+    //             ) {
+    //                 updatedPermission.canView = true;
+    //             }
+
+    //             return updatedPermission;
+    //         });
+
+    //         // Permission validation
+    //         const hasPermission = updatedPermissions.some(
+    //             (permission) =>
+    //                 permission.canView ||
+    //                 permission.canCreate ||
+    //                 permission.canEdit ||
+    //                 permission.canDelete
+    //         );
+    //         if (!hasPermission) {
+    //             toast.error("At least one permission must be selected");
+    //         }
+
+    //         setErrors((prevErrors) => ({
+    //             ...prevErrors,
+    //             permissions: hasPermission
+    //                 ? undefined
+    //                 : "At least one permission must be selected",
+    //         }));
+
+    //         return {
+    //             ...prev,
+    //             permissions: updatedPermissions,
+    //         };
+    //     });
+    // };
+
     const togglePermission = (
-        moduleId: number,
-        action: "canView" | "canCreate" | "canEdit" | "canDelete"
-    ) => {
-        setForm((prev) => {
-            const updatedPermissions = permissions.map((permission) => {
-                if (permission.moduleId !== moduleId) {
-                    return permission;
-                }
-
-                const updatedPermission = {
-                    ...permission,
-                    [action]: !permission[action],
-                };
-
-                // View off => all actions off
-                if (action === "canView" && !updatedPermission.canView) {
-                    updatedPermission.canCreate = false;
-                    updatedPermission.canEdit = false;
-                    updatedPermission.canDelete = false;
-                }
-
-                // Any action on => View on
-                if (
-                    action !== "canView" &&
-                    updatedPermission[action]
-                ) {
-                    updatedPermission.canView = true;
-                }
-
-                return updatedPermission;
-            });
-
-            // Permission validation
-            const hasPermission = updatedPermissions.some(
-                (permission) =>
-                    permission.canView ||
-                    permission.canCreate ||
-                    permission.canEdit ||
-                    permission.canDelete
-            );
-            if (!hasPermission) {
-                toast.error("At least one permission must be selected");
+    moduleId: number,
+    action: "canView" | "canCreate" | "canEdit" | "canDelete"
+) => {
+    setPermissions((prev) => {
+        const updatedPermissions = prev.map((permission) => {
+            if (permission.moduleId !== moduleId) {
+                return permission;
             }
 
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                permissions: hasPermission
-                    ? undefined
-                    : "At least one permission must be selected",
-            }));
-
-            return {
-                ...prev,
-                permissions: updatedPermissions,
+            const updatedPermission = {
+                ...permission,
+                [action]: !permission[action],
             };
+
+            // View OFF => all actions OFF
+            if (action === "canView" && !updatedPermission.canView) {
+                updatedPermission.canCreate = false;
+                updatedPermission.canEdit = false;
+                updatedPermission.canDelete = false;
+            }
+
+            // Create/Edit/Delete ON => View ON
+            if (
+                action !== "canView" &&
+                updatedPermission[action]
+            ) {
+                updatedPermission.canView = true;
+            }
+
+            return updatedPermission;
         });
-    };
+
+        // Permission validation
+        const hasPermission = updatedPermissions.some(
+            (permission) =>
+                permission.canView ||
+                permission.canCreate ||
+                permission.canEdit ||
+                permission.canDelete
+        );
+
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            permissions: hasPermission
+                ? undefined
+                : "At least one permission must be selected",
+        }));
+
+        return updatedPermissions;
+    });
+};
 
     const handleSubmit = async () => {
         // if (!form.name) { toast.error("Role name is required"); return; }

@@ -24,6 +24,7 @@ import LeaveApproval from "@/pages/LeaveApproval";
 import PayrollPage from "@/pages/payroll/Payroll";
 import HolidayPage from "@/pages/Holiday";
 import LandingPage from "@/pages/LandingPage";
+import PayrollReportPage from "@/pages/reports/PayrollReportPage";
 
 const AppRoutes = () => {
     return (
@@ -57,6 +58,7 @@ const AppRoutes = () => {
                         <Route path="/leave/policy" element={<LeavePolicy />} />
                         <Route path="/payroll" element={<PayrollPage />} />
                         <Route path="/holiday" element={<HolidayPage />} />
+                        <Route path="/reports/payroll" element={<PayrollReportPage />} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}
