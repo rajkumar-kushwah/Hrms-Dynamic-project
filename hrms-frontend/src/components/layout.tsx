@@ -136,31 +136,22 @@ export default function Layout() {
 
     return (
         <SidebarProvider>
-            <div className="flex min-h-screen w-full p-2">
+            <div className="flex min-h-screen w-full min-w-0 overflow-x-hidden p-2">
 
-                {/* ─────────────────────────────
-                    Sidebar
-                ───────────────────────────── */}
-
+                {/* Sidebar */}
                 <AppSidebar />
 
-                {/* ─────────────────────────────
-                    Main Content
-                ───────────────────────────── */}
-
-                <main className="flex-1 p-3 px-4 space-y-4">
+                {/* Main Content */}
+                <main className="min-w-0 flex-1 overflow-x-hidden p-3 px-4 space-y-4">
 
                     {/* Sidebar Trigger + Breadcrumb */}
                     <div className="flex items-center gap-2">
 
-                        {/* Sidebar Toggle */}
                         <SidebarTrigger className="-ml-1 cursor-pointer" />
 
-                        {/* Breadcrumb */}
                         <Breadcrumb>
                             <BreadcrumbList>
 
-                                {/* Dashboard / Role */}
                                 <BreadcrumbItem>
                                     <BreadcrumbLink asChild>
                                         <Link to="/dashboard">
@@ -171,7 +162,6 @@ export default function Layout() {
 
                                 <BreadcrumbSeparator />
 
-                                {/* Employee Attendance */}
                                 {isEmployeeAttendance ? (
                                     <>
                                         <BreadcrumbItem>
@@ -191,7 +181,6 @@ export default function Layout() {
                                         </BreadcrumbItem>
                                     </>
                                 ) : (
-                                    /* Normal Pages */
                                     <BreadcrumbItem>
                                         <BreadcrumbPage>
                                             {pageTitle}
@@ -204,21 +193,15 @@ export default function Layout() {
 
                     </div>
 
-                    <div className="space-y-5">
-
-                        {/* ─────────────────────────
-                            Page Title
-                        ───────────────────────── */}
+                    <div className="w-full min-w-0 max-w-full space-y-5">
 
                         <h1 className="text-2xl font-medium">
                             {pageTitle}
                         </h1>
 
-                        {/* ─────────────────────────
-                            Page Content
-                        ───────────────────────── */}
-
-                        <Outlet />
+                        <div className="w-full min-w-0 max-w-full">
+                            <Outlet />
+                        </div>
 
                     </div>
 

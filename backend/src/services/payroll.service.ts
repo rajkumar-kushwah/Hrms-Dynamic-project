@@ -46,6 +46,7 @@ const calculateEmployeePayroll = async (
     const user = await prisma.user.findUnique({
         where: {
             id: userId,
+            companyId,
         },
 
         select: {
@@ -1180,7 +1181,7 @@ export const getPayrollSummary =
                     ...(userId && {
                         id: userId,
                     }),
-                    ...(excludedRoleIds.length > 0 && {
+                    ...(excludedRoleIds.length > 0 && !userId && {
                         roleId: {
                             notIn:
                                 excludedRoleIds,

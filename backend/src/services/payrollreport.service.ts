@@ -76,10 +76,22 @@ const groupBy = (
 export const getMonthlyPayrollReport = async (
     companyId: string,
     month: number,
-    year: number
+    year: number,
+    userId: string
 ) => {
+
+    const user = await prisma.user.findFirst({
+        where: {
+            id: userId,
+            companyId,
+        }
+    })
+
+    if (!user) {
+        throw new Error("You are not authorized to perform this action");
+    }
     // 1. Reuse existing calculation for all employees
-    const payrollData = await getPayrollSummary(companyId, month, year);
+    const payrollData = await getPayrollSummary(companyId, month, year, userId);
 
     if (payrollData.length === 0) {
         return {

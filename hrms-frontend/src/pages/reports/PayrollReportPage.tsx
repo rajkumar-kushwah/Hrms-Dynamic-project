@@ -3,7 +3,7 @@ import PayrollReport from "../reports/payrollreport";
 
 export default function PayrollReportPage() {
     return (
-        <div className="p-6">
+        <div className="w-full min-w-0 max-w-full">
             <PayrollReport />
         </div>
     );
