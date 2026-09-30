@@ -1,0 +1,13 @@
+-- CreateEnum
+CREATE TYPE "PayrollStatus" AS ENUM ('DRAFT', 'CONFIRMED', 'PAID');
+
+-- AlterTable
+ALTER TABLE "Payroll" ADD COLUMN     "confirmedAt" TIMESTAMP(3),
+ADD COLUMN     "earnedSalary" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "elapsedCalendarDays" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "paidAt" TIMESTAMP(3),
+ADD COLUMN     "payableDays" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "paymentRef" TEXT,
+ADD COLUMN     "perDaySalary" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "status" "PayrollStatus" NOT NULL DEFAULT 'DRAFT',
+ADD COLUMN     "totalDaysInMonth" INTEGER NOT NULL DEFAULT 0;

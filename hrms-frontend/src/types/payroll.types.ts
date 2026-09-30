@@ -19,4 +19,5 @@ export interface PayrollSummary {
   perDaySalary: number;
   deductionAmount: number;
   netSalary: number;
+  status: "DRAFT" | "CONFIRMED" | "PAID";
 }

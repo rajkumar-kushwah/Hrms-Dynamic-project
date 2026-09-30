@@ -1,5 +1,5 @@
 import { prisma } from "../config/db.js";
-import { getPayrollSummary } from "./payroll.service.js"; // adjust path
+import { getPayrollSummary } from "../services/payroll.service.js"; // adjust path
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -91,6 +91,9 @@ export const getMonthlyPayrollReport = async (
                 totalEarned: 0,
                 totalDeduction: 0,
                 totalNet: 0,
+                draftCount: 0,
+                confirmedCount: 0,
+                paidCount: 0,
             },
             byBranch: [],
             byCategory: [],
@@ -155,6 +158,7 @@ export const getMonthlyPayrollReport = async (
             earned: p.earnedSalary,
             deduction: p.deductionAmount,
             net: p.netSalary,
+            status: p.status as "DRAFT" | "CONFIRMED" | "PAID",
         };
     });
 
@@ -165,6 +169,9 @@ export const getMonthlyPayrollReport = async (
         totalEarned: round2(rows.reduce((s, r) => s + r.earned, 0)),
         totalDeduction: round2(rows.reduce((s, r) => s + r.deduction, 0)),
         totalNet: round2(rows.reduce((s, r) => s + r.net, 0)),
+        draftCount: rows.filter((r) => r.status === "DRAFT").length,
+        confirmedCount: rows.filter((r) => r.status === "CONFIRMED").length,
+        paidCount: rows.filter((r) => r.status === "PAID").length,
     };
 
     // 5. Groupings

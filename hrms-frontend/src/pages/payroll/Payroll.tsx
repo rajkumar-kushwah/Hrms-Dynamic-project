@@ -1,3 +1,4 @@
+// payroll.tsx
 import React from "react";
 
 import {
@@ -29,17 +30,36 @@ import {
 
 import { PayrollTable } from "@/pages/payroll/Payrolltable";
 
-// ─────────────────────────────────────────────
+
 // Currency
-// ─────────────────────────────────────────────
+
 
 const formatCurrency = (amount: number) => {
     return `₹${Math.round(amount).toLocaleString("en-IN")}`;
 };
 
-// ─────────────────────────────────────────────
+
+// Status Badge (naya)
+
+
+const STATUS_STYLES: Record<string, string> = {
+    DRAFT: "bg-gray-200 text-gray-700",
+    CONFIRMED: "bg-yellow-100 text-yellow-700",
+    PAID: "bg-green-100 text-green-700",
+};
+
+const StatusBadge = ({ status }: { status: string }) => (
+    <span
+        className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_STYLES[status] ?? "bg-gray-200 text-gray-700"
+            }`}
+    >
+        {status}
+    </span>
+);
+
+
 // Payroll Page
-// ─────────────────────────────────────────────
+
 
 const Payroll = () => {
     const currentDate = new Date();
@@ -169,6 +189,52 @@ const Payroll = () => {
         });
     };
 
+    // ─────────────────────────────────────────
+    // Status-workflow selection subsets (naya)
+    // ─────────────────────────────────────────
+    // Toolbar ko batana hai ki selected employees mein se kitne
+    // Draft hain (Confirm ke liye eligible) aur kitne Confirmed
+    // hain (Mark Paid / Revert ke liye eligible).
+
+    const selectedDraftIds = React.useMemo(
+        () =>
+            payrollData
+                .filter(
+                    (emp) =>
+                        selectedIds.has(emp.userId) &&
+                        emp.status === "DRAFT"
+                )
+                .map((emp) => emp.userId),
+        [payrollData, selectedIds]
+    );
+
+    const selectedConfirmedIds = React.useMemo(
+        () =>
+            payrollData
+                .filter(
+                    (emp) =>
+                        selectedIds.has(emp.userId) &&
+                        emp.status === "CONFIRMED"
+                )
+                .map((emp) => emp.userId),
+        [payrollData, selectedIds]
+    );
+
+    const selectedDraftEmployees = React.useMemo(
+        () =>
+            payrollData.filter(
+                (emp) => selectedIds.has(emp.userId) && emp.status === "DRAFT"
+            ),
+        [payrollData, selectedIds]
+    );
+
+    const selectedConfirmedEmployees = React.useMemo(
+        () =>
+            payrollData.filter(
+                (emp) => selectedIds.has(emp.userId) && emp.status === "CONFIRMED"
+            ),
+        [payrollData, selectedIds]
+    );
     // ─────────────────────────────────────────
     // Payroll Summary
     // ─────────────────────────────────────────
@@ -322,7 +388,7 @@ const Payroll = () => {
 
             </div>
 
-            {/* SALARY SLIP TOOLBAR */}
+            {/* SALARY SLIP + STATUS TOOLBAR */}
 
             <PayrollTable
                 selectedIds={selectedIds}
@@ -330,6 +396,11 @@ const Payroll = () => {
                 year={year}
                 onMonthChange={setMonth}
                 onYearChange={setYear}
+                selectedDraftIds={selectedDraftIds}
+                selectedConfirmedIds={selectedConfirmedIds}
+                selectedDraftEmployees={selectedDraftEmployees}
+                selectedConfirmedEmployees={selectedConfirmedEmployees}
+                onActionComplete={loadPayroll}
             />
 
             {/* PAYROLL TABLE */}
@@ -413,6 +484,10 @@ const Payroll = () => {
                                 Net Salary
                             </TableHead>
 
+                            <TableHead>
+                                Status
+                            </TableHead>
+
                         </TableRow>
 
                     </TableHeader>
@@ -422,7 +497,7 @@ const Payroll = () => {
                         {loading ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={12}
+                                    colSpan={13}
                                     className="text-center text-muted-foreground py-8"
                                 >
                                     <div className="flex items-center justify-center gap-2">
@@ -434,7 +509,7 @@ const Payroll = () => {
                         ) : filteredEmployees.length === 0 ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={12}
+                                    colSpan={13}
                                     className="text-center text-muted-foreground py-8"
                                 >
                                     No employees found
@@ -571,6 +646,12 @@ const Payroll = () => {
                                                     emp.netSalary
                                                 )}
                                             </span>
+                                        </TableCell>
+
+                                        {/* STATUS */}
+
+                                        <TableCell>
+                                            <StatusBadge status={emp.status} />
                                         </TableCell>
 
                                     </TableRow>

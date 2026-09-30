@@ -1,4 +1,5 @@
 import { prisma } from "../config/db.js";
+import { getLockedPayrollIfExists } from "./Payrollstatus.service.js";
 
 
 // ─────────────────────────────────────────────────────────────
@@ -85,6 +86,64 @@ const calculateEmployeePayroll = async (
 
     if (!companySettings) {
         throw new Error("Company settings not found");
+    }
+
+
+    // ─────────────────────────────────────────
+    // 2.5. Locked Payroll Check (Confirmed/Paid)
+    // ─────────────────────────────────────────
+    // Agar is month/year ka payroll pehle se Confirmed ya Paid ho
+    // chuka hai, to dobara attendance/leave calculate nahi karte —
+    // jo DB mein save hai wahi return kar dete hain, taaki confirm
+    // hone ke baad numbers silently na badlein.
+    // ─────────────────────────────────────────
+
+    const locked = await getLockedPayrollIfExists(userId, month, year);
+
+    // payroll.service.ts ke andar, "if (locked) { return { ... } }" wale block mein,
+    // deductionAmount: locked.unpaidDeduction, wali line ke UPAR ye add karo:
+
+    if (locked) {
+        return {
+            userId,
+            user: {
+                id: userId,
+                name: user.name,
+                employeeCode: user.employeeCode,
+                designation: user.designation,
+            },
+            month,
+            year,
+
+            totalDaysInMonth: locked.totalDaysInMonth,
+            elapsedCalendarDays: locked.elapsedCalendarDays,
+
+            totalWorkingDays: locked.workingDays,
+            holidayDays: locked.holidayDays,
+            presentDays: locked.presentDays,
+            paidLeaveDays: locked.paidLeaveDays,
+            unpaidLeaveDays: locked.unpaidLeaveDays,
+            absentDays: locked.absentDays,
+
+            payableDays: locked.payableDays,
+            grossSalary: locked.grossSalary,
+            earnedSalary: locked.earnedSalary,
+            perDaySalary: locked.perDaySalary,
+
+            // ── YE NAYI LINE ADD KARO ──
+            // totalUnpaidDays DB mein alag se save nahi hai, isliye
+            // deduction aur per-day-salary se wapas nikal rahe hain
+            // (deductionAmount = totalUnpaidDays * perDaySalary tha)
+            totalUnpaidDays:
+                locked.perDaySalary > 0
+                    ? Number((locked.unpaidDeduction / locked.perDaySalary).toFixed(2))
+                    : 0,
+
+            deductionAmount: locked.unpaidDeduction,
+            netSalary: locked.netSalary,
+
+            status: locked.status,
+        };
     }
 
 
@@ -872,10 +931,6 @@ const calculateEmployeePayroll = async (
 
 
     // ─────────────────────────────────────────
-    // 23. Return
-    // ─────────────────────────────────────────
-
-    // ─────────────────────────────────────────
     // 23. Save Payroll
     // ─────────────────────────────────────────
 
@@ -902,6 +957,20 @@ const calculateEmployeePayroll = async (
             netSalary: Number(
                 netSalary.toFixed(2)
             ),
+
+            // naye fields
+            totalDaysInMonth,
+            elapsedCalendarDays,
+            payableDays,
+            earnedSalary: Number(
+                earnedSalary.toFixed(2)
+            ),
+            perDaySalary: Number(
+                perDaySalary.toFixed(2)
+            ),
+
+            // status yahan mat chuo — is code tak pahunchna hi
+            // matlab record DRAFT hai (locked check upar se)
         },
 
         create: {
@@ -921,6 +990,19 @@ const calculateEmployeePayroll = async (
             netSalary: Number(
                 netSalary.toFixed(2)
             ),
+
+            // naye fields
+            totalDaysInMonth,
+            elapsedCalendarDays,
+            payableDays,
+            earnedSalary: Number(
+                earnedSalary.toFixed(2)
+            ),
+            perDaySalary: Number(
+                perDaySalary.toFixed(2)
+            ),
+
+            status: "DRAFT",
         },
     });
 
@@ -1023,6 +1105,8 @@ const calculateEmployeePayroll = async (
             Number(
                 netSalary.toFixed(2)
             ),
+
+        status: "DRAFT",
     };
 };
 
