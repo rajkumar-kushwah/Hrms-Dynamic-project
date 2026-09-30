@@ -33,12 +33,13 @@ interface SalarySlipData {
     unpaidLeaveDays: number;
     absentDays: number;
     holidayDays: number;
-    paidWeekOffDays: number;
-    unpaidWeekOffDays: number;
+    paidWeekOffDays?: number;
+    unpaidWeekOffDays?: number;
 
     totalUnpaidDays: number;
     deductionAmount: number;
     netSalary: number;
+    status: string;
 }
 
 const MONTH_NAMES = [
@@ -255,6 +256,10 @@ export const generateSalarySlipHTML = (
         <div class="label">Net Salary Payable</div>
         <div class="value">${formatCurrency(data.netSalary)}</div>
     </div>
+
+    <div>
+    Status: <strong>${data.status}</strong>
+</div>
 
     <div class="footer">
         This is a system-generated salary slip and does not require a signature.
