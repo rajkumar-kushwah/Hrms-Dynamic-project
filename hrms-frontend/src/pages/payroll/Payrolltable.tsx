@@ -113,21 +113,19 @@ export const PayrollTable = ({
             );
             downloadBlobAsFile(response.data, `salary-slips-${month}-${year}.zip`);
             toast.success("Salary slips generated successfully.");
-        } catch (error: unknown) {
-            console.error("Bulk salary slip generation failed:", error);
+        } catch (error: any) {
             toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Could not generate salary slips. Try again."
-            );
+                error?.message || "Failed to generate salary slips"
+            )
+
         } finally {
             setBulkLoading(false);
         }
     };
 
-    
+
     // Status workflow actions (new)
-    
+
 
     const handleConfirm = async () => {
         if (selectedDraftIds.length === 0) return;
