@@ -27,7 +27,7 @@ const app = express();
 app.set("trust proxy", 1);
 const port = 5000;
 
- 
+
 app.use(cors({
     origin: ['http://localhost:5173',
         "https://hrms-dynamic-project.vercel.app",
@@ -39,6 +39,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));  // parse application/x-www-form-urlencoded
 
 app.use(sessionMiddleware);
+
+app.use((req, res, next) => {
+    console.log("SESSION CHECK:", {
+        path: req.originalUrl,
+        hasSession: Boolean(req.session),
+        hasUserId: Boolean(req.session?.userId),
+        cookieReceived: Boolean(req.headers.cookie),
+    });
+
+    next();
+});
 
 app.get("/", (req, res) => {
     res.send("HRMS Backend API is running");
