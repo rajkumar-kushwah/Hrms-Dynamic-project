@@ -213,12 +213,12 @@ export const PayrollTable = ({
             {/* ACTIONS */}
             <div className="flex flex-wrap items-center gap-2">
 
-                <Button
-                    variant="outline"
+                <Button className="cursor-pointer"
+                    variant="add"
                     onClick={handleConfirm}
                     disabled={selectedDraftIds.length === 0 || actionLoading !== null}
                     title={selectedDraftIds.length === 0 ? "Select Draft rows to confirm" : ""}
-                >
+                    >
                     {actionLoading === "confirm" ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -227,8 +227,8 @@ export const PayrollTable = ({
                     Confirm{selectedDraftIds.length > 0 && ` (${selectedDraftIds.length})`}
                 </Button>
 
-                <Button
-                    variant="outline"
+                <Button className="cursor-pointer"
+                    variant="add"
                     onClick={handleMarkPaid}
                     disabled={selectedConfirmedIds.length === 0 || actionLoading !== null}
                     title={selectedConfirmedIds.length === 0 ? "Select Confirmed rows to mark paid" : ""}
@@ -241,8 +241,8 @@ export const PayrollTable = ({
                     Mark Paid{selectedConfirmedIds.length > 0 && ` (${selectedConfirmedIds.length})`}
                 </Button>
 
-                <Button
-                    variant="outline"
+                <Button className="cursor-pointer"
+                    variant="add"
                     onClick={handleRevert}
                     disabled={selectedConfirmedIds.length === 0 || actionLoading !== null}
                     title={selectedConfirmedIds.length === 0 ? "Select Confirmed rows to revert" : ""}
