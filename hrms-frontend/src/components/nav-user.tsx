@@ -36,13 +36,14 @@ export function NavUser() {
   // }) {
   const { isMobile } = useSidebar()
   const navigate = useNavigate();
-  // const logout = useAuthStore((state) => state.logout);
+  const logout = useAuthStore((state) => state.logout);
 
-  const logout = async () => {
+  
+  const handleLogout = async () => {
     try {
       await LogoutUser()
-
-      navigate("/");
+      logout();
+      navigate("/", { replace: true });
     } catch (error) {
       console.error(error);
     }
@@ -197,7 +198,7 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOutIcon
               />
               Log out
