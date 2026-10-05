@@ -259,7 +259,7 @@ export const PayrollTable = ({
                     variant="add"
                     onClick={handleGenerateSlips}
                     disabled={bulkLoading || selectedIds.size === 0}
-                    className="min-w-[210px]"
+                    className="min-w-[210px] cursor-pointer"
                 >
                     {bulkLoading ? (
                         <>

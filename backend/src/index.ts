@@ -38,7 +38,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));  // parse application/x-www-form-urlencoded
 
-app.use(sessionMiddleware);
+app.use(sessionMiddleware); // Session middleware to handle session management
 
 app.use((req, res, next) => {
     console.log("SESSION CHECK:", {
@@ -48,7 +48,7 @@ app.use((req, res, next) => {
         cookieReceived: Boolean(req.headers.cookie),
     });
 
-    next();
+    next(); // Move to the next middleware or route handler
 });
 
 app.get("/", (req, res) => {

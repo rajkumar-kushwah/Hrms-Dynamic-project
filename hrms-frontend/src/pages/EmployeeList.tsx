@@ -230,8 +230,8 @@ const EmployeeList = () => {
               <InfoItem label="Marital Status" value={selectedEmployee.maritalStatus} />
               <InfoItem className="col-span-2" icon={<MapPin className="h-4 w-4" />} label="Current Address" value={selectedEmployee.currentAddress} />
               <InfoItem className="col-span-2" icon={<MapPin className="h-4 w-4" />} label="Permanent Address" value={selectedEmployee.permanentAddress} />
-              <InfoItem label="Emergency Contact" value={selectedEmployee.emergencyContactName} />
-              <InfoItem label="Emergency Phone" value={selectedEmployee.emergencyContactPhone} />
+              <InfoItem label="Emergency Contact Name" value={selectedEmployee.emergencyContactName} />
+              <InfoItem label="Emergency Contact Phone" value={selectedEmployee.emergencyContactPhone} />
             </div>
           </TabsContent>
 
