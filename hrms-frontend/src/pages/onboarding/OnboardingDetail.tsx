@@ -154,6 +154,8 @@ export default function OnboardingDetail() {
   const handleStatusChange = async (
     status: "IN_PROGRESS" | "ON_HOLD"
   ) => {
+    if (!userId) return;
+
     try {
       await setOnboardingStatus(userId, status);
 
@@ -330,7 +332,9 @@ export default function OnboardingDetail() {
                 Target Date
               </p>
               <p className="font-medium mt-1">
-                {new Date(data.targetDate).toLocaleDateString()}
+                {data.targetDate
+                  ? new Date(data.targetDate).toLocaleDateString()
+                  : "-"}
               </p>
             </div>
 

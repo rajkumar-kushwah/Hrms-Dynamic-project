@@ -69,9 +69,9 @@ const Signin = () => {
             toast.success("Login successful");
 
             navigate("/dashboard");
-        } catch (error) {
+        } catch (error:any) {
             console.error(error);
-            toast.error("Invalid email or password");
+            toast.error(error.message || "Invalid email or password");
         } finally {
             setSpinner(false);
             setLoading(false);
