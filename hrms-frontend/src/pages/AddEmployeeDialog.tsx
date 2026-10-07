@@ -20,6 +20,7 @@ import { isAdminRole } from "@/utilis/roleUtils";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { startOnboarding } from "@/services/onboarding.service";
 
 const fieldTabMap: Record<string, string> = {
     name: "basic",
@@ -92,6 +93,21 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
     >({});
     const [isPhoneValid, setIsPhoneValid] = React.useState(false);
     const [isEmergencyPhoneValid, setIsEmergencyPhoneValid] = React.useState(false);
+
+
+    const [onboardingConfirmOpen, setOnboardingConfirmOpen] =
+        React.useState(false);
+
+    const [startOnboardingOpen, setStartOnboardingOpen] =
+        React.useState(false);
+
+    const [createdEmployee, setCreatedEmployee] =
+        React.useState<Employee | null>(null);
+
+    const [targetDate, setTargetDate] = React.useState("");
+    const [onboardingNotes, setOnboardingNotes] = React.useState("");
+
+
     // const isSuperAdmin = user?.role?.name === "super_admin";
     const isCompanyAdmin = isAdminRole(user?.role?.name);
 
@@ -336,8 +352,11 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
             } else {
 
                 const res = await createEmployee(form);
+                const newEmployee = res.data.data as Employee;
                 toast.success("Employee created successfully!");
-                onSuccess(res.data.data);
+                setCreatedEmployee(newEmployee);
+                onSuccess(newEmployee);
+                setOnboardingConfirmOpen(true);
             }
             setForm(initialForm);
             setActiveTab("basic");
@@ -772,6 +791,136 @@ const AddEmployeeDialog = ({ open, onOpenChange, onSuccess, editEmployee }: Prop
                     </div>
                 )} */}
                     <Button variant="add" onClick={handleSubmit} className="mt-4">{isEditeMode ? "Update Employee" : "Add Employee"}</Button>
+                </DialogContent>
+            </Dialog>
+            <Dialog
+                open={onboardingConfirmOpen}
+                onOpenChange={setOnboardingConfirmOpen}
+            >
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Start Employee Onboarding</DialogTitle>
+
+                        <DialogDescription>
+                            Employee has been created successfully.
+                            Do you want to start onboarding now?
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setOnboardingConfirmOpen(false);
+                                setCreatedEmployee(null);
+                            }}
+                        >
+                            No, Later
+                        </Button>
+
+                        <Button
+                            variant="add"
+                            onClick={() => {
+                                setOnboardingConfirmOpen(false);
+                                setStartOnboardingOpen(true);
+                            }}
+                        >
+                            Yes, Start Onboarding
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            <Dialog
+                open={startOnboardingOpen}
+                onOpenChange={setStartOnboardingOpen}
+            >
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Start Onboarding</DialogTitle>
+
+                        <DialogDescription>
+                            Set the target date and add notes for this employee's onboarding.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Employee</Label>
+
+                            <Input
+                                value={createdEmployee?.name ?? ""}
+                                disabled
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Target Date</Label>
+
+                            <Input
+                                type="date"
+                                value={targetDate}
+                                onChange={(e) => setTargetDate(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Notes</Label>
+
+                            <textarea
+                                className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                placeholder="Enter onboarding notes..."
+                                value={onboardingNotes}
+                                onChange={(e) =>
+                                    setOnboardingNotes(e.target.value)
+                                }
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setStartOnboardingOpen(false);
+                                setCreatedEmployee(null);
+                                setTargetDate("");
+                                setOnboardingNotes("");
+                            }}
+                        >
+                            Cancel
+                        </Button>
+
+                        <Button
+                            variant="add"
+                            onClick={async () => {
+                                if (!createdEmployee) return;
+
+                                try {
+                                    await startOnboarding(createdEmployee.id, {
+                                        targetDate: targetDate || undefined,
+                                        notes: onboardingNotes.trim() || undefined,
+                                    });
+
+                                    toast.success(
+                                        "Onboarding started successfully!"
+                                    );
+
+                                    setStartOnboardingOpen(false);
+                                    setCreatedEmployee(null);
+                                    setTargetDate("");
+                                    setOnboardingNotes("");
+                                } catch (err: any) {
+                                    toast.error(
+                                        err?.response?.data?.message ||
+                                        err?.message ||
+                                        "Failed to start onboarding"
+                                    );
+                                }
+                            }}
+                        >
+                            Start Onboarding
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

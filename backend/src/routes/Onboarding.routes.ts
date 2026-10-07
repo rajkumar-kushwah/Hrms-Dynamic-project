@@ -7,6 +7,7 @@ import {
     toggleChecklistItem,
     setStageManually,
     setOnboardingStatus,
+    resetEmployeeOnboarding
 } from "../controllers/Onboarding.controller.js";
 
 const router = Router();
@@ -17,6 +18,7 @@ router.get("/:userId", protect, getOnboardingDetail);
 router.patch("/:userId/stage", protect, setStageManually);
 router.patch("/:userId/status", protect, setOnboardingStatus);
 router.patch("/item/:itemId/toggle", protect, toggleChecklistItem);
+router.delete("/:userId/reset", protect, resetEmployeeOnboarding);
 
 
 export default router;

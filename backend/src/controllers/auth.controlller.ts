@@ -1,6 +1,7 @@
 import { type Request, type Response } from "express";
 import { prisma } from "../config/db.js";
 import bcrypt from "bcrypt";
+import { isAdminRole } from "../utilis/roleUtils.js";
 
 
 // signup controller
@@ -296,9 +297,29 @@ export const signin = async (req: Request, res: Response) => {
             }
         })
 
+
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
+        const roleName = user.role?.name
+            ?.trim()
+            .toLowerCase()
+            .replace(/\s+/g, "_");
+
+        const isAdmin = isAdminRole(roleName);
+
+        const employmentStatus = user.employmentStatus
+            ?.trim()
+            .toLowerCase();
+
+        // Onboarding check
+        if (!isAdmin && employmentStatus !== "active") {
+            return res.status(403).json({
+                success: false,
+                message: "Onboarding is not completed. Login is not allowed.",
+            });
+        }
+
 
         // checked active user
         if (!user.isActive) {

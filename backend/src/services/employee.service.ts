@@ -170,7 +170,9 @@ export const createEmployee = async (
     const role = await prisma.role.findUnique({
         where: {
             id: data.roleId,
+
         },
+
     });
 
     if (!role) {
@@ -207,7 +209,6 @@ export const createEmployee = async (
         10
     );
 
-
     // ─────────────────────────────────────────
     // Create Employee
     // ─────────────────────────────────────────
@@ -218,7 +219,10 @@ export const createEmployee = async (
             email: data.email,
             password: hashedPassword,
 
-            isActive: true,
+            isActive: !role.requiresOnboarding,
+            employmentStatus: role.requiresOnboarding
+                ? "ONBOARDING"
+                : "ACTIVE",
 
             companyId,
 
@@ -399,13 +403,12 @@ export const getEmployees = async (
         .map((role) => role.id);
 
 
-    return await prisma.user.findMany({
+    const employees = await prisma.user.findMany({
         where: {
             ...(companyId
                 ? { companyId }
                 : { companyId: { not: null } }),
 
-            // Company Admin users ko Employee list se hatao
             ...(companyAdminRoleIds.length > 0 && {
                 roleId: {
                     notIn: companyAdminRoleIds,
@@ -456,11 +459,60 @@ export const getEmployees = async (
                     name: true,
                 },
             },
+
+            onboarding: {
+                select: {
+                    status: true,
+                    currentStage: true,
+                    targetDate: true,
+
+                    items: {
+                        select: {
+                            isRequired: true,
+                            isCompleted: true,
+                        },
+                    },
+                },
+            },
         },
 
         orderBy: {
             createdAt: "desc",
         },
+    });
+
+    return employees.map((employee) => {
+        const requiredItems =
+            employee.onboarding?.items.filter(
+                (item) => item.isRequired
+            ) ?? [];
+
+        const completedRequired =
+            requiredItems.filter(
+                (item) => item.isCompleted
+            );
+
+        const progressPercent =
+            requiredItems.length > 0
+                ? Math.round(
+                    (completedRequired.length /
+                        requiredItems.length) *
+                    100
+                )
+                : 0;
+
+        return {
+            ...employee,
+
+            onboarding: employee.onboarding
+                ? {
+                    status: employee.onboarding.status,
+                    currentStage: employee.onboarding.currentStage,
+                    progressPercent,
+                    targetDate: employee.onboarding.targetDate,
+                }
+                : null,
+        };
     });
 };
 

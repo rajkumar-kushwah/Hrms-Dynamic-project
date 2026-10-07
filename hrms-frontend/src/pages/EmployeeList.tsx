@@ -11,14 +11,17 @@ import { useAuthStore } from "@/store/auth.store";
 import type { Employee, EmployeeDetail } from "@/types/employee.types";
 import { getEmployeeById, getEmployees, resetEmployeePassword, updateEmployee } from "@/services/employee.service";
 import AddEmployeeDialog from "@/pages/AddEmployeeDialog";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { isAdminRole } from "@/utilis/roleUtils";
 import { startOnboarding } from "@/services/onboarding.service";
+import { Textarea } from "@/components/ui/textarea";
+import { useNavigate } from "react-router-dom";
 
 const EmployeeList = () => {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
 
   // active and inactive super_admin kr skta h or  company admin (Employee nhi)
@@ -44,6 +47,13 @@ const EmployeeList = () => {
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [branchFilter, setBranchFilter] = React.useState("all");
   const [roleFilter, setRoleFilter] = React.useState("all");
+
+  const [startDialogOpen, setStartDialogOpen] = React.useState(false);
+  const [selectedOnboardingEmployee, setSelectedOnboardingEmployee] =
+    React.useState<EmployeeDetail | null>(null);
+
+  const [targetDate, setTargetDate] = React.useState("");
+  const [notes, setNotes] = React.useState("");
 
   React.useEffect(() => {
     loadEmployees();
@@ -84,15 +94,45 @@ const EmployeeList = () => {
   }
 
 
-  const handleStartOnboarding = async (userId: string) => {
+  const handleStartOnboarding = async () => {
+    if (!selectedOnboardingEmployee) return;
+
     try {
-      await startOnboarding(userId);
+      await startOnboarding(selectedOnboardingEmployee.id, {
+        targetDate: targetDate || undefined,
+        notes: notes.trim() || undefined,
+      });
 
       toast.success("Onboarding started successfully");
+
+      // Update employee list immediately
+      setEmployees((prev) =>
+        prev.map((employee) =>
+          employee.id === selectedOnboardingEmployee.id
+            ? {
+              ...employee,
+              onboarding: {
+                status: "IN_PROGRESS",
+                currentStage: "OFFER",
+                progressPercent: 0,
+                targetDate: targetDate || null,
+              },
+            }
+            : employee
+        )
+      );
+
+      setStartDialogOpen(false);
+      setSelectedOnboardingEmployee(null);
+      setTargetDate("");
+      setNotes("");
     } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to start onboarding";
 
-
-      toast.error(err?.message || "failed to start onboarding");
+      toast.error(message);
     }
   };
 
@@ -391,6 +431,53 @@ const EmployeeList = () => {
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={startDialogOpen}
+        onOpenChange={setStartDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start Onboarding</DialogTitle>
+            <DialogDescription>
+              Set the expected completion date and add onboarding notes.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Target Date</Label>
+              <Input
+                type="date"
+                value={targetDate}
+                onChange={(e) => setTargetDate(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                placeholder="Enter onboarding notes..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setStartDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button onClick={handleStartOnboarding}>
+              Start Onboarding
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Reset Password Dialog */}
       <Dialog open={resetOpen} onOpenChange={setResetOpen}>
         <DialogContent>
@@ -425,6 +512,7 @@ const EmployeeList = () => {
                 <TableHead className="min-w-25">Role</TableHead>
                 {canChangeStatus && <TableHead className="min-w-37.5">Company</TableHead>}
                 <TableHead className="min-w-20">Status</TableHead>
+                <TableHead>Onboarding</TableHead>
                 <TableHead className="sticky right-0 bg-muted">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -445,6 +533,30 @@ const EmployeeList = () => {
                       {emp.isActive ? "Active" : "Inactive"}
                     </Badge>
                   </TableCell>
+                  <TableCell>
+                    {!emp.onboarding ? (
+                      <Badge variant="outline">
+                        Not Started
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant={
+                          emp.onboarding.status === "COMPLETED"
+                            ? "green"
+                            : emp.onboarding.status === "ON_HOLD"
+                              ? "destructive"
+                              : "blue"
+                        }
+                      >
+                        {emp.onboarding.status === "IN_PROGRESS"
+                          ? "In Progress"
+                          : emp.onboarding.status === "ON_HOLD"
+                            ? "On Hold"
+                            : "Completed"}
+                      </Badge>
+                    )}
+                  </TableCell>
+
                   <TableCell className="sticky right-0 bg-card">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -454,11 +566,59 @@ const EmployeeList = () => {
                         <DropdownMenuGroup>
                           <DropdownMenuItem onClick={() => handleViewDetails(emp.id)}>View Details</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditClick(emp.id)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleStartOnboarding(emp.id)}
-                          >
-                            Start Onboarding
-                          </DropdownMenuItem>
+                          {!emp.onboarding && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedOnboardingEmployee(emp);
+                                setTargetDate("");
+                                setNotes("");
+                                setStartDialogOpen(true);
+                              }}
+                            >
+                              Start Onboarding
+                            </DropdownMenuItem>
+                          )}
+
+                          {emp.onboarding?.status === "IN_PROGRESS" && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                navigate(`/onboarding/${emp.id}`);
+                              }}
+                            >
+                              View Onboarding
+                            </DropdownMenuItem>
+                          )}
+
+                          {emp.onboarding?.status === "ON_HOLD" && (
+                            <>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedOnboardingEmployee(emp);
+                                  // Resume API yahan call kar sakte hain
+                                }}
+                              >
+                                Resume Onboarding
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  navigate(`/onboarding/${emp.id}`);
+                                }}
+                              >
+                                View Onboarding
+                              </DropdownMenuItem>
+                            </>
+                          )}
+
+                          {emp.onboarding?.status === "COMPLETED" && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                navigate(`/onboarding/${emp.id}`);
+                              }}
+                            >
+                              View Onboarding
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem variant="destructive"
                             onClick={() => {
                               setSelectedEmployee(emp)

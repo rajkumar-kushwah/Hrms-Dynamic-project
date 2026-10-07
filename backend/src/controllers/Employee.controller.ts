@@ -7,8 +7,14 @@ export const createEmployee = async (req: Request, res: Response) => {
     try {
         const companyId = req.user?.companyId!;
         const createdBy = req.user?.id!;
-        const requestingUserRole = req.user?.role?.name!;
-        const employee = await EmployeeService.createEmployee(companyId, createdBy, requestingUserRole, req.body);
+        // const requestingUserRole = req.user?.role?.name!;
+
+        const roleName = req.user?.role?.name
+            ?.trim()
+            .toLowerCase()
+            .replace(/\s+/g, "_");
+
+        const employee = await EmployeeService.createEmployee(companyId, createdBy, roleName!, req.body);
 
         res.status(201).json({
             success: true,
@@ -86,7 +92,7 @@ export const resetEmployeePassword = async (req: Request, res: Response) => {
     try {
         const id = (req.params.id as string);
         const { password } = req.body
-        
+
         if (!id) return res.status(400).json({ success: false, message: "Invalid employee id" });
 
         if (!password || password.length < 6) {
@@ -94,7 +100,7 @@ export const resetEmployeePassword = async (req: Request, res: Response) => {
                 success: false,
                 message: "Password must be at least 6 characters"
             });
-        } 
+        }
 
         const employee = await EmployeeService.resetEmployeePassword(id, password);
 

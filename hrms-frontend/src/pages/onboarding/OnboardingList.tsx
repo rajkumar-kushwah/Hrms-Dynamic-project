@@ -1,3 +1,4 @@
+// src/pages/onboarding/OnboardingList.tsx
 import React from "react";
 import {
     Table,
@@ -28,37 +29,34 @@ import { toast } from "sonner";
 import {
     getOnboardingList,
     startOnboarding,
+    resetOnboarding
 } from "@/services/onboarding.service";
 import { useNavigate } from "react-router-dom";
-
-type OnboardingStatus = "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
-
-type OnboardingEmployee = {
-    id: string;
-    userId: string;
-    user: {
-        id: string;
-        name: string;
-        employeeCode: string | null;
-        designation: string | null;
-    };
-    currentStage: string;
-    status: OnboardingStatus;
-    startDate: string;
-    targetDate: string | null;
-    completedAt: string | null;
-    progressPercent: number;
-};
+import type { OnboardingEmployee, OnboardingStatus } from "@/types/onboardingList.types";
+import {
+    AlertDialog,
+    // AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const OnboardingList = () => {
     const navigate = useNavigate();
     const [onboardings, setOnboardings] = React.useState<OnboardingEmployee[]>(
         []
     );
-    
+
     const [searchQuery, setSearchQuery] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState("all");
     const [loading, setLoading] = React.useState(false);
+
+
+    const [resetDialogOpen, setResetDialogOpen] = React.useState(false);
+    const [selectedOnboarding, setSelectedOnboarding] = React.useState<OnboardingEmployee | null>(null);
 
     const loadOnboardings = async () => {
         try {
@@ -106,6 +104,21 @@ const OnboardingList = () => {
             await loadOnboardings();
         } catch (err: any) {
             toast.error(err?.message || "Failed to start onboarding");
+        }
+    };
+
+    const handleResetOnboarding = async () => {
+        if (!selectedOnboarding) return
+        try {
+            await resetOnboarding(selectedOnboarding.userId);
+
+            toast.success("Onboarding reset successfully");
+            setResetDialogOpen(false);
+            setSelectedOnboarding(null);
+            // list dobara load karo
+            await loadOnboardings();
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to reset onboarding");
         }
     };
 
@@ -204,6 +217,38 @@ const OnboardingList = () => {
                 </div>
 
             </div>
+            <AlertDialog
+                open={resetDialogOpen}
+                onOpenChange={setResetDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Reset Onboarding? {selectedOnboarding?.user.name}
+                        </AlertDialogTitle>
+
+                        <AlertDialogDescription>
+                            This will delete <span className="font-bold">{selectedOnboarding?.user.name}</span>'s current onboarding
+                            checklist and reset the onboarding process. The employee
+                            can then be started again using the latest configured
+                            checklist templates.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="cursor-pointer">
+                            Cancel
+                        </AlertDialogCancel>
+
+                        <Button
+                            onClick={handleResetOnboarding}
+                            className="bg-[var(--logo-green)] text-black hover:bg-[var(--logo-green)]/80 cursor-pointer"
+                        >
+                            Reset Onboarding
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Table */}
             <div className="bg-card grid grid-cols-1 rounded border w-full overflow-hidden">
@@ -339,6 +384,15 @@ const OnboardingList = () => {
                                                     </DropdownMenuItem>
                                                 )}
 
+                                                <DropdownMenuItem
+                                                    variant="destructive"
+                                                    onClick={() => {
+                                                        setSelectedOnboarding(item);
+                                                        setResetDialogOpen(true);
+                                                    }}
+                                                >
+                                                    Reset Onboarding
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
 
                                         </DropdownMenu>

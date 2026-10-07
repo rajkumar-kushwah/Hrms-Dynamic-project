@@ -13,6 +13,23 @@ const isAdminUser = (req: Request) => {
 // POST /api/onboarding/start/:userId
 export const startOnboarding = async (req: Request, res: Response) => {
     try {
+        const { targetDate, notes } = (req.body ?? {}) as {
+            targetDate?: string;
+            notes?: string;
+        };
+
+        let parsedTargetDate: Date | undefined;
+
+        if (targetDate) {
+            parsedTargetDate = new Date(targetDate);
+
+            if (Number.isNaN(parsedTargetDate.getTime())) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid target date",
+                });
+            }
+        }
         if (!isAdminUser(req)) {
             return res.status(403).json({ success: false, message: "Not authorized" });
         }
@@ -23,7 +40,7 @@ export const startOnboarding = async (req: Request, res: Response) => {
         }
 
         const { userId } = req.params as { userId: string };
-        const data = await OnboardingService.startOnboarding(userId, companyId);
+        const data = await OnboardingService.startOnboarding(userId, companyId, parsedTargetDate, notes?.trim() || undefined);
         return res.status(201).json({ success: true, data });
     } catch (error: any) {
         return res.status(400).json({ success: false, message: error.message });
@@ -157,5 +174,49 @@ export const setOnboardingStatus = async (req: Request, res: Response) => {
         return res.status(200).json({ success: true, data });
     } catch (error: any) {
         return res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+export const resetEmployeeOnboarding = async (
+    req: Request,
+    res: Response
+) => {
+    try {
+        const { userId } = req.params as { userId: string };
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "User ID is required",
+            });
+        }
+
+        const companyId = req.user?.companyId;
+
+        if (!companyId) {
+            return res.status(400).json({
+                success: false,
+                message: "Company ID is required",
+            });
+        }
+
+        const data = await OnboardingService.resetOnboarding(
+            userId,
+            companyId
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Onboarding reset successfully",
+            data,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to reset onboarding",
+        });
     }
 };

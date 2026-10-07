@@ -14,8 +14,11 @@ export const getOnboardingDetail = async (userId: string) => {
     return response.data;
 };
 
-export const startOnboarding = async (userId: string) => {
-    const response = await api.post(`/onboarding/start/${userId}`);
+export const startOnboarding = async (userId: string, data?: {
+    targetDate?: string;
+    notes?: string;
+}) => {
+    const response = await api.post(`/onboarding/start/${userId}`, data);
 
     return response.data;
 };
@@ -49,5 +52,10 @@ export const setOnboardingStatus = async (
         { status }
     );
 
+    return response.data;
+};
+
+export const resetOnboarding = async (userId: string) => {
+    const response = await api.delete(`/onboarding/${userId}/reset`);
     return response.data;
 };

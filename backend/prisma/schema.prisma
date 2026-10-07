@@ -130,11 +130,12 @@ model User {
 
 //Roles Table — UI se banenge, hardcoded nahi
 model Role {
-  id           Int     @id @default(autoincrement())
-  name         String //  "HR Manager" , "Accountant" , "Branch Manager"
-  description  String?
-  isActive     Boolean @default(true)
-  isSystemRole Boolean @default(false)
+  id                 Int     @id @default(autoincrement())
+  name               String //  "HR Manager" , "Accountant" , "Branch Manager"
+  description        String?
+  isActive           Boolean @default(true)
+  isSystemRole       Boolean @default(false)
+  requiresOnboarding Boolean @default(true)
 
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id])

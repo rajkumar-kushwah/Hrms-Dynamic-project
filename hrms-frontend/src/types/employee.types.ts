@@ -13,6 +13,17 @@ export interface Employee {
     category?: { id: string; name: string };
     company?: { id: string; name: string };
     grossSalary: number | null;
+    onboarding: {
+        status: "IN_PROGRESS" | "ON_HOLD" | "COMPLETED";
+        currentStage:
+        | "OFFER"
+        | "JOINING"
+        | "DOCUMENTS"
+        | "TRAINING"
+        | "ACTIVE";
+        progressPercent: number;
+        targetDate: string | null;
+    } | null;
 }
 
 export interface EmployeeDetail extends Employee {

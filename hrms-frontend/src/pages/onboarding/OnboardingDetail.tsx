@@ -6,10 +6,11 @@ import { toast } from "sonner";
 import {
   getOnboardingDetail,
   toggleChecklistItem,
+  setOnboardingStatus,
 } from "@/services/onboarding.service";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -48,6 +49,7 @@ interface OnboardingDetailData {
   status: "IN_PROGRESS" | "COMPLETED" | "ON_HOLD";
   startDate: string;
   targetDate: string | null;
+  notes: string | null;
   completedAt: string | null;
   itemsByStage: Record<Stage, ChecklistItem[]>;
 }
@@ -116,18 +118,10 @@ export default function OnboardingDetail() {
 
       const response = await getOnboardingDetail(userId);
 
-      if (!response?.success) {
-        throw new Error(
-          response?.message || "Failed to load onboarding details"
-        );
-      }
-
       setData(response.data);
-    } catch (error: unknown) {
+    } catch (error: any) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to load onboarding details";
+        error.message || "Failed to load onboarding details";
 
       toast.error(message);
     } finally {
@@ -145,24 +139,36 @@ export default function OnboardingDetail() {
 
       const response = await toggleChecklistItem(itemId);
 
-      if (!response?.success) {
-        throw new Error(
-          response?.message || "Failed to update checklist item"
-        );
-      }
-
-      toast.success("Checklist updated");
+      toast.success(response?.message || "Checklist updated");
 
       await loadDetail();
-    } catch (error: unknown) {
+    } catch (error: any) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to update checklist item";
-
+        error.message || "Failed to update checklist item";
       toast.error(message);
     } finally {
       setTogglingItemId(null);
+    }
+  };
+
+  const handleStatusChange = async (
+    status: "IN_PROGRESS" | "ON_HOLD"
+  ) => {
+    try {
+      await setOnboardingStatus(userId, status);
+
+      toast.success(
+        status === "ON_HOLD"
+          ? "Onboarding put on hold"
+          : "Onboarding resumed"
+      );
+
+      await loadDetail();
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ||
+        "Failed to update onboarding status"
+      );
     }
   };
 
@@ -197,16 +203,17 @@ export default function OnboardingDetail() {
 
   return (
     <div className="space-y-6 p-6">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => navigate("/onboarding")}
+        className="cursor-pointer"
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </Button>
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigate("/onboarding")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
 
           <div>
             <h1 className="text-2xl font-semibold">
@@ -218,24 +225,58 @@ export default function OnboardingDetail() {
             </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          {/* <Badge
+            variant={
+              data.status === "COMPLETED"
+                ? "add"
+                : data.status === "ON_HOLD"
+                  ? "secondary"
+                  : "outline"
+            }
+          >
+            {getStatusLabel(data.status)}
+          </Badge> */}
+          {data.status === "IN_PROGRESS" && (
+            <Button className="cursor-pointer"
+              variant="add"
+              onClick={() => handleStatusChange("ON_HOLD")}
+            >
+              Put On Hold
+            </Button>
+          )}
 
-        <Badge
-          variant={
-            data.status === "COMPLETED"
-              ? "default"
-              : data.status === "ON_HOLD"
-                ? "secondary"
-                : "outline"
-          }
-        >
-          {getStatusLabel(data.status)}
-        </Badge>
+          {data.status === "ON_HOLD" && (
+            <Button className="cursor-pointer"
+              variant="add"
+              onClick={() => handleStatusChange("IN_PROGRESS")}
+            >
+              Resume
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Employee Information */}
       <Card>
-        <CardHeader>
-          <CardTitle>Employee Information</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <CardTitle>Employee Information</CardTitle>
+            <CardDescription>
+              Basic details of the employee
+            </CardDescription>
+          </div>
+          <Badge
+            variant={
+              data.status === "COMPLETED"
+                ? "green"
+                : data.status === "ON_HOLD"
+                  ? "destructive"
+                  : "blue"
+            }
+          >
+            {getStatusLabel(data.status)}
+          </Badge>
         </CardHeader>
 
         <CardContent>
@@ -284,6 +325,23 @@ export default function OnboardingDetail() {
                 {new Date(data.startDate).toLocaleDateString()}
               </p>
             </div>
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Target Date
+              </p>
+              <p className="font-medium mt-1">
+                {new Date(data.targetDate).toLocaleDateString()}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Notes
+              </p>
+              <p className="font-medium mt-1">
+                {data.notes || "-"}
+              </p>
+            </div>
 
             <div>
               <p className="text-sm text-muted-foreground">
@@ -323,13 +381,12 @@ export default function OnboardingDetail() {
               return (
                 <div
                   key={stage}
-                  className={`rounded-lg border p-4 text-center ${
-                    isCurrent
-                      ? "border-primary bg-primary/5"
-                      : isCompleted
-                        ? "border-green-500/50 bg-green-300"
-                        : ""
-                  }`}
+                  className={`rounded-lg border p-4 text-center ${isCurrent
+                    ? "border-primary bg-primary/5"
+                    : isCompleted
+                      ? "border-green-600/50 bg-green-600/10 "
+                      : ""
+                    }`}
                 >
                   <div className="flex justify-center mb-2">
                     {isCompleted ? (
@@ -378,11 +435,10 @@ export default function OnboardingDetail() {
                   {items.map((item) => (
                     <div
                       key={item.id}
-                      className={`flex items-start gap-3 rounded-lg border p-4 ${
-                        item.isCompleted
-                          ? "bg-muted/60"
-                          : ""
-                      }`}
+                      className={`flex items-start gap-3 rounded-lg border p-4 ${item.isCompleted
+                        ? "bg-muted/60"
+                        : ""
+                        }`}
                     >
                       <Checkbox
                         checked={item.isCompleted}
@@ -399,11 +455,10 @@ export default function OnboardingDetail() {
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <p
-                            className={`font-medium ${
-                              item.isCompleted
-                                ? "line-through text-muted-foreground"
-                                : ""
-                            }`}
+                            className={`font-medium ${item.isCompleted
+                              ? "line-through text-muted-foreground"
+                              : ""
+                              }`}
                           >
                             {item.title}
                           </p>

@@ -22,7 +22,9 @@ const nextStage = (current: Stage): Stage | null => {
 
 export const startOnboarding = async (
     userId: string,
-    companyId: string
+    companyId: string,
+    targetDate?: Date,
+    notes?: string
 ) => {
     const user = await prisma.user.findFirst({
         where: {
@@ -68,6 +70,8 @@ export const startOnboarding = async (
                 companyId,
                 currentStage: "OFFER",
                 status: "IN_PROGRESS",
+                ...(targetDate !== undefined && { targetDate }),
+                ...(notes !== undefined && { notes }),
 
                 items: {
                     create: templateItems.map((template) => ({
@@ -130,6 +134,7 @@ export const getOnboardingList = async (companyId: string, status?: OnboardingSt
             status: o.status,
             startDate: o.startDate,
             targetDate: o.targetDate,
+            notes: o.notes,
             completedAt: o.completedAt,
             progressPercent:
                 requiredItems.length > 0
@@ -171,6 +176,7 @@ export const getOnboardingDetail = async (userId: string, companyId: string) => 
         status: onboarding.status,
         startDate: onboarding.startDate,
         targetDate: onboarding.targetDate,
+        notes: onboarding.notes,
         completedAt: onboarding.completedAt,
         itemsByStage: grouped,
     };
@@ -196,6 +202,19 @@ export const toggleChecklistItem = async (
     if (!item || item.onboarding.companyId !== companyId) {
         throw new Error("Checklist item not found");
     }
+
+    if (item?.onboarding.status === "ON_HOLD") {
+        throw new Error(
+            "Onboarding is on hold. Resume onboarding before updating checklist."
+        );
+    }
+
+    if (item?.onboarding.status === "COMPLETED") {
+        throw new Error(
+            "Completed onboarding cannot be modified."
+        );
+    }
+
 
     const willBeCompleted = !item.isCompleted;
 
@@ -247,7 +266,7 @@ const evaluateStageProgress = async (onboardingId: string) => {
 
         await prisma.user.update({
             where: { id: onboarding.userId },
-            data: { employmentStatus: "ACTIVE" },
+            data: { employmentStatus: "ACTIVE", isActive: true },
         });
 
         return updated;
@@ -321,5 +340,37 @@ export const setOnboardingStatus = async (
     return prisma.onboarding.update({
         where: { userId },
         data: { status },
+    });
+};
+
+export const resetOnboarding = async (
+    userId: string,
+    companyId: string
+) => {
+    const onboarding = await prisma.onboarding.findUnique({
+        where: { userId },
+    });
+
+    if (!onboarding || onboarding.companyId !== companyId) {
+        throw new Error("Onboarding record not found");
+    }
+
+    if (onboarding.status === "COMPLETED") {
+        throw new Error("Completed onboarding cannot be reset");
+    }
+
+    return prisma.$transaction(async (tx) => {
+        await tx.onboarding.delete({
+            where: { id: onboarding.id },
+        });
+
+        await tx.user.update({
+            where: { id: userId },
+            data: {
+                employmentStatus: "ONBOARDING",
+            },
+        });
+
+        return { success: true };
     });
 };
