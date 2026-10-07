@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { isAdminRole } from "@/utilis/roleUtils";
+import { startOnboarding } from "@/services/onboarding.service";
 
 const EmployeeList = () => {
   const { user } = useAuthStore();
@@ -81,6 +82,19 @@ const EmployeeList = () => {
     }
 
   }
+
+
+  const handleStartOnboarding = async (userId: string) => {
+    try {
+      await startOnboarding(userId);
+
+      toast.success("Onboarding started successfully");
+    } catch (err: any) {
+
+
+      toast.error(err?.message || "failed to start onboarding");
+    }
+  };
 
   const handleToggleStatus = async () => {
     if (!selectedEmployee) return
@@ -440,6 +454,11 @@ const EmployeeList = () => {
                         <DropdownMenuGroup>
                           <DropdownMenuItem onClick={() => handleViewDetails(emp.id)}>View Details</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditClick(emp.id)}>Edit</DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleStartOnboarding(emp.id)}
+                          >
+                            Start Onboarding
+                          </DropdownMenuItem>
                           <DropdownMenuItem variant="destructive"
                             onClick={() => {
                               setSelectedEmployee(emp)

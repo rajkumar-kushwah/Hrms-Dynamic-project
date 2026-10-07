@@ -2,6 +2,7 @@ import { prisma } from "../src/config/db.ts";
 import { seedModules } from "./seeds/modules.seed.ts";
 import { seedSuperAdminRole } from "./seeds/roles.seed.ts";
 import { seedSuperAdmin } from "./seeds/admin.seed.ts";
+import { seedOnboardingTemplates } from "./seeds/onboarding.seed.ts";
 
 async function main() {
   console.log(" Seeding started...\n");
@@ -9,6 +10,7 @@ async function main() {
   await seedModules();        //  Pehle modules
   await seedSuperAdminRole(); //  Phir role + permissions
   await seedSuperAdmin();     //  Aakhir mein user
+  await seedOnboardingTemplates();
 
   console.log("\n All seeding done!");
 }

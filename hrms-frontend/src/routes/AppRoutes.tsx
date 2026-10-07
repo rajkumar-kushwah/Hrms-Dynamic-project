@@ -25,6 +25,9 @@ import PayrollPage from "@/pages/payroll/Payroll";
 import HolidayPage from "@/pages/Holiday";
 import LandingPage from "@/pages/LandingPage";
 import PayrollReportPage from "@/pages/reports/PayrollReportPage";
+import OnboardingChecklistSettings from "@/pages/settings/Onboardingchecklistsettings";
+import OnboardingDetail from "@/pages/onboarding/OnboardingDetail";
+import OnboardingList from "@/pages/onboarding/OnboardingList";
 
 const AppRoutes = () => {
     return (
@@ -59,6 +62,9 @@ const AppRoutes = () => {
                         <Route path="/payroll" element={<PayrollPage />} />
                         <Route path="/holiday" element={<HolidayPage />} />
                         <Route path="/reports/payroll" element={<PayrollReportPage />} />
+                        <Route path="/onboardingchecklist" element={<OnboardingChecklistSettings />} />
+                        <Route path="/onboarding" element={<OnboardingList />} />
+                        <Route path="/onboarding/:userId" element={<OnboardingDetail />} />
                     </Route>
                 </Route>
                 {/* Error hanlding */}

@@ -6,6 +6,7 @@ import {
   List, Radio, MapPin, Send, CheckCircle,
   FileText, FileBarChart, FileBarChart2,
   FileSpreadsheet, FileClock,
+  UserRoundPlus,
 } from "lucide-react";
 
 export const iconMap: Record<string, React.ReactNode> = {
@@ -30,4 +31,5 @@ export const iconMap: Record<string, React.ReactNode> = {
   FileBarChart2: <FileBarChart2 />,
   FileSpreadsheet: <FileSpreadsheet />,
   FileClock: <FileClock />,
+  UserRoundPlus: <UserRoundPlus />,
 };

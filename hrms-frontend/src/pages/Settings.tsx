@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/auth.store'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AttendanceSettings from './settings/AttendanceSettings';
 import GeneralSettings from './settings/GeneralSettings';
+import OnboardingSettings from './settings/Onboardingchecklistsettings';
 
 function Settings() {
     const { user } = useAuthStore()
@@ -21,12 +22,16 @@ function Settings() {
                 <TabsList>
                     <TabsTrigger value="general">General</TabsTrigger>
                     <TabsTrigger value="attendance">Attendance</TabsTrigger>
+                    <TabsTrigger value="onboardingchecklist">Onboarding Checklist</TabsTrigger>
                 </TabsList>
                 <TabsContent value="general">
                     <GeneralSettings />
                 </TabsContent>
                 <TabsContent value="attendance" >
                     <AttendanceSettings />
+                </TabsContent>
+                <TabsContent value="onboardingchecklist" >
+                    <OnboardingSettings />
                 </TabsContent>
             </Tabs>
 

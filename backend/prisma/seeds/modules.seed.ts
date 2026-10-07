@@ -7,13 +7,14 @@ export const seedModules = async () => {
     { name: "branch", displayName: "Branch", icon: "GitBranch", url: "/branch", order: 3 },
     { name: "category", displayName: "Category", icon: "Tag", url: "/category", order: 4 },
     { name: "employee", displayName: "Employee", icon: "Users", url: "/employee", order: 5 },
-    { name: "attendance", displayName: "Attendance", icon: "CalendarCheck", url: "/attendance", order: 6 },
-    { name: "leave", displayName: "Leave", icon: "CalendarOff", url: "/leave", order: 7 },
-    { name: "payroll", displayName: "Payroll", icon: "Wallet", url: "/payroll", order: 8 },
-    { name: "reports", displayName: "Reports", icon: "BarChart2", url: "/reports", order: 9 },
-    { name: "roles", displayName: "Roles & Permissions", icon: "ShieldCheck", url: "/roles", order: 10 },
-    { name: "settings", displayName: "Settings", icon: "Settings", url: "/settings", order: 11 },
-    { name: "company-users", displayName: "Company Users", icon: "UserCog", url: "/companyusers", order: 12 }
+    { name: "onboarding", displayName: "Onboarding", icon: "UserRoundPlus", url: "/onboarding", order: 6 },
+    { name: "attendance", displayName: "Attendance", icon: "CalendarCheck", url: "/attendance", order: 7 },
+    { name: "leave", displayName: "Leave", icon: "CalendarOff", url: "/leave", order: 8 },
+    { name: "payroll", displayName: "Payroll", icon: "Wallet", url: "/payroll", order: 9 },
+    { name: "reports", displayName: "Reports", icon: "BarChart2", url: "/reports", order: 10 },
+    { name: "roles", displayName: "Roles & Permissions", icon: "ShieldCheck", url: "/roles", order: 11 },
+    { name: "settings", displayName: "Settings", icon: "Settings", url: "/settings", order: 12 },
+    { name: "company-users", displayName: "Company Users", icon: "UserCog", url: "/companyusers", order: 13 }
   ];
 
   // Parent modules

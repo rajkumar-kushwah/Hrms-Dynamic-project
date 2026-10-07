@@ -114,6 +114,12 @@ export default function Layout() {
             case "/reports/payroll":
                 return "Payroll Report";
 
+            case "/onboarding":
+                return "OnboardingList";
+
+            // case "/onboarding/:userId":
+            //     return "Onboarding Detail";
+
             default:
                 return "Dashboard";
         }
