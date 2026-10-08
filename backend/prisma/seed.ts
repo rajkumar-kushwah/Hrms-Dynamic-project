@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { prisma } from "../src/config/db.ts";
 import { seedModules } from "./seeds/modules.seed.ts";
 import { seedSuperAdminRole } from "./seeds/roles.seed.ts";
@@ -7,6 +8,11 @@ import { seedOnboardingTemplates } from "./seeds/onboarding.seed.ts";
 async function main() {
   console.log(" Seeding started...\n");
 
+  console.log("DATABASE URL loaded:", !!process.env.DATABASE_URL);
+
+  await prisma.$queryRaw`SELECT 1`;
+
+  console.log("Database query successful");
   await seedModules();        //  Pehle modules
   await seedSuperAdminRole(); //  Phir role + permissions
   await seedSuperAdmin();     //  Aakhir mein user

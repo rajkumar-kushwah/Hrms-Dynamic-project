@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -14,185 +7,141 @@ datasource db {
 }
 
 model Company {
-  id   String @id @default(uuid())
-  name String
-  code String @unique
-
-  email   String?
-  phone   String?
-  website String?
-  address String?
-  logo    String?
-
-  gstNumber        String?
-  subscriptionPlan String    @default("basic")
-  subscriptionEnd  DateTime?
-  maxBranches      Int       @default(1)
-  maxEmployees     Int       @default(10)
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users       User[]
-  role        Role[]
-  permission  Permission[]
-  branches    Branch[]
-  categories  Category[]
-  attendances Attendance[]
-
-  companySettings CompanySettings[]
-  leaveTypes      LeaveType[]
-  leaveRequests   LeaveRequest[]
-
+  id                           String                        @id @default(uuid())
+  name                         String
+  code                         String                        @unique
+  email                        String?
+  phone                        String?
+  website                      String?
+  address                      String?
+  logo                         String?
+  isActive                     Boolean                       @default(true)
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime                      @updatedAt
+  gstNumber                    String?
+  maxBranches                  Int                           @default(1)
+  maxEmployees                 Int                           @default(10)
+  subscriptionEnd              DateTime?
+  subscriptionPlan             String                        @default("basic")
+  attendances                  Attendance[]
+  branches                     Branch[]
+  categories                   Category[]
+  companySettings              CompanySettings?
   holidays                     Holiday[]
+  leaveRequests                LeaveRequest[]
+  leaveTypes                   LeaveType[]
   onboardings                  Onboarding[]
   onboardingChecklistTemplates OnboardingChecklistTemplate[]
+  permission                   Permission[]
+  role                         Role[]
+  users                        User[]
 }
 
 model User {
-  id          String  @id @default(uuid())
-  name        String?
-  email       String  @unique
-  password    String
-  isActive    Boolean @default(true)
-  grossSalary Float?
-
-  companyId String?
-  company   Company? @relation(fields: [companyId], references: [id])
-
-  roleId Int?
-  role   Role? @relation(fields: [roleId], references: [id])
-
-  createdBy     String? //  Kisne ne banaya
-  createdByUser User?   @relation("CreatedBy", fields: [createdBy], references: [id])
-  createdUsers  User[]  @relation("CreatedBy")
-
-  // employee field add kro
-  branchId String?
-  branch   Branch? @relation(fields: [branchId], references: [id])
-
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id])
-
-  //  Personal Info
-  employeeCode  String?   @unique
-  phone         String?
-  dateOfBirth   DateTime?
-  gender        String? // Male/Female/Other
-  bloodGroup    String?
-  maritalStatus String? // Single/Married
-  profilePhoto  String?
-
-  //  Address
-  currentAddress   String?
-  permanentAddress String?
-
-  //  Employment Info
-  designation        String?
-  joiningDate        DateTime?
-  employmentType     String? // Full-time/Part-time/Contract/Intern
-  workShift          String? // Morning/Evening/Night
-  reportingManagerId String?
-  reportingManager   User?     @relation("ReportingManager", fields: [reportingManagerId], references: [id])
-  teamMembers        User[]    @relation("ReportingManager")
-
-  //  Government IDs
-  panNumber    String?
-  aadharNumber String?
-
-  //  Bank Details
-  bankAccountNumber String?
-  bankIFSC          String?
-  bankName          String?
-
-  //  Statutory
-  pfNumber  String?
-  esiNumber String?
-
-  //  Emergency Contact
+  id                    String           @id @default(uuid())
+  name                  String?
+  email                 String           @unique
+  password              String
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  lastLogin             DateTime?
+  isActive              Boolean          @default(true)
+  companyId             String?
+  roleId                Int?
+  createdBy             String?
+  branchId              String?
+  categoryId            String?
+  designation           String?
+  employeeCode          String?          @unique
+  joiningDate           DateTime?
+  phone                 String?
+  aadharNumber          String?
+  bankAccountNumber     String?
+  bankIFSC              String?
+  bankName              String?
+  bloodGroup            String?
+  currentAddress        String?
+  dateOfBirth           DateTime?
   emergencyContactName  String?
   emergencyContactPhone String?
-
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  lastLogin      DateTime?
-  attendances    Attendance[]
-  leaveRequests  LeaveRequest[] @relation("LeaveRequests")
-  approvedLeaves LeaveRequest[] @relation("ApprovedLeaves")
-
-  payrolls Payroll[]
-
-  employmentStatus EmploymentStatus @default(ONBOARDING) // ye naya
-  onboarding       Onboarding?
+  employmentType        String?
+  esiNumber             String?
+  gender                String?
+  maritalStatus         String?
+  panNumber             String?
+  permanentAddress      String?
+  pfNumber              String?
+  profilePhoto          String?
+  reportingManagerId    String?
+  workShift             String?
+  grossSalary           Float?
+  employmentStatus      EmploymentStatus @default(ONBOARDING)
+  attendances           Attendance[]
+  approvedLeaves        LeaveRequest[]   @relation("ApprovedLeaves")
+  leaveRequests         LeaveRequest[]   @relation("LeaveRequests")
+  onboarding            Onboarding?
+  payrolls              Payroll[]
+  branch                Branch?          @relation(fields: [branchId], references: [id])
+  category              Category?        @relation(fields: [categoryId], references: [id])
+  company               Company?         @relation(fields: [companyId], references: [id])
+  createdByUser         User?            @relation("CreatedBy", fields: [createdBy], references: [id])
+  createdUsers          User[]           @relation("CreatedBy")
+  reportingManager      User?            @relation("ReportingManager", fields: [reportingManagerId], references: [id])
+  teamMembers           User[]           @relation("ReportingManager")
+  role                  Role?            @relation(fields: [roleId], references: [id])
 }
 
-//Roles Table — UI se banenge, hardcoded nahi
 model Role {
-  id                 Int     @id @default(autoincrement())
-  name               String //  "HR Manager" , "Accountant" , "Branch Manager"
+  id                 Int          @id @default(autoincrement())
+  name               String
   description        String?
-  isActive           Boolean @default(true)
-  isSystemRole       Boolean @default(false)
-  requiresOnboarding Boolean @default(true)
-
-  companyId String?
-  company   Company? @relation(fields: [companyId], references: [id])
-
-  user        User[]
-  permissions Permission[]
+  isActive           Boolean      @default(true)
+  companyId          String?
+  isSystemRole       Boolean      @default(false)
+  requiresOnboarding Boolean      @default(true)
+  permissions        Permission[]
+  company            Company?     @relation(fields: [companyId], references: [id])
+  user               User[]
 
   @@unique([name, companyId])
 }
 
-//Modules Table — Kaunse modules hain system mein
 model Module {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique // "attendance", "payroll", "reports"
-  displayName String // "Attendance", "Payroll", "Reports"
-  icon        String // ui icon
-  url         String // "/attendance"
-  parentId    Int? // Submenu ke liye
-  order       Int     @default(0)
-  isActive    Boolean @default(true)
-
-  parent   Module?  @relation("SubModules", fields: [parentId], references: [id])
-  children Module[] @relation("SubModules")
-
-  permission Permission[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  displayName String
+  icon        String
+  url         String
+  parentId    Int?
+  order       Int          @default(0)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  parent      Module?      @relation("SubModules", fields: [parentId], references: [id])
+  children    Module[]     @relation("SubModules")
+  permission  Permission[]
 }
 
-//Permissions Table — Role + Module ka combination
 model Permission {
-  id Int @id @default(autoincrement())
-
-  roleId Int
-  role   Role @relation(fields: [roleId], references: [id])
-
-  moduleId Int
-  module   Module @relation(fields: [moduleId], references: [id])
-
+  id        Int      @id @default(autoincrement())
+  roleId    Int
+  moduleId  Int
   companyId String?
-  company   Company? @relation(fields: [companyId], references: [id])
-
-  // Access levels
-  canView   Boolean @default(false)
-  canCreate Boolean @default(false)
-  canEdit   Boolean @default(false)
-  canDelete Boolean @default(false)
-
+  canView   Boolean  @default(false)
+  canCreate Boolean  @default(false)
+  canEdit   Boolean  @default(false)
+  canDelete Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  company   Company? @relation(fields: [companyId], references: [id])
+  module    Module   @relation(fields: [moduleId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
 
-  @@unique([roleId, moduleId, companyId]) // Ek role ka ek module pe ek hi permission
+  @@unique([roleId, moduleId, companyId])
 }
 
 model Branch {
-  id           String  @id @default(uuid())
+  id           String       @id @default(uuid())
   name         String
   code         String
   address      String?
@@ -202,189 +151,149 @@ model Branch {
   state        String?
   pincode      String?
   managerName  String?
-  latitude     Float? // 28.6139
-  longitude    Float? // 77.2090
-  geoRadius    Float? // 100 (meters)
+  latitude     Float?
+  longitude    Float?
+  geoRadius    Float?
+  isActive     Boolean      @default(true)
+  companyId    String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
   locationName String?
-  isActive     Boolean @default(true)
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
-
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  categories  Category[]
-  users       User[]
-  attendances Attendance[]
+  attendances  Attendance[]
+  company      Company      @relation(fields: [companyId], references: [id])
+  categories   Category[]
+  users        User[]
 
   @@unique([code, companyId])
 }
 
 model Category {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   description String
-  isActive    Boolean @default(true)
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
-
-  branchId String
-  branch   Branch @relation(fields: [branchId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
+  isActive    Boolean  @default(true)
+  companyId   String
+  branchId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  branch      Branch   @relation(fields: [branchId], references: [id])
+  company     Company  @relation(fields: [companyId], references: [id])
+  users       User[]
 
   @@unique([name, branchId])
 }
 
 model Attendance {
-  id String @id @default(uuid())
+  id               String    @id @default(uuid())
+  userId           String
+  companyId        String
+  branchId         String
+  date             DateTime
+  punchInTime      DateTime?
+  punchOutTime     DateTime?
+  punchInLat       Float?
+  punchInLng       Float?
+  punchOutLat      Float?
+  punchOutLng      Float?
+  isWithinGeoFence Boolean   @default(true)
+  status           String    @default("Present")
+  workingHours     Float?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  branch           Branch    @relation(fields: [branchId], references: [id])
+  company          Company   @relation(fields: [companyId], references: [id])
+  user             User      @relation(fields: [userId], references: [id])
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
-
-  branchId String
-  branch   Branch @relation(fields: [branchId], references: [id])
-
-  date DateTime // Sirf date (00:00:00 time) — ek din ka unique record
-
-  punchInTime  DateTime?
-  punchOutTime DateTime?
-
-  punchInLat  Float?
-  punchInLng  Float?
-  punchOutLat Float?
-  punchOutLng Float?
-
-  isWithinGeoFence Boolean @default(true)
-
-  status String @default("Present") // Present / Absent / Half-day / Late
-
-  workingHours Float? // Auto calculate (punch out - punch in)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, date]) // Ek user ka ek din ka ek hi record
+  @@unique([userId, date])
 }
 
 model CompanySettings {
-  id        String  @id @default(uuid())
-  companyId String  @unique
-  company   Company @relation(fields: [companyId], references: [id])
-
-  lateMarkHour     Int   @default(10)
-  lateMarkMinute   Int   @default(15)
-  halfDayHours     Float @default(4)
-  defaultGeoRadius Float @default(100)
-
-  weekOffDays Int[] @default([0]) // 0 = Sunday, 6 = Saturday
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(uuid())
+  companyId        String   @unique
+  lateMarkHour     Int      @default(10)
+  lateMarkMinute   Int      @default(15)
+  halfDayHours     Float    @default(4)
+  defaultGeoRadius Float    @default(100)
+  weekOffDays      Int[]    @default([0])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  company          Company  @relation(fields: [companyId], references: [id])
 }
 
 model LeaveType {
-  id          String  @id @default(uuid())
-  name        String // "Sick Leave", "Casual Leave", "Earned Leave"
-  description String?
-  isPaid      Boolean @default(true)
-  daysPerYear Int     @default(12)
-  isActive    Boolean @default(true)
-  companyId   String
-  company     Company @relation(fields: [companyId], references: [id])
-
+  id           String         @id @default(uuid())
+  name         String
+  description  String?
+  daysPerYear  Int            @default(12)
+  isActive     Boolean        @default(true)
+  companyId    String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  isPaid       Boolean        @default(true)
   leaveRequest LeaveRequest[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  company      Company        @relation(fields: [companyId], references: [id])
 }
 
 model LeaveRequest {
-  id String @id @default(uuid())
-
-  userId String
-  user   User   @relation("LeaveRequests", fields: [userId], references: [id])
-
-  leaveTypeId String
-  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
-
-  startDate DateTime
-  endDate   DateTime
-  totalDays Float
-  reason    String?
-
-  status String @default("Pending") // Pending/Approved/Rejected
-
+  id             String    @id @default(uuid())
+  userId         String
+  leaveTypeId    String
+  companyId      String
+  startDate      DateTime
+  endDate        DateTime
+  totalDays      Float
+  reason         String?
+  status         String    @default("Pending")
   approvedBy     String?
-  approvedByUser User?   @relation("ApprovedLeaves", fields: [approvedBy], references: [id])
-
-  approvedAt   DateTime?
-  rejectReason String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  approvedAt     DateTime?
+  rejectReason   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  approvedByUser User?     @relation("ApprovedLeaves", fields: [approvedBy], references: [id])
+  company        Company   @relation(fields: [companyId], references: [id])
+  leaveType      LeaveType @relation(fields: [leaveTypeId], references: [id])
+  user           User      @relation("LeaveRequests", fields: [userId], references: [id])
 }
 
 model Payroll {
-  id              String @id @default(uuid())
-  userId          String
-  month           Int
-  year            Int
-  grossSalary     Float
-  workingDays     Int
-  holidayDays     Int    @default(0)
-  presentDays     Int
-  paidLeaveDays   Int
-  unpaidLeaveDays Int
-  absentDays      Int
-  unpaidDeduction Float
-  netSalary       Float
-
-  totalDaysInMonth    Int   @default(0)
-  elapsedCalendarDays Int   @default(0)
-  payableDays         Int   @default(0)
-  earnedSalary        Float @default(0)
-  perDaySalary        Float @default(0)
-
-  status      PayrollStatus @default(DRAFT)
-  confirmedAt DateTime?
-  paidAt      DateTime?
-  paymentRef  String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
+  id                  String        @id @default(uuid())
+  userId              String
+  year                Int
+  grossSalary         Float
+  workingDays         Int
+  presentDays         Int
+  paidLeaveDays       Int
+  unpaidLeaveDays     Int
+  absentDays          Int
+  unpaidDeduction     Float
+  netSalary           Float
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  month               Int
+  holidayDays         Int           @default(0)
+  confirmedAt         DateTime?
+  earnedSalary        Float         @default(0)
+  elapsedCalendarDays Int           @default(0)
+  paidAt              DateTime?
+  payableDays         Int           @default(0)
+  paymentRef          String?
+  perDaySalary        Float         @default(0)
+  status              PayrollStatus @default(DRAFT)
+  totalDaysInMonth    Int           @default(0)
+  user                User          @relation(fields: [userId], references: [id])
 
   @@unique([userId, month, year])
 }
 
-enum PayrollStatus {
-  DRAFT
-  CONFIRMED
-  PAID
-}
-
 model Holiday {
-  id       String   @id @default(uuid())
-  name     String
-  date     DateTime
-  isActive Boolean  @default(true)
-
+  id        String   @id @default(uuid())
+  name      String
+  date      DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  isActive  Boolean  @default(true)
+  company   Company  @relation(fields: [companyId], references: [id])
 
   @@unique([companyId, date])
 }
@@ -398,7 +307,67 @@ model Session {
   @@map("sessions")
 }
 
-// ── Enums ──
+model Onboarding {
+  id           String                    @id @default(uuid())
+  userId       String                    @unique
+  companyId    String
+  currentStage OnboardingStage           @default(OFFER)
+  status       OnboardingStatus          @default(IN_PROGRESS)
+  startDate    DateTime                  @default(now())
+  targetDate   DateTime?
+  completedAt  DateTime?
+  notes        String?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  company      Company                   @relation(fields: [companyId], references: [id])
+  user         User                      @relation(fields: [userId], references: [id])
+  items        OnboardingChecklistItem[]
+
+  @@index([companyId])
+}
+
+model OnboardingChecklistItem {
+  id               String          @id @default(uuid())
+  onboardingId     String
+  stage            OnboardingStage
+  title            String
+  description      String?
+  isRequired       Boolean         @default(true)
+  order            Int             @default(0)
+  isCompleted      Boolean         @default(false)
+  completedAt      DateTime?
+  completedBy      String?
+  requiresDocument Boolean         @default(false)
+  documentUrl      String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  onboarding       Onboarding      @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+
+  @@index([onboardingId])
+}
+
+model OnboardingChecklistTemplate {
+  id               String          @id @default(uuid())
+  companyId        String
+  stage            OnboardingStage
+  title            String
+  description      String?
+  isRequired       Boolean         @default(true)
+  order            Int             @default(0)
+  requiresDocument Boolean         @default(false)
+  isActive         Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  company          Company         @relation(fields: [companyId], references: [id])
+
+  @@index([companyId, stage])
+}
+
+enum PayrollStatus {
+  DRAFT
+  CONFIRMED
+  PAID
+}
 
 enum OnboardingStage {
   OFFER
@@ -407,8 +376,6 @@ enum OnboardingStage {
   TRAINING
   ACTIVE
 }
-
-// ── Enums ──
 
 enum EmploymentStatus {
   ONBOARDING
@@ -420,78 +387,4 @@ enum OnboardingStatus {
   IN_PROGRESS
   COMPLETED
   ON_HOLD
-}
-
-// ── Onboarding — ek record per employee ──
-
-model Onboarding {
-  id        String @id @default(uuid())
-  userId    String @unique
-  companyId String
-
-  currentStage OnboardingStage  @default(OFFER)
-  status       OnboardingStatus @default(IN_PROGRESS)
-
-  startDate   DateTime  @default(now())
-  targetDate  DateTime?
-  completedAt DateTime?
-
-  notes String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user    User                      @relation(fields: [userId], references: [id])
-  company Company                   @relation(fields: [companyId], references: [id])
-  items   OnboardingChecklistItem[]
-
-  @@index([companyId])
-}
-
-// ── Checklist items — employee ki apni copy, template se clone hoti hai ──
-
-model OnboardingChecklistItem {
-  id           String @id @default(uuid())
-  onboardingId String
-
-  stage       OnboardingStage
-  title       String
-  description String?
-  isRequired  Boolean         @default(true)
-  order       Int             @default(0)
-
-  isCompleted Boolean   @default(false)
-  completedAt DateTime?
-  completedBy String?
-
-  requiresDocument Boolean @default(false)
-  documentUrl      String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  onboarding Onboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
-
-  @@index([onboardingId])
-}
-
-model OnboardingChecklistTemplate {
-  id        String @id @default(uuid())
-  companyId String
-
-  stage            OnboardingStage
-  title            String
-  description      String?
-  isRequired       Boolean         @default(true)
-  order            Int             @default(0)
-  requiresDocument Boolean         @default(false)
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  company Company @relation(fields: [companyId], references: [id])
-
-  @@index([companyId, stage])
 }
