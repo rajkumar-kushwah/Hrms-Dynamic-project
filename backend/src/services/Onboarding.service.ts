@@ -1,5 +1,5 @@
 import { prisma } from "../config/db.js";
-import { OnboardingStatus } from "@prisma/client";
+import { OnboardingStatus, type Onboarding } from "@prisma/client";
 
 const STAGE_ORDER = ["OFFER", "JOINING", "DOCUMENTS", "TRAINING", "ACTIVE"] as const;
 type Stage = (typeof STAGE_ORDER)[number];
@@ -236,46 +236,53 @@ export const toggleChecklistItem = async (
 // was the last stage).
 // ─────────────────────────────────────────────────────────────
 
-const evaluateStageProgress = async (onboardingId: string) => {
+const evaluateStageProgress = async (onboardingId: string): Promise<Onboarding> => {
     const onboarding = await prisma.onboarding.findUnique({
         where: { id: onboardingId },
         include: { items: true },
     });
 
     if (!onboarding) throw new Error("Onboarding not found");
-    if (onboarding.status !== "IN_PROGRESS") return onboarding; // on hold / completed — don't auto-advance
+    if (onboarding.status !== "IN_PROGRESS") return onboarding; // on hold / completed
 
     const currentStage = onboarding.currentStage as Stage;
-    const stageItems = onboarding.items.filter((i) => i.stage === currentStage);
-    const requiredItems = stageItems.filter((i) => i.isRequired);
+
+    const requiredItems = onboarding.items.filter(
+        (i) => i.stage === currentStage && i.isRequired
+    );
+
+    // Khaali array par every() true deta hai, to jis stage mein required
+    // item nahi hai wo bhi "done" maana jayega aur aage badh jayega
     const allRequiredDone = requiredItems.every((i) => i.isCompleted);
 
-    if (!allRequiredDone || requiredItems.length === 0) {
-        return onboarding;
-    }
+    if (!allRequiredDone) return onboarding;
 
     const upcoming = nextStage(currentStage);
 
+    // Aakhri stage bhi complete: poora onboarding khatam
     if (upcoming === null) {
-        // Was already on ACTIVE and its required items just finished —
-        // the whole onboarding is complete.
-        const updated = await prisma.onboarding.update({
-            where: { id: onboardingId },
-            data: { status: "COMPLETED", completedAt: new Date() },
-        });
+        return prisma.$transaction(async (tx) => {
+            const updated = await tx.onboarding.update({
+                where: { id: onboardingId },
+                data: { status: "COMPLETED", completedAt: new Date() },
+            });
 
-        await prisma.user.update({
-            where: { id: onboarding.userId },
-            data: { employmentStatus: "ACTIVE", isActive: true },
-        });
+            await tx.user.update({
+                where: { id: onboarding.userId },
+                data: { employmentStatus: "ACTIVE", isActive: true },
+            });
 
-        return updated;
+            return updated;
+        });
     }
 
-    return prisma.onboarding.update({
+    await prisma.onboarding.update({
         where: { id: onboardingId },
         data: { currentStage: upcoming },
     });
+
+    // Agla stage bhi already complete (ya khaali) ho to wahan se bhi aage badho
+    return evaluateStageProgress(onboardingId);
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -367,7 +374,7 @@ export const resetOnboarding = async (
         await tx.user.update({
             where: { id: userId },
             data: {
-                employmentStatus: "ONBOARDING",
+                employmentStatus: "ACTIVE",
             },
         });
 

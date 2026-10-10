@@ -23,6 +23,9 @@ import holidayRoutes from "./routes/holiday.routes.js";
 import payrollReportRoutes from "./routes/payrollreport.routes.js";
 import onboardingTemplateRoutes from "./routes/Onboardingtemplate.routes.js";
 import onboardingRouter from "./routes/Onboarding.routes.js";
+import { healthCheck } from "./utilis/dbErrors.js";
+import { isDatabaseUnavailable } from "./utilis/dbErrors.js";
+import type { Request, Response, NextFunction } from "express";
 
 dotenv.config();
 const app = express();
@@ -72,15 +75,40 @@ app.use("/api/holidays", holidayRoutes);
 app.use("/api/payroll-report", payrollReportRoutes);
 app.use("/api/onboarding-template", onboardingTemplateRoutes);
 app.use("/api/onboarding", onboardingRouter);
+app.get("/api/health", healthCheck)
 
 
 app.use('/checkin', checkInRouter)
 app.use('/monthly-attendance', monthlyRouter)
 
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error("Global Catch Error:", err);
+
+    // Agar error database ya session store (connect-pg-simple) ki wajah se hai
+    if (
+        isDatabaseUnavailable(err) ||
+        err.code === "ECONNREFUSED" ||
+        err.message?.includes("connect-pg-simple") ||
+        err.toString().includes("ECONNREFUSED")
+    ) {
+        return res.status(503).json({
+            success: false,
+            code: "SERVICE_UNAVAILABLE",
+            message: "Database connection is unavailable. Please try again later.",
+        });
+    }
+
+    return res.status(500).json({
+        success: false,
+        message: err.message || "Internal server error",
+    });
+});
 
 async function start() {
     try {
         await prisma.$connect();
+        // await prisma.$queryRaw`SELECT 1`;
+        // console.log("Prisma database connection verified");
         app.listen(port, () => {
             console.log(`Server running on port ${port}`);
         });

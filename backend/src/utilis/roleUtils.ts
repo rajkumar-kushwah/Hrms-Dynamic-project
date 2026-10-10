@@ -1,11 +1,13 @@
-export const isAdminRole = (role?: string | null) => {
-    const normalized = role
+export const isAdminRole = (
+    roleName?: string | null
+): boolean => {
+    const normalizedRole = roleName
         ?.trim()
         .toLowerCase()
         .replace(/\s+/g, "_");
 
     return (
-        normalized === "super_admin" ||
-        normalized === "company_admin"
+        normalizedRole === "super_admin" ||
+        normalizedRole === "company_admin"
     );
 };

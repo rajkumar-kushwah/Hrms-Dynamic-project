@@ -118,7 +118,7 @@ export default function Layout() {
                 return "OnboardingList";
 
             // case "/onboarding/:userId":
-            //     return "Onboarding Detail";
+            //     return "OnboardingDetail";
 
             default:
                 return "Dashboard";
@@ -132,13 +132,25 @@ export default function Layout() {
     const isEmployeeAttendance =
         location.pathname.startsWith("/attendance/employee/");
 
+    const isOnboardingDetail =
+        location.pathname.startsWith("/onboarding/") &&
+        location.pathname !== "/onboarding";
+
+    const isEmployeeDetail =
+        location.pathname.startsWith("/employee/") &&
+        location.pathname !== "/employee";
+
     // ─────────────────────────────────────────
     // Current Page Title
     // ─────────────────────────────────────────
 
     const pageTitle = isEmployeeAttendance
         ? "Employee Attendance"
-        : getPageTitle();
+        : isOnboardingDetail
+            ? "Onboarding Detail"
+            : isEmployeeDetail
+                ? "Employee Detail"
+                : getPageTitle();
 
     return (
         <SidebarProvider>
@@ -183,6 +195,42 @@ export default function Layout() {
                                         <BreadcrumbItem>
                                             <BreadcrumbPage>
                                                 Employee Attendance
+                                            </BreadcrumbPage>
+                                        </BreadcrumbItem>
+                                    </>
+                                ) : isOnboardingDetail ? (
+                                    <>
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink asChild>
+                                                <Link to="/onboarding">
+                                                    Onboarding
+                                                </Link>
+                                            </BreadcrumbLink>
+                                        </BreadcrumbItem>
+
+                                        <BreadcrumbSeparator />
+
+                                        <BreadcrumbItem>
+                                            <BreadcrumbPage>
+                                                Onboarding Detail
+                                            </BreadcrumbPage>
+                                        </BreadcrumbItem>
+                                    </>
+                                ) : isEmployeeDetail ? (
+                                    <>
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink asChild>
+                                                <Link to="/employee">
+                                                    Employee List
+                                                </Link>
+                                            </BreadcrumbLink>
+                                        </BreadcrumbItem>
+
+                                        <BreadcrumbSeparator />
+
+                                        <BreadcrumbItem>
+                                            <BreadcrumbPage>
+                                                Employee Detail
                                             </BreadcrumbPage>
                                         </BreadcrumbItem>
                                     </>

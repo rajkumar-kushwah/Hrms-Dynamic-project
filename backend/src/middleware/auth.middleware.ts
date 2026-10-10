@@ -1,6 +1,7 @@
 
 import type { Request, Response, NextFunction } from "express";
 import { prisma } from "../config/db.js";
+import { isDatabaseUnavailable, sendDatabaseUnavailable } from "../utilis/dbErrors.js";
 
 // export const protect = async (req: any, res: Response, next: NextFunction) => {
 //   try {
@@ -126,6 +127,10 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
 
     next();
   } catch (error) {
+    console.log("Auth Protect Error: ", error);
+    if (isDatabaseUnavailable(error)) {
+      return sendDatabaseUnavailable(res);
+    }
     return res.status(500).json({ message: "Auth error" });
   }
 };

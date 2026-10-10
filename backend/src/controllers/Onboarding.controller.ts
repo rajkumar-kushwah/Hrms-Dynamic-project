@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import * as OnboardingService from "../services/Onboarding.service.js";
 import { OnboardingStage, OnboardingStatus } from "@prisma/client";
+
 const isAdminUser = (req: Request) => {
     const roleName = req.user?.role?.name
         ?.trim()
@@ -13,6 +14,7 @@ const isAdminUser = (req: Request) => {
 // POST /api/onboarding/start/:userId
 export const startOnboarding = async (req: Request, res: Response) => {
     try {
+
         const { targetDate, notes } = (req.body ?? {}) as {
             targetDate?: string;
             notes?: string;
@@ -50,6 +52,11 @@ export const startOnboarding = async (req: Request, res: Response) => {
 // GET /api/onboarding?status=IN_PROGRESS
 export const getOnboardingList = async (req: Request, res: Response) => {
     try {
+
+        if (!isAdminUser(req)) {
+            return res.status(403).json({ success: false, message: "Not authorized" });
+        }
+
         const companyId = req.user?.companyId;
         if (!companyId) {
             return res.status(400).json({ success: false, message: "Company ID is required" });
@@ -70,12 +77,22 @@ export const getOnboardingList = async (req: Request, res: Response) => {
 // GET /api/onboarding/:userId
 export const getOnboardingDetail = async (req: Request, res: Response) => {
     try {
+        
+        const { userId } = req.params as { userId: string };
+
+        if (!userId) {
+            return res.status(400).json({ success: false, message: "User ID is required" });
+        }
+
+        if (!isAdminUser(req)) {
+            return res.status(403).json({ success: false, message: "Not authorized" });
+        }
+
         const companyId = req.user?.companyId;
         if (!companyId) {
             return res.status(400).json({ success: false, message: "Company ID is required" });
         }
 
-        const { userId } = req.params as { userId: string };
         const data = await OnboardingService.getOnboardingDetail(userId, companyId);
         return res.status(200).json({ success: true, data });
     } catch (error: any) {
@@ -182,6 +199,11 @@ export const resetEmployeeOnboarding = async (
     res: Response
 ) => {
     try {
+
+        if (!isAdminUser(req)) {
+            return res.status(403).json({ success: false, message: "Not authorized" });
+        }
+
         const { userId } = req.params as { userId: string };
 
         if (!userId) {

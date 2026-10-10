@@ -2,305 +2,218 @@ import { type Request, type Response } from "express";
 import { prisma } from "../config/db.js";
 import bcrypt from "bcrypt";
 import { isAdminRole } from "../utilis/roleUtils.js";
+import { isDatabaseUnavailable, sendDatabaseUnavailable } from "../utilis/dbErrors.js";
 
 
-// signup controller
 
-// export const signup = async (req: any, res: any) => {
-//     const { name, email, password } = req.body;
+
+// export const signin = async (req: Request, res: Response) => {
 //     try {
-//         const users = await prisma.user.findUnique({
-//             where: {
-//                 email: email
-//             }
-//         })
-//         if (users) {
-//             return res.status(400).json({ message: 'User already exists' });
-//         }
-//         const hashedPassword = await bcrypt.hash(password, 10);
+//         const { email, password } = req.body;
 
-//         // 2. check user count   super admin can create user
-//         const userCount = await prisma.user.count();
+//         // Check if email and password are provided
+//         // if (!email || !password) {
+//         //     return res.status(400).json({ success: false, message: 'Email and password are required' });
+//         // }
 
-//         let role;
-
-//         if (userCount === 0) {
-//             role = await prisma.role.findFirst({
-//                 where: { name: "SUPER_ADMIN" }
-//             });
-//         } else {
-//             role = await prisma.role.findFirst({
-//                 where: { name: "EMPLOYEE" }   // default role
-//             });
-//         }
-
-//         if (!role) {
-//             return res.status(404).json({ message: 'Role not found' });
-//         }
-
-//         const newUser = await prisma.user.create({
-//             data: {
-//                 name,
-//                 email,
-//                 password: hashedPassword,
-//                 companyId: req.company.id,
-//                 roles: {
-//                     connect: { id: role.id }
-//                 }
-//             }
-//         });
-//         res.status(201).json({ message: 'User created successfully', user: newUser });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: 'Server error' });
-//     }
-// }
-
-
-
-
-// signup controller
-// export const signup = async (req: any, res: any) => {
-//     const { name, email, password } = req.body;
-//     try {
-//         const users = await prisma.user.findUnique({
-//             where: {
-//                 email: email
-//             }
-//         })
-//         if (users) {
-//             return res.status(400).json({ message: 'User already exists' });
-//         }
-//         const hashedPassword = await bcrypt.hash(password, 10);
-
-//         // 2. check user count   super admin can create user
-//         const userCount = await prisma.user.count();
-
-//         let role;
-
-//         if (userCount === 0) {
-//             role = await prisma.role.findFirst({
-//                 where: { name: "SUPER_ADMIN" }
-//             });
-//         } else {
-//             role = await prisma.role.findFirst({
-//                 where: { name: "EMPLOYEE" }   // default role
-//             });
-//         }
-
-//         if (!role) {
-//             return res.status(404).json({ message: 'Role not found' });
-//         }
-
-//         const newUser = await prisma.user.create({
-//             data: {
-//                 name,
-//                 email,
-//                 password: hashedPassword,
-//                 companyId: req.company.id,
-//                 roles: {
-//                     connect: { id: role.id }
-//                 }
-//             }
-//         });
-//         res.status(201).json({ message: 'User created successfully', user: newUser });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: 'Server error' });
-//     }
-// }
-
-// signin controller 
-// export const signin = async (req: any, res: any) => {
-//     const { email, password } = req.body;
-//     try {
-//         if (!email || !password) {
-//             return res.status(400).json({ message: "Email and password required" });
-//         }
-
+//         // find user
 //         const user = await prisma.user.findUnique({
 //             where: { email },
 //             include: {
-//                 company: true,
-//                 roles: {
+//                 role: {
 //                     include: {
-//                         permissions: true
+//                         permissions: {
+//                             include: {
+//                                 module: true  // module detail bhi aaye
+//                             },
+//                         },
+//                     }
+//                 },
+//                 company: true
+//             }
+//         })
+
+
+//         if (!user) {
+//             return res.status(404).json({ success: false, message: 'User not found' });
+//         }
+
+//         const isAdmin = isAdminRole(user?.role?.name);
+
+//         const employmentStatus = user.employmentStatus
+//             ?.trim()
+//             .toLowerCase();
+
+//         // Onboarding check
+//         if (!isAdmin && employmentStatus !== "active") {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: "Onboarding is not completed. Login is not allowed.",
+//             });
+//         }
+
+
+//         // checked active user
+//         if (!user.isActive) {
+//             return res.status(403).json({ success: false, message: 'User is inactive' });
+//         }
+
+//         if (
+//             user.role?.name !== "super_admin" &&
+//             user.company &&
+//             !user.company.isActive
+//         ) {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: "Company account is inactive"
+//             });
+//         }
+
+//         // Check password
+//         const isPasswordValid = await bcrypt.compare(password, user.password);
+
+//         if (!isPasswordValid) {
+//             return res.status(401).json({ success: false, message: 'Invalid password' });
+//         }
+
+//         // create session
+//         req.session.userId = user.id;
+//         console.log("SESSION AFTER LOGIN:", req.session);
+//         console.log("USER ID:", req.session.userId);
+
+//         // update Last login
+//         const UpdateUser = await prisma.user.update({
+//             where: { id: user.id },
+//             data: { lastLogin: new Date() },
+//             include: {
+//                 role: {
+//                     include: {
+//                         permissions: {
+//                             include: {
+//                                 module: true  //  Module details bhi aaye
+//                             }
+//                         }
 //                     }
 //                 }
 //             }
 //         });
 
-//         if (!user) {
-//             return res.status(401).json({ message: 'User not found' });
-//         }
+//         const { password: _, ...userWithoutPassword } = UpdateUser;
 
-
-//         // console.log("user", JSON.stringify(user.roles, null, 2));
-
-//         const isMatch = await bcrypt.compare(password, user.password);
-//         if (!isMatch) {
-//             return res.status(401).json({ message: 'Invalid Password' });
-//         }
-
-//         // update last login
-//         await prisma.user.update({
-//             where: { id: user.id },
-//             data: { lastLogin: new Date() }
-//         });
-
-//         // console.log(JSON.stringify(user.roles, null, 2));
-//         // Store the user ID in the session
-
-//         console.log("LOGIN START");
-
-//         console.log("EMAIL:", email);
-
-//         console.log("USER FOUND:", user);
-
-//         console.log("ROLES RAW:", user?.roles);
-
-//         console.log("ROLES JSON:", JSON.stringify(user?.roles, null, 2));
-
-//         console.log("LOGIN END");
-
-//         (req.session as any).userId = user.id;
-//         (req.session as any).companyId = user.companyId;
-
-//         console.log("SESSION:", req.session);
-//         console.log("USERID:", (req as any).session?.userId);
-//         const permission = [
-//             ...new Set(
-//                 user.roles?.flatMap((role: any) =>
-//                     role.permissions.map((p: any) => p.name) ?? []
-//                 ) ?? []
-//             )
-//         ];
-
-//         const primaryRole = user.roles?.[0] || null;
-
-//         if (!primaryRole) {
-//             return res.status(400).json({
-//                 message: "Role not assigned to user"
-//             });
-//         }
-
-//         return res.status(200).json({
-//             message: 'Login successful',
-//             user: {
-//                 id: user.id,
-//                 email: user.email,
-//                 role: primaryRole.name,
-//                 roles: user.roles.map(role => role.name),
-//                 permission
-//             }
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ message: 'Server error' });
-//     }
-// };
-
-// logout controller
-// export const logout = async (req: any, res: any) => {
-//     try {
-
-//         if (!(req.session as any).userId) {
-//             return res.status(401).json({ message: "Not authorized" });
-//         }
-
-//         req.session.destroy((err: any) => {
+//         req.session.save((err) => {
 //             if (err) {
-//                 return res.status(500).json({ message: 'Logout failed' });
+//                 console.error("SESSION SAVE ERROR:", err);
+
+//                 return res.status(500).json({
+//                     success: false,
+//                     message: "Session save failed",
+//                 });
 //             }
 
-//             res.clearCookie('connect.sid');
-//             return res.status(200).json({ message: 'Logout successful' });
+//             console.log("SESSION SAVED:", req.session);
+
+//             return res.status(200).json({
+//                 success: true,
+//                 message: "Login successful",
+//                 data: userWithoutPassword,
+//             });
 //         });
-
 //     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ message: 'Server error' });
-//     }
-// };
-
-// delete user
-// export const deleteUser = async (req: any, res: any) => {
-//     try {
-//         // const userId = req.session.userId;
-//         const id = Number(req.params.id);
-//         const user = await prisma.user.deleteMany({
-//             where: { id,
-//                 companyId: req.session.companyId
-//              },
-//         })
-//         res.status(200).json({ message: 'User deleted successfully', user: user });
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({ message: 'Server error' });
+//         console.error("Login Error :", error);
+//         if (isDatabaseUnavailable(error)) {
+//             console.log("Login Error : Database is unavailable : ", error);
+//             return sendDatabaseUnavailable(res);
+//         }
+//         return res.status(500).json({ success: false, message: 'Server error' });
 //     }
 // }
 
-// update user
-// export const UpdateUser = async (req: any, res: any) => {
+
+// // logout controller
+// export const logout = async (req: Request, res: Response) => {
 //     try {
-//         const id = Number(req.params.id);
-//         const { name, email, password } = req.body;
 
-//         type UserUpdateInput = Parameters<typeof prisma.user.updateMany>[0]['data'];
+//         req.session.destroy((err: Error | null) => {
+//             if (err) {
+//                 console.error("Logout Error :", err);
+//                 return res.status(500).json({ success: false, message: 'Logout failed' });
+//             }
 
-//         const data: UserUpdateInput = { name, email };
-//         // password script
-//        if(password){
-//         data.password = await bcrypt.hash(password, 10);
-//        }
+//             // res.clearCookie("connect.sid", {
+//             //     path: "/",
+//             //     httpOnly: true,
+//             //     sameSite: "lax",
+//             // });
+//             res.clearCookie("sid", {
+//                 path: "/",
+//                 httpOnly: true,
+//                 secure: process.env.NODE_ENV === "production",
+//                 sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+//             });
+//             return res.status(200).json({ success: true, message: 'Logged out successfully' });
 
-//         const UpdateUser = await prisma.user.updateMany({
-//             where: { 
-//                 id,
-//                 companyId: req.session.companyId,
-//              },
-//             data,
-//         })
-//         res.status(200).json({ message: 'User updated successfully', user: UpdateUser });
+//         });
+
 //     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({ message: 'Server error' });
+//         console.error("Logout Error :", error);
+//         if (isDatabaseUnavailable(error)) {
+//             console.log("Logout Error : Database is unavailable : ", error);
+//             return sendDatabaseUnavailable(res);
+//         }
+//         return res.status(500).json({ success: false, message: 'Server error' });
 //     }
+// }
 
-// };
 
-// signin controller
+// Imports jo aapki file mein pehle se hain wahi rakho
+// (Request, Response, prisma, bcrypt, isAdminRole) aur ye add karo:
+// import { isDatabaseUnavailable, sendDatabaseUnavailable } from "../utils/dbErrors.js";
+
+
 
 export const signin = async (req: Request, res: Response) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body ?? {};
 
-        // Check if email and password are provided
-        // if (!email || !password) {
-        //     return res.status(400).json({ success: false, message: 'Email and password are required' });
-        // }
+        // Missing/non-string input pe pehle 500 aata tha (bcrypt/Prisma throw karte the)
+        if (typeof email !== "string" || typeof password !== "string" || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required",
+            });
+        }
 
-        // find user
         const user = await prisma.user.findUnique({
             where: { email },
             include: {
                 role: {
                     include: {
                         permissions: {
-                            include: {
-                                module: true  // module detail bhi aaye
-                            },
+                            include: { module: true },
                         },
-                    }
+                    },
                 },
-                company: true
-            }
-        })
+                company: true,
+            },
+        });
 
+        // Password PEHLE check hota hai, status baad mein. Warna bina password
+        // ke hi koi bhi email se pata laga leta ki account inactive/onboarding mein hai.
+        // "User not found" aur "wrong password" ka message same hai, taaki
+        // koi ye na jaan sake ki kaunsa email registered hai.
+        const passwordMatches = user
+            ? await bcrypt.compare(password, user.password)
+            : false;
 
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+        if (!user || !passwordMatches) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password",
+            });
         }
+
+        // req.user login ke waqt set nahi hota (wo protect middleware se aata hai),
+        // isliye role user object se hi lena hai
         const roleName = user.role?.name
             ?.trim()
             .toLowerCase()
@@ -308,22 +221,8 @@ export const signin = async (req: Request, res: Response) => {
 
         const isAdmin = isAdminRole(roleName);
 
-        const employmentStatus = user.employmentStatus
-            ?.trim()
-            .toLowerCase();
-
-        // Onboarding check
-        if (!isAdmin && employmentStatus !== "active") {
-            return res.status(403).json({
-                success: false,
-                message: "Onboarding is not completed. Login is not allowed.",
-            });
-        }
-
-
-        // checked active user
         if (!user.isActive) {
-            return res.status(403).json({ success: false, message: 'User is inactive' });
+            return res.status(403).json({ success: false, message: "User is inactive" });
         }
 
         if (
@@ -333,44 +232,38 @@ export const signin = async (req: Request, res: Response) => {
         ) {
             return res.status(403).json({
                 success: false,
-                message: "Company account is inactive"
+                message: "Company account is inactive",
             });
         }
 
-        // Check password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            return res.status(401).json({ success: false, message: 'Invalid password' });
+        if (!isAdmin && user.employmentStatus !== "ACTIVE") {
+            return res.status(403).json({
+                success: false,
+                message: "Onboarding is not completed. Login is not allowed.",
+            });
         }
 
-        // create session
         req.session.userId = user.id;
-        console.log("SESSION AFTER LOGIN:", req.session);
-        console.log("USER ID:", req.session.userId);
 
-        // update Last login
-        const UpdateUser = await prisma.user.update({
+        const loggedInAt = new Date();
+
+        // Pehle poori user query dobara chalti thi (role + permissions + module),
+        // ab sirf lastLogin update hota hai aur response mein company bhi aati hai
+        await prisma.user.update({
             where: { id: user.id },
-            data: { lastLogin: new Date() },
-            include: {
-                role: {
-                    include: {
-                        permissions: {
-                            include: {
-                                module: true  //  Module details bhi aaye
-                            }
-                        }
-                    }
-                }
-            }
+            data: { lastLogin: loggedInAt },
         });
 
-        const { password: _, ...userWithoutPassword } = UpdateUser;
+        const { password: _, ...userWithoutPassword } = user;
 
         req.session.save((err) => {
             if (err) {
                 console.error("SESSION SAVE ERROR:", err);
+
+                // Session store DB mein ho to DB down hone par yahi fail hota hai
+                if (isDatabaseUnavailable(err)) {
+                    return sendDatabaseUnavailable(res);
+                }
 
                 return res.status(500).json({
                     success: false,
@@ -378,47 +271,51 @@ export const signin = async (req: Request, res: Response) => {
                 });
             }
 
-            console.log("SESSION SAVED:", req.session);
-
             return res.status(200).json({
                 success: true,
                 message: "Login successful",
-                data: userWithoutPassword,
+                data: { ...userWithoutPassword, lastLogin: loggedInAt },
             });
         });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ success: false, message: 'Server error' });
-    }
-}
+        console.error("Login Error:", error);
 
+        if (isDatabaseUnavailable(error)) {
+            console.log("sendDatabaseUnavailable", isDatabaseUnavailable(error));
+            return sendDatabaseUnavailable(res);
+        }
+
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+};
 
 // logout controller
 export const logout = async (req: Request, res: Response) => {
     try {
-
         req.session.destroy((err: Error | null) => {
+            // destroy() ka error callback mein aata hai, catch mein nahi,
+            // isliye DB-down check yahan hona chahiye
             if (err) {
-                return res.status(500).json({ success: false, message: 'Logout failed' });
+                console.error("Logout Error:", err);
+
+                if (isDatabaseUnavailable(err)) {
+                    return sendDatabaseUnavailable(res);
+                }
+
+                return res.status(500).json({ success: false, message: "Logout failed" });
             }
 
-            // res.clearCookie("connect.sid", {
-            //     path: "/",
-            //     httpOnly: true,
-            //     sameSite: "lax",
-            // });
             res.clearCookie("sid", {
                 path: "/",
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             });
-            return res.status(200).json({ success: true, message: 'Logged out successfully' });
 
+            return res.status(200).json({ success: true, message: "Logged out successfully" });
         });
-
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ success: false, message: 'Server error' });
+        console.error("Logout Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
-}
+};

@@ -28,6 +28,7 @@ import PayrollReportPage from "@/pages/reports/PayrollReportPage";
 import OnboardingChecklistSettings from "@/pages/settings/Onboardingchecklistsettings";
 import OnboardingDetail from "@/pages/onboarding/OnboardingDetail";
 import OnboardingList from "@/pages/onboarding/OnboardingList";
+import EmployeeView from "@/pages/EmployeeView";
 
 const AppRoutes = () => {
     return (
@@ -51,6 +52,7 @@ const AppRoutes = () => {
                         <Route path="/branch" element={<BranchList />} />
                         <Route path="/category" element={<CategoryList />} />
                         <Route path="/employee" element={<EmployeeList />} />
+                        <Route path="/employee/:id" element={<EmployeeView />} />
                         <Route path="/attendance/list" element={<AttendanceList />} />
                         <Route path="/attendance/live" element={<AttendanceLive />} />
                         <Route path="/attendance/employee/:userId" element={<EmployeeAttendanceDetail />} />
